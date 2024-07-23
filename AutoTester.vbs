@@ -25,6 +25,10 @@ Set DadosExcel = CreateObject("Scripting.Dictionary")
 Dim DadosTxt
 Set DadosTxt = CreateObject("Scripting.Dictionary")
 
+' Criação de dicionário para armazenar os BancosDeDadaos
+Dim DadosBancoDeDados
+Set DadosBancoDeDados = CreateObject("Scripting.Dictionary")
+
 ' Criação do dicionário para verificar o mesmo objeto sendo utilizado em libs diferentes
 Set ListaObjetosLib = CreateObject("Scripting.Dictionary")
 
@@ -41,7 +45,9 @@ Sub Main()
     For Each ScreenObj in Application.ListFiles("Screen")
         VerificarTela ScreenObj
     Next 
-
+	
+	ListarXObjectsDominio
+	
     ' Gerar relatórios
     If GerarLogErrosScript And Not DebugMode Then
     	VerificarMesmoObjetoLibsDiferentes()
@@ -61,10 +67,12 @@ Sub VerificarTela(ParentObj)
     Mecanicos = Array("Bomb", "Valve", "Brake")
     
     InfoAlarmSourceObject ParentObj ' Verifica se o SourceObject01 está preenchido dos InfoAlarmes
-    InfoAlarmGenericLib ParentObj ' Verifica se os InfoAlarmes estão utilizando a lib Generic
+    If Not UsandoLibControle Then
+    	InfoAlarmGenericLib ParentObj ' Verifica se os InfoAlarmes estão utilizando a lib Generic
+    	InfoAnalogicaGenericLib ParentObj ' Verifica se os InfoAnalogica estão utilizando a lib Generic
+    End If
     InfoAlarmComValue ParentObj ' Verifica se os SourceObjectXX estão preenchidos incorretamente com .Value
     InfoAnalogicaSemSourceObject ParentObj ' Verifica se os SourceObject da InfoAnalogica estão preenchidos
-    InfoAnalogicaGenericLib ParentObj ' Verifica se os InfoAnalogica estão utilizando a lib Generic
     VerificarInfoAnalogic ParentObj ' Verifica os objetos gx_InfoAnalogic
     VerificarPwaLineVert ParentObj ' Verificar pwa_LineVert está com a prorpiedade CorOn vazia
     VerificarPwaLineHoriz ParentObj ' Verificar pwa_LineHoriz está com a prorpiedade CorOn vazia
@@ -77,7 +85,7 @@ Sub VerificarTela(ParentObj)
     For Each Objeto in Mecanicos
     	ClassificarLibMecanicos ParentObj, Objeto
     Next
-
+	
 End Sub
 
 Sub GerarRelatorioExcel()
@@ -540,7 +548,7 @@ End Sub
 Sub ObjetoMecanicoDeviceNoteVazio(Tela, Obj, ObjetoMecanico) ' Verifica o DeviceNote vazio em disjuntores que abrem tela de comando
 On Error Resume Next
 	If InStr(1, TypeName(Obj), ObjetoMecanico, 1) > 0 Then
-		If TypeName(Obj) <> "uhe_ValveButterfly" And TypeName(Obj) <> "uhe_ValveDistributing" And TypeName(Obj) <> "uhe_Valve3Ways" Then
+		If TypeName(Obj) <> "uhe_ValveButterfly" And TypeName(Obj) <> "uhe_ValveDistributing" And TypeName(Obj) <> "uhe_Valve3Ways" And TypeName(Obj) <> "uhe_Valve4Ways" Then
 			If Obj.DeviceNote = "" And Obj.UseNotes = True Then	
 				If Err.Number = 0 Then
 					DadosExcel.Add Cstr(Linha), Obj.PathName & "/" & "Erro" & "/" & ObjetoMecanico & " com DeviceNote vazio mas UseNotes True"
@@ -566,7 +574,7 @@ End Sub
 Sub ObjetoMecanicoSemTelaDeComandoDeviceNote(Tela, Obj, ObjetoMecanico) ' Verifica o DeviceNote vazio em disjuntores que abrem tela de comando
 On Error Resume Next
 
-	If TypeName(Obj) <> "uhe_ValveButterfly" And TypeName(Obj) <> "uhe_ValveDistributing" And TypeName(Obj) <> "uhe_Valve3Ways" Then
+	If TypeName(Obj) <> "uhe_ValveButterfly" And TypeName(Obj) <> "uhe_ValveDistributing" And TypeName(Obj) <> "uhe_Valve3Ways" And TypeName(Obj) <> "uhe_Valve4Ways" Then
 		If InStr(1, TypeName(Obj), ObjetoMecanico, 1) > 0 Then
 			If Obj.DeviceNote <> "" And Obj.UseNotes = False Then
 				If Err.Number = 0 Then
@@ -673,6 +681,7 @@ On Error Goto 0
 End Sub
 
 Sub InfoAnalogicaGenericLib(Tela)'Verifica se os InfoAnalogicas estão sendo utilizados com a lib nova
+
 On Error Resume Next
 	For Each Obj in Tela
 		TypeNameObj = TypeName(Obj)
@@ -794,7 +803,7 @@ On Error Resume Next
 	End If
 	
 	If Err.Number <> 0 Then
-		DadosTxt.Add Cstr(LinhaTxt), "Erro na Sub InfoAlarmGenericLib/" & Obj.PathName & ": " & Err.Description
+		DadosTxt.Add Cstr(LinhaTxt), "Erro na Sub ObjetoLibXCNotaOperacional/" & Obj.PathName & ": " & Err.Description
   		LinhaTxt = LinhaTxt + 1
   		Err.Clear
 	End If
@@ -855,6 +864,73 @@ On Error Resume Next
 	End If
 
 On Error Goto 0
+End Sub
+
+Sub ListarXObjectsDominio()
+Set DataServer = Application.ListFiles("DataServer")
+FiltrarXObjectsDominio DataServer
+End Sub
+
+Sub FiltrarXObjectsDominio(DataServer)
+
+For each Object in DataServer
+	Select Case TypeName(Object)
+	Case "DataServer"
+		FiltrarXObjectsDominio Object
+	Case "DataFolder"
+		FiltrarXObjectsDominio Object
+	Case "frCustomAppConfig"
+		If not DadosBancoDeDados.Exists(Object.AppDBServerPathName) Then
+			DadosBancoDeDados.Add Object.AppDBServerPathName, Object.PathName
+		Else
+			DadosExcel.Add Cstr(Linha), Object.PathName & "/" & "Aviso" & "/" & "O customizador do " & Object.Name & " não possui um banco de dados exclusivo e compartilha o " & Object.AppDBServerPathName & " com o objeto " & DadosBancoDeDados(Object.AppDBServerPathName)
+			Linha = Linha + 1
+		End If
+		'MsgBox Object.PathName
+	Case "ww_Parameters"
+		If not DadosBancoDeDados.Exists(Object.DBServer) Then
+			DadosBancoDeDados.Add Object.DBServer, Object.PathName
+		Else
+			DadosExcel.Add Cstr(Linha), Object.PathName & "/" & "Aviso" & "/" & "O customizador do " & Object.Name & " não possui um banco de dados exclusivo e compartilha o " & Object.DBServer & " com o objeto " & DadosBancoDeDados(Object.DBServer)
+			Linha = Linha + 1
+		End If
+		'MsgBox Object.PathName
+	Case "DatabaseTags_Parameters"
+		If not DadosBancoDeDados.Exists(Object.StorageMethod) Then
+			DadosBancoDeDados.Add Object.StorageMethod, Object.PathName
+		Else
+			DadosExcel.Add Cstr(Linha), Object.PathName & "/" & "Aviso" & "/" & "O customizador do " & Object.Name & " não possui um banco de dados exclusivo e compartilha o " & Object.StorageMethod & " com o objeto " & DadosBancoDeDados(Object.StorageMethod)
+			Linha = Linha + 1
+		End If
+		'MsgBox Object.PathName
+	Case "patm_CmdBoxXmlCreator"
+		If not DadosBancoDeDados.Exists(Object.DBServerPathName) Then
+			DadosBancoDeDados.Add Object.DBServerPathName, Object.PathName
+		Else
+			DadosExcel.Add Cstr(Linha), Object.PathName & "/" & "Aviso" & "/" & "O customizador do " & Object.Name & " não possui um banco de dados exclusivo e compartilha o " & Object.DBServerPathName & " com o objeto " & DadosBancoDeDados(Object.DBServerPathName)
+			Linha = Linha + 1
+		End If
+		'MsgBox Object.PathName
+	Case "patm_NoteDatabaseControl"
+		If not DadosBancoDeDados.Exists(Object.DBServer) Then
+			DadosBancoDeDados.Add Object.DBServer, Object.PathName
+		Else
+			DadosExcel.Add Cstr(Linha), Object.PathName & "/" & "Aviso" & "/" & "O customizador do " & Object.Name & " não possui um banco de dados exclusivo e compartilha o " & Object.DBServer & " com o objeto " & DadosBancoDeDados(Object.DBServer)
+			Linha = Linha + 1
+		End If
+		'MsgBox Object.PathName
+	Case "patm_xoAlarmHistConfig"
+		If not DadosBancoDeDados.Exists(Object.MainDBServerPathName) Then
+			DadosBancoDeDados.Add Object.MainDBServerPathName, Object.PathName
+		Else
+			DadosExcel.Add Cstr(Linha), Object.PathName & "/" & "Aviso" & "/" & "O customizador do " & Object.Name & " não possui um banco de dados exclusivo e compartilha o " & Object.MainDBServerPathName & " com o objeto " & DadosBancoDeDados(Object.MainDBServerPathName)
+			Linha = Linha + 1
+		End If
+		'MsgBox Object.PathName
+	End Select
+Next
+
+
 End Sub
 
 Sub Fim()
