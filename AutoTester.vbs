@@ -873,6 +873,7 @@ Sub ListarXObjectsDominio()
     ' Verifica os historiadores
     Set Historiadores = Application.ListFiles("Hist")
     VerificarHistoriadores Historiadores
+     
 End Sub
 
 Sub FiltrarXObjectsDominio(DataServer)
@@ -907,39 +908,23 @@ Sub VerificarBancoDeDados(DBServerPathName, ObjectPathName, ObjectName)
     End If
 End Sub
 
+Sub VerificarHist(DBServerPathName, ObjectPathName, ObjectName)
+    If Not DadosBancoDeDados.Exists(DBServerPathName) Then
+        DadosBancoDeDados.Add DBServerPathName, ObjectPathName
+    Else
+        DadosExcel.Add CStr(Linha), ObjectPathName & "/" & "Aviso" & "/" & "O historiador " & ObjectName & " não possui um banco de dados exclusivo e compartilha o " & DBServerPathName & " com o objeto " & DadosBancoDeDados(DBServerPathName)
+        Linha = Linha + 1
+    End If
+End Sub
+
 Sub VerificarHistoriadores(Historiadores)
     For Each Hist In Historiadores
         Select Case TypeName(Hist)
         Case "DataFolder"
             VerificarHistoriadores Hist
         Case "Hist"
-            VerificarBancoDeDados Hist.DBServer, Hist.PathName, Hist.Name
+            VerificarHist Hist.DBServer, Hist.PathName, Hist.Name
         End Select
-    Next
-End Sub
-
-Sub VerificarBancosNaoUtilizados()
-    Dim BancoDeDadosUtilizados, BancoDeDadosNaoUtilizados
-    Set BancoDeDadosUtilizados = CreateObject("Scripting.Dictionary")
-
-    ' Listar bancos de dados utilizados
-    For Each Key In DadosBancoDeDados.Keys
-        BancoDeDadosUtilizados.Add Key, DadosBancoDeDados(Key)
-    Next
-
-    ' Comparar com a lista de todos os bancos de dados configurados
-    Set TodosBancosDeDados = Application.ListFiles("DataServer")
-
-    For Each Banco In TodosBancosDeDados
-        If Not BancoDeDadosUtilizados.Exists(Banco.Name) Then
-            BancoDeDadosNaoUtilizados.Add Banco.Name, Banco.PathName
-        End If
-    Next
-
-    ' Relatar bancos de dados não utilizados
-    For Each Key In BancoDeDadosNaoUtilizados.Keys
-        DadosExcel.Add CStr(Linha), "Banco de dados não utilizado: " & Key & " localizado em: " & BancoDeDadosNaoUtilizados(Key)
-        Linha = Linha + 1
     Next
 End Sub
 
