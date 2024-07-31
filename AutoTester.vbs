@@ -867,70 +867,65 @@ On Error Goto 0
 End Sub
 
 Sub ListarXObjectsDominio()
-Set DataServer = Application.ListFiles("DataServer")
-FiltrarXObjectsDominio DataServer
+    Set DataServer = Application.ListFiles("DataServer")
+    FiltrarXObjectsDominio DataServer
+
+    ' Verifica os historiadores
+    Set Historiadores = Application.ListFiles("Hist")
+    VerificarHistoriadores Historiadores
+     
 End Sub
 
 Sub FiltrarXObjectsDominio(DataServer)
+    For Each Object in DataServer
+        Select Case TypeName(Object)
+        Case "DataServer"
+            FiltrarXObjectsDominio Object
+        Case "DataFolder"
+            FiltrarXObjectsDominio Object
+        Case "frCustomAppConfig"
+            VerificarBancoDeDados Object.AppDBServerPathName, Object.PathName, Object.Name
+        Case "ww_Parameters"
+            VerificarBancoDeDados Object.DBServer, Object.PathName, Object.Name
+        Case "DatabaseTags_Parameters"
+            VerificarBancoDeDados Object.StorageMethod, Object.PathName, Object.Name
+        Case "patm_CmdBoxXmlCreator"
+            VerificarBancoDeDados Object.DBServerPathName, Object.PathName, Object.Name
+        Case "patm_NoteDatabaseControl"
+            VerificarBancoDeDados Object.DBServer, Object.PathName, Object.Name
+        Case "patm_xoAlarmHistConfig"
+            VerificarBancoDeDados Object.MainDBServerPathName, Object.PathName, Object.Name
+        End Select
+    Next
+End Sub
 
-For each Object in DataServer
-	Select Case TypeName(Object)
-	Case "DataServer"
-		FiltrarXObjectsDominio Object
-	Case "DataFolder"
-		FiltrarXObjectsDominio Object
-	Case "frCustomAppConfig"
-		If not DadosBancoDeDados.Exists(Object.AppDBServerPathName) Then
-			DadosBancoDeDados.Add Object.AppDBServerPathName, Object.PathName
-		Else
-			DadosExcel.Add Cstr(Linha), Object.PathName & "/" & "Aviso" & "/" & "O customizador do " & Object.Name & " não possui um banco de dados exclusivo e compartilha o " & Object.AppDBServerPathName & " com o objeto " & DadosBancoDeDados(Object.AppDBServerPathName)
-			Linha = Linha + 1
-		End If
-		'MsgBox Object.PathName
-	Case "ww_Parameters"
-		If not DadosBancoDeDados.Exists(Object.DBServer) Then
-			DadosBancoDeDados.Add Object.DBServer, Object.PathName
-		Else
-			DadosExcel.Add Cstr(Linha), Object.PathName & "/" & "Aviso" & "/" & "O customizador do " & Object.Name & " não possui um banco de dados exclusivo e compartilha o " & Object.DBServer & " com o objeto " & DadosBancoDeDados(Object.DBServer)
-			Linha = Linha + 1
-		End If
-		'MsgBox Object.PathName
-	Case "DatabaseTags_Parameters"
-		If not DadosBancoDeDados.Exists(Object.StorageMethod) Then
-			DadosBancoDeDados.Add Object.StorageMethod, Object.PathName
-		Else
-			DadosExcel.Add Cstr(Linha), Object.PathName & "/" & "Aviso" & "/" & "O customizador do " & Object.Name & " não possui um banco de dados exclusivo e compartilha o " & Object.StorageMethod & " com o objeto " & DadosBancoDeDados(Object.StorageMethod)
-			Linha = Linha + 1
-		End If
-		'MsgBox Object.PathName
-	Case "patm_CmdBoxXmlCreator"
-		If not DadosBancoDeDados.Exists(Object.DBServerPathName) Then
-			DadosBancoDeDados.Add Object.DBServerPathName, Object.PathName
-		Else
-			DadosExcel.Add Cstr(Linha), Object.PathName & "/" & "Aviso" & "/" & "O customizador do " & Object.Name & " não possui um banco de dados exclusivo e compartilha o " & Object.DBServerPathName & " com o objeto " & DadosBancoDeDados(Object.DBServerPathName)
-			Linha = Linha + 1
-		End If
-		'MsgBox Object.PathName
-	Case "patm_NoteDatabaseControl"
-		If not DadosBancoDeDados.Exists(Object.DBServer) Then
-			DadosBancoDeDados.Add Object.DBServer, Object.PathName
-		Else
-			DadosExcel.Add Cstr(Linha), Object.PathName & "/" & "Aviso" & "/" & "O customizador do " & Object.Name & " não possui um banco de dados exclusivo e compartilha o " & Object.DBServer & " com o objeto " & DadosBancoDeDados(Object.DBServer)
-			Linha = Linha + 1
-		End If
-		'MsgBox Object.PathName
-	Case "patm_xoAlarmHistConfig"
-		If not DadosBancoDeDados.Exists(Object.MainDBServerPathName) Then
-			DadosBancoDeDados.Add Object.MainDBServerPathName, Object.PathName
-		Else
-			DadosExcel.Add Cstr(Linha), Object.PathName & "/" & "Aviso" & "/" & "O customizador do " & Object.Name & " não possui um banco de dados exclusivo e compartilha o " & Object.MainDBServerPathName & " com o objeto " & DadosBancoDeDados(Object.MainDBServerPathName)
-			Linha = Linha + 1
-		End If
-		'MsgBox Object.PathName
-	End Select
-Next
+Sub VerificarBancoDeDados(DBServerPathName, ObjectPathName, ObjectName)
+    If Not DadosBancoDeDados.Exists(DBServerPathName) Then
+        DadosBancoDeDados.Add DBServerPathName, ObjectPathName
+    Else
+        DadosExcel.Add CStr(Linha), ObjectPathName & "/" & "Aviso" & "/" & "O customizador do " & ObjectName & " não possui um banco de dados exclusivo e compartilha o " & DBServerPathName & " com o objeto " & DadosBancoDeDados(DBServerPathName)
+        Linha = Linha + 1
+    End If
+End Sub
 
+Sub VerificarHist(DBServerPathName, ObjectPathName, ObjectName)
+    If Not DadosBancoDeDados.Exists(DBServerPathName) Then
+        DadosBancoDeDados.Add DBServerPathName, ObjectPathName
+    Else
+        DadosExcel.Add CStr(Linha), ObjectPathName & "/" & "Aviso" & "/" & "O historiador " & ObjectName & " não possui um banco de dados exclusivo e compartilha o " & DBServerPathName & " com o objeto " & DadosBancoDeDados(DBServerPathName)
+        Linha = Linha + 1
+    End If
+End Sub
 
+Sub VerificarHistoriadores(Historiadores)
+    For Each Hist In Historiadores
+        Select Case TypeName(Hist)
+        Case "DataFolder"
+            VerificarHistoriadores Hist
+        Case "Hist"
+            VerificarHist Hist.DBServer, Hist.PathName, Hist.Name
+        End Select
+    Next
 End Sub
 
 Sub Fim()
