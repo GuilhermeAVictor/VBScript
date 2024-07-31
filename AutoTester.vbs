@@ -47,14 +47,12 @@ Sub Main()
     Next 
 	
 	ListarXObjectsDominio
-	
+	VerificarMesmoObjetoLibsDiferentes()
     ' Gerar relatórios
     If GerarLogErrosScript And Not DebugMode Then
-    	VerificarMesmoObjetoLibsDiferentes()
     	GerarRelatorioExcel
     	GerarRelatorioTxt
     ElseIf Not GerarLogErrosScript And Not DebugMode Then
-    	VerificarMesmoObjetoLibsDiferentes()
     	GerarRelatorioExcel
     End If
     
@@ -886,6 +884,12 @@ For each Object in DataServer
 			DadosExcel.Add Cstr(Linha), Object.PathName & "/" & "Aviso" & "/" & "O customizador do " & Object.Name & " não possui um banco de dados exclusivo e compartilha o " & Object.AppDBServerPathName & " com o objeto " & DadosBancoDeDados(Object.AppDBServerPathName)
 			Linha = Linha + 1
 		End If
+		If not DadosBancoDeDados.Exists(Object.DomainEventsDBName) Then
+			DadosBancoDeDados.Add Object.DomainEventsDBName, Object.PathName
+		Else
+			DadosExcel.Add Cstr(Linha), Object.PathName & "/" & "Aviso" & "/" & "O customizador do " & Object.Name & " não possui um banco de dados exclusivo e compartilha o " & Object.DomainEventsDBName & " com o objeto " & DadosBancoDeDados(Object.DomainEventsDBName)
+			Linha = Linha + 1
+		End If
 		'MsgBox Object.PathName
 	Case "ww_Parameters"
 		If not DadosBancoDeDados.Exists(Object.DBServer) Then
@@ -924,6 +928,14 @@ For each Object in DataServer
 			DadosBancoDeDados.Add Object.MainDBServerPathName, Object.PathName
 		Else
 			DadosExcel.Add Cstr(Linha), Object.PathName & "/" & "Aviso" & "/" & "O customizador do " & Object.Name & " não possui um banco de dados exclusivo e compartilha o " & Object.MainDBServerPathName & " com o objeto " & DadosBancoDeDados(Object.MainDBServerPathName)
+			Linha = Linha + 1
+		End If
+		'MsgBox Object.PathName
+	Case "uheCustomConfig"
+		If not DadosBancoDeDados.Exists(Object.DBServerPathName) Then
+			DadosBancoDeDados.Add Object.DBServerPathName, Object.PathName
+		Else
+			DadosExcel.Add Cstr(Linha), Object.PathName & "/" & "Aviso" & "/" & "O customizador do " & Object.Name & " não possui um banco de dados exclusivo e compartilha o " & Object.DBServerPathName & " com o objeto " & DadosBancoDeDados(Object.DBServerPathName)
 			Linha = Linha + 1
 		End If
 		'MsgBox Object.PathName
