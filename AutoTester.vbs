@@ -47,14 +47,12 @@ Sub Main()
     Next 
 	
 	ListarXObjectsDominio
-	
+	VerificarMesmoObjetoLibsDiferentes()
     ' Gerar relatórios
     If GerarLogErrosScript And Not DebugMode Then
-    	VerificarMesmoObjetoLibsDiferentes()
     	GerarRelatorioExcel
     	GerarRelatorioTxt
     ElseIf Not GerarLogErrosScript And Not DebugMode Then
-    	VerificarMesmoObjetoLibsDiferentes()
     	GerarRelatorioExcel
     End If
     
@@ -259,7 +257,7 @@ Sub VerificarPwaLineVert(Tela)
         TypeNameObj = TypeName(Obj)
         If StrComp(TypeNameObj, "DrawGroup", 1) = 0 Then
             VerificarPwaLineVert Obj
-        ElseIf InStr(1, TypeNameObj, "LineVert", 1) > 0 Then
+        ElseIf InStr(1, TypeNameObj, "LineVert", 1) > 0 And (TypeNameObj <> "archLineVertical") Then
             On Error Resume Next  
             If (Obj.Links.Item("CorOn").Source = "") Then
                 DadosExcel.Add CStr(Linha), Obj.PathName & "/" & "Aviso" & "/" & "Propriedade CorOn está vazia"
@@ -286,7 +284,7 @@ Sub VerificarPwaLineHoriz(Tela)
         TypeNameObj = TypeName(Obj)
         If StrComp(TypeNameObj, "DrawGroup", 1) = 0 Then
             VerificarPwaLineHoriz Obj
-        ElseIf InStr(1, TypeNameObj, "LineHoriz", 1) > 0 Then
+        ElseIf InStr(1, TypeNameObj, "LineHoriz", 1) > 0 And (TypeNameObj <> "archLineHorizontal") Then
             On Error Resume Next  
             If (Obj.Links.Item("CorOn").Source = "") Then
                 DadosExcel.Add CStr(Linha), Obj.PathName & "/" & "Aviso" & "/" & "Propriedade CorOn está vazia"
@@ -733,7 +731,7 @@ On Error Resume Next
 						End If
 					End If
 				End If
-			ElseIf ObjetoMecanico = "Valve" And TypeName(Obj) <> "uhe_ValveDistributing" And TypeName(Obj) <> "uhe_ValveButterfly" And TypeName(Obj) <> "uhe_Valve3Ways" Then
+			ElseIf ObjetoMecanico = "Valve" And TypeName(Obj) <> "uhe_ValveDistributing" And TypeName(Obj) <> "uhe_ValveButterfly" And TypeName(Obj) <> "uhe_Valve3Ways" And TypeName(Obj) <> "uhe_Valve4Ways" Then
 				If (Obj.Unsupervised = False) Then
 					If (Obj.Links.Item("Open").Source = "") Then
 						If Err.Number <> 0 Then
@@ -899,6 +897,7 @@ Sub FiltrarXObjectsDominio(DataServer)
     Next
 End Sub
 
+
 Sub VerificarBancoDeDados(DBServerPathName, ObjectPathName, ObjectName)
     If Not DadosBancoDeDados.Exists(DBServerPathName) Then
         DadosBancoDeDados.Add DBServerPathName, ObjectPathName
@@ -907,6 +906,7 @@ Sub VerificarBancoDeDados(DBServerPathName, ObjectPathName, ObjectName)
         Linha = Linha + 1
     End If
 End Sub
+
 
 Sub VerificarHist(DBServerPathName, ObjectPathName, ObjectName)
     If Not DadosBancoDeDados.Exists(DBServerPathName) Then
