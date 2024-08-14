@@ -253,11 +253,13 @@ End Sub
 
 Sub VerificarPwaLineVert(Tela)
     On Error Resume Next
+    Set ObjetosIgnorados = CreateObject("Scripting.Dictionary")
+    ObjetosIgnorados.Add "archLineVertical", Empty
     For Each Obj In Tela
         TypeNameObj = TypeName(Obj)
         If StrComp(TypeNameObj, "DrawGroup", 1) = 0 Then
             VerificarPwaLineVert Obj
-        ElseIf InStr(1, TypeNameObj, "LineVert", 1) > 0 And (TypeNameObj <> "archLineVertical") Then
+        ElseIf InStr(1, TypeNameObj, "LineVert", 1) > 0 And (Not ObjetosIgnorados.Exists(TypeNameObj)) Then
             On Error Resume Next  
             If (Obj.Links.Item("CorOn").Source = "") Then
                 DadosExcel.Add CStr(Linha), Obj.PathName & "/" & "Aviso" & "/" & "Propriedade CorOn está vazia"
@@ -280,11 +282,13 @@ End Sub
 
 Sub VerificarPwaLineHoriz(Tela)
     On Error Resume Next
+    Set ObjetosIgnorados = CreateObject("Scripting.Dictionary")
+    ObjetosIgnorados.Add "archLineHorizontal", Empty
     For Each Obj In Tela
         TypeNameObj = TypeName(Obj)
         If StrComp(TypeNameObj, "DrawGroup", 1) = 0 Then
             VerificarPwaLineHoriz Obj
-        ElseIf InStr(1, TypeNameObj, "LineHoriz", 1) > 0 And (TypeNameObj <> "archLineHorizontal") Then
+        ElseIf InStr(1, TypeNameObj, "LineHoriz", 1) > 0 And (Not ObjetosIgnorados.Exists(TypeNameObj)) Then
             On Error Resume Next  
             If (Obj.Links.Item("CorOn").Source = "") Then
                 DadosExcel.Add CStr(Linha), Obj.PathName & "/" & "Aviso" & "/" & "Propriedade CorOn está vazia"
@@ -545,8 +549,13 @@ End Sub
 
 Sub ObjetoMecanicoDeviceNoteVazio(Tela, Obj, ObjetoMecanico) ' Verifica o DeviceNote vazio em disjuntores que abrem tela de comando
 On Error Resume Next
+	Set ObjetosIgnorados = CreateObject("Scripting.Dictionary")
+    ObjetosIgnorados.Add "uhe_ValveButterfly", Empty
+    ObjetosIgnorados.Add "uhe_ValveDistributing", Empty
+    ObjetosIgnorados.Add "uhe_Valve3Ways", Empty
+    ObjetosIgnorados.Add "uhe_Valve4Ways", Empty
 	If InStr(1, TypeName(Obj), ObjetoMecanico, 1) > 0 Then
-		If TypeName(Obj) <> "uhe_ValveButterfly" And TypeName(Obj) <> "uhe_ValveDistributing" And TypeName(Obj) <> "uhe_Valve3Ways" And TypeName(Obj) <> "uhe_Valve4Ways" Then
+		If Not ObjetosIgnorados.Exists(TypeName(Obj)) Then
 			If Obj.DeviceNote = "" And Obj.UseNotes = True Then	
 				If Err.Number = 0 Then
 					DadosExcel.Add Cstr(Linha), Obj.PathName & "/" & "Erro" & "/" & ObjetoMecanico & " com DeviceNote vazio mas UseNotes True"
@@ -571,8 +580,13 @@ End Sub
 
 Sub ObjetoMecanicoSemTelaDeComandoDeviceNote(Tela, Obj, ObjetoMecanico) ' Verifica o DeviceNote vazio em disjuntores que abrem tela de comando
 On Error Resume Next
-
-	If TypeName(Obj) <> "uhe_ValveButterfly" And TypeName(Obj) <> "uhe_ValveDistributing" And TypeName(Obj) <> "uhe_Valve3Ways" And TypeName(Obj) <> "uhe_Valve4Ways" Then
+	Set ObjetosIgnorados = CreateObject("Scripting.Dictionary")
+    ObjetosIgnorados.Add "uhe_ValveButterfly", Empty
+    ObjetosIgnorados.Add "uhe_ValveDistributing", Empty
+    ObjetosIgnorados.Add "uhe_Valve3Ways", Empty
+    ObjetosIgnorados.Add "uhe_Valve4Ways", Empty
+    
+	If Not ObjetosIgnorados.Exists(TypeName(Obj)) Then
 		If InStr(1, TypeName(Obj), ObjetoMecanico, 1) > 0 Then
 			If Obj.DeviceNote <> "" And Obj.UseNotes = False Then
 				If Err.Number = 0 Then
@@ -598,8 +612,10 @@ End Sub
 
 Sub ObjetoMecanicoSemSourceObject(Tela, Obj, ObjetoMecanico) ' Verifica se objetos mecanicos supervisionados possuem SourceObject
 On Error Resume Next
-
-	If TypeName(Obj) <> "uhe_ValveDistributing" Then
+	Set ObjetosIgnorados = CreateObject("Scripting.Dictionary")
+    ObjetosIgnorados.Add "uhe_ValveDistributing", Empty
+    
+	If Not ObjetosIgnorados.Exists(TypeName(Obj)) Then
 		If InStr(1, TypeName(Obj), ObjetoMecanico, 1) > 0 And TypeName(Obj) = "uhe_ValveButterfly" Then
 			If Obj.SourceObject = "" And Obj.NaoSupervisionada = False Then
 				If Err.Number = 0 Then
@@ -708,7 +724,12 @@ End Sub
 
 Sub ConferirLinkObjetosMecanicos(Tela, Obj, ObjetoMecanico)'Verifica os equipamentos mecânicos que são supervisionados estão linkados
 On Error Resume Next
-
+	Set ObjetosIgnorados = CreateObject("Scripting.Dictionary")
+    ObjetosIgnorados.Add "uhe_ValveDistributing", Empty
+    ObjetosIgnorados.Add "uhe_ValveButterfly", Empty
+    ObjetosIgnorados.Add "uhe_Valve3Ways", Empty
+    ObjetosIgnorados.Add "uhe_Valve4Ways", Empty
+    
 	If InStr(1, TypeName(Obj), ObjetoMecanico, 1) > 0 Then
 			If ObjetoMecanico = "Bomb" Then
 				If (Obj.Unsupervised = False) Then
@@ -731,7 +752,7 @@ On Error Resume Next
 						End If
 					End If
 				End If
-			ElseIf ObjetoMecanico = "Valve" And TypeName(Obj) <> "uhe_ValveDistributing" And TypeName(Obj) <> "uhe_ValveButterfly" And TypeName(Obj) <> "uhe_Valve3Ways" And TypeName(Obj) <> "uhe_Valve4Ways" Then
+			ElseIf ObjetoMecanico = "Valve" And (Not ObjetosIgnorados.Exists(TypeName(Obj))) Then
 				If (Obj.Unsupervised = False) Then
 					If (Obj.Links.Item("Open").Source = "") Then
 						If Err.Number <> 0 Then
