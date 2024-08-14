@@ -4,13 +4,21 @@
 Verificações nas Telas:
 
 Verificação de preenchimento do SourceObject01 nos InfoAlarmes.
+
 Verificação se os InfoAlarmes estão utilizando a biblioteca Generic.
+
 Verificação se os InfoAnalogica estão utilizando a biblioteca Generic.
+
 Verificação se os SourceObjectXX nos InfoAlarmes estão incorretamente preenchidos com .Value.
+
 Verificação de preenchimento dos SourceObject nos InfoAnalogica.
+
 Verificação dos objetos gx_InfoAnalogic.
+
 Verificação se a propriedade CorOn está vazia nos objetos pwa_LineVert.
+
 Verificação se a propriedade CorOn está vazia nos objetos pwa_LineHoriz.
+
 Verificação se o background da tela está vinculado à cor do frame.
 
 Classificação de Objetos:
