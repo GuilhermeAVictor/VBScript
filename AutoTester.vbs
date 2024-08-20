@@ -61,7 +61,7 @@ Sub Main()
 End Sub    
 
 Sub VerificarTela(ParentObj)
-    Eletricos = Array("Disjuntor", "Seccionadora", "Trafo", "Gerador", "Chave")
+    Eletricos = Array("Disjuntor", "Seccionadora", "Trafo", "Gerador", "Chave", "Switch")
     Mecanicos = Array("Bomb", "Valve", "Brake")
     
     InfoAlarmSourceObject ParentObj ' Verifica se o SourceObject01 está preenchido dos InfoAlarmes
@@ -69,12 +69,14 @@ Sub VerificarTela(ParentObj)
     	InfoAlarmGenericLib ParentObj ' Verifica se os InfoAlarmes estão utilizando a lib Generic
     	InfoAnalogicaGenericLib ParentObj ' Verifica se os InfoAnalogica estão utilizando a lib Generic
     End If
+    
     InfoAlarmComValue ParentObj ' Verifica se os SourceObjectXX estão preenchidos incorretamente com .Value
     InfoAnalogicaSemSourceObject ParentObj ' Verifica se os SourceObject da InfoAnalogica estão preenchidos
     VerificarInfoAnalogic ParentObj ' Verifica os objetos gx_InfoAnalogic
     VerificarPwaLineVert ParentObj ' Verificar pwa_LineVert está com a prorpiedade CorOn vazia
     VerificarPwaLineHoriz ParentObj ' Verificar pwa_LineHoriz está com a prorpiedade CorOn vazia
     CorBackgroundTela ParentObj ' Verifica se o background da tela está linkado com a cor do frame
+    VerificaAlarmBar ParentObj ' Veriifica as barras de alarme uhe_AlarmBar
     
     For Each Objeto in Eletricos
     	ClassificarLibEletricos ParentObj, Objeto
@@ -178,9 +180,17 @@ Sub ClassificarLibEletricos (Tela, Objeto)
 		End If
 	If InStr(1, TypeNameObj, Objeto, 1) > 0 Then
 		If Left(TypeName(Obj),2) = "xc" Then
-			Lib = Left(TypeName(Obj),2)	
+			Lib = Left(TypeName(Obj),2)
+		ElseIf Left(TypeName(Obj),4) = "arch" Then
+			Lib = Left(TypeName(Obj),4)
 		Else
+			On Error Resume Next
 			Lib = Left(TypeName(Obj),InStr(1, TypeName(Obj), "_", 1)-1)
+			If Err.Number <> 0 Then
+            	DadosTxt.Add CStr(LinhaTxt), "Erro definindo Lib/" & Obj.PathName & ": " & Err.Description
+            	LinhaTxt = LinhaTxt + 1
+            	Err.Clear
+        	End If
 		End If
 		Select Case True
 		
@@ -191,15 +201,23 @@ Sub ClassificarLibEletricos (Tela, Objeto)
 			Case (Lib="xc") And (Objeto = "Trafo")
 				'Nada a colocar aqui, a menos que um link em energizado seja obrigatório
 			Case (Lib = "xc") And (Objeto = "NotaOperacional")
-				ObjetoLibXCNotaOperacional Tela, Obj, Objeto
+				ObjetoLibXCNotaOperacional Tela, Obj, Objeto	
 			Case (Lib = "xc") And (Objeto = "Chave")
 				ObjetoEletricoSemSourceObject Tela, Obj, Objeto
+			Case (Lib = "arch") And (Objeto = "Switch")
+				'Nada pra fazer por enquanto
             Case (Lib = "pwa") And (Objeto = "Disjuntor")
                 ObjetoEletricoDeviceNoteVazio Tela, Obj, Objeto ' Verifica o DeviceNote vazio em objetos eletricos que abrem tela de comando
       		    ObjetoEletricoSemTelaDeComandoDeviceNote Tela, Obj, Objeto ' Verifica se tem objetos eletricos sem tela mas com DeviceNote
+      			ObjetoEletricoSemSourceObject Tela, Obj, Objeto
+      		Case (Lib = "pwa") And (Objeto = "Switch")
+                ObjetoEletricoDeviceNoteVazio Tela, Obj, Objeto ' Verifica o DeviceNote vazio em objetos eletricos que abrem tela de comando
+      		    ObjetoEletricoSemTelaDeComandoDeviceNote Tela, Obj, Objeto ' Verifica se tem objetos eletricos sem tela mas com DeviceNote
+      			ObjetoEletricoSemSourceObject Tela, Obj, Objeto
       		Case (Lib = "pwa") And (Objeto = "Seccionadora")
                 ObjetoEletricoDeviceNoteVazio Tela, Obj, Objeto ' Verifica o DeviceNote vazio em objetos eletricos que abrem tela de comando
       		    ObjetoEletricoSemTelaDeComandoDeviceNote Tela, Obj, Objeto ' Verifica se tem objetos eletricos sem tela mas com DeviceNote
+      			ObjetoEletricoSemSourceObject Tela, Obj, Objeto
       		Case (Lib = "pwa") And (Objeto = "Trafo")
 				ObjetoEletricoDeviceNoteVazio Tela, Obj, Objeto ' Verifica o DeviceNote vazio em objetos eletricos que abrem tela de comando
       			ObjetoEletricoSemTelaDeComandoDeviceNote Tela, Obj, Objeto ' Verifica se tem objetos eletricos sem tela mas com DeviceNote
@@ -303,6 +321,39 @@ Sub VerificarPwaLineHoriz(Tela)
         
         If Err.Number <> 0 Then
             DadosTxt.Add CStr(LinhaTxt), "Erro na Sub VerificarPwaLineHoriz/" & Obj.PathName & ": " & Err.Description
+            LinhaTxt = LinhaTxt + 1
+            Err.Clear
+        End If
+    Next
+End Sub
+
+Sub VerificaAlarmBar(Tela)
+    On Error Resume Next
+    Set ObjetosIgnorados = CreateObject("Scripting.Dictionary")
+    'ObjetosIgnorados.Add "archLineHorizontal", Empty
+    
+    For Each Obj In Tela
+        TypeNameObj = TypeName(Obj)
+        If StrComp(TypeNameObj, "DrawGroup", 1) = 0 Then
+            VerificaAlarmBar Obj
+        ElseIf InStr(1, TypeNameObj, "AlarmBar", 1) > 0 And (Not ObjetosIgnorados.Exists(TypeNameObj)) Then
+            On Error Resume Next  
+            If (Obj.NaoSupervisionado = "False") & (Obj.Measure = "") Then
+                DadosExcel.Add CStr(Linha), Obj.PathName & "/" & "Erro" & "/" & "Propriedade measure está vazia"
+                Linha = Linha + 1
+            ElseIf (Obj.NaoSupervisionado = "True") & (Obj.Measure <> "") Then
+            	DadosExcel.Add CStr(Linha), Obj.PathName & "/" & "Aviso" & "/" & "Propriedade measure está preenchida mesmo com objeto não supervisionado"
+                Linha = Linha + 1
+            End If
+        End If
+        On Error GoTo 0
+        
+        If Not ListaObjetosLib.Exists(TypeNameObj) Then
+			ListaObjetosLib.Add TypeNameObj, Empty
+		End If	
+        
+        If Err.Number <> 0 Then
+            DadosTxt.Add CStr(LinhaTxt), "Erro na Sub VerificaAlarmBar/" & Obj.PathName & ": " & Err.Description
             LinhaTxt = LinhaTxt + 1
             Err.Clear
         End If
@@ -459,7 +510,7 @@ On Error Resume Next
 On Error Goto 0
 End Sub
 
-Sub ObjetoEletricoSemSourceObject(Tela,Obj, ObjetoEletrico) ' Verifica o DeviceNote vazio em disjuntores que abrem tela de comando
+Sub ObjetoEletricoSemSourceObject(Tela,Obj, ObjetoEletrico) 'Procura sourceObject em objetos elétricos
 On Error Resume Next
 
 	If InStr(1, TypeName(Obj), "Chave", 1) > 0 Then
@@ -470,7 +521,14 @@ On Error Resume Next
 			DadosExcel.Add Cstr(Linha), Obj.PathName & "/" & "Aviso" & "/" & "Chave está supervisionada e com EstadoOFF em branco"
 			Linha = Linha + 1
 		End If
-	'Por enquanto está sem configuração para procurar sourceoobject em objetos elétricos, apenas essa lib (xc) pede	
+	Else
+		If Obj.NaoSupervisionado = False And Obj.SourceObject = "" Then
+			DadosExcel.Add Cstr(Linha), Obj.PathName & "/" & "Erro" & "/" & "Chave está supervisionada e sem SourceObject"
+			Linha = Linha + 1
+		ElseIf Obj.NaoSupervisionado = True And Obj.SourceObject <> "" Then
+			DadosExcel.Add Cstr(Linha), Obj.PathName & "/" & "Aviso" & "/" & "Chave não está supervisionada e com SourceObject"
+			Linha = Linha + 1
+		End If
 	End If
 	
 	If Not ListaObjetosLib.Exists(TypeName(Obj)) Then
@@ -622,6 +680,11 @@ On Error Resume Next
 					DadosExcel.Add Cstr(Linha), Obj.PathName & "/" & "Erro" & "/" & ObjetoMecanico & " supervisionada mas sem SourceObject"
 					Linha = Linha + 1
 				End If
+			ElseIf Obj.SourceObject <> "" And Obj.NaoSupervisionada = True Then
+				If Err.Number = 0 Then
+					DadosExcel.Add Cstr(Linha), Obj.PathName & "/" & "Aviso" & "/" & ObjetoMecanico & " não supervisionada mas com SourceObject"
+					Linha = Linha + 1
+				End If
 			End If
 		ElseIf InStr(1, TypeName(Obj), ObjetoMecanico, 1) > 0 And TypeName(Obj) = "uhe_BrakeAlert"Then
 			If Obj.SourceObject = "" Then
@@ -632,6 +695,11 @@ On Error Resume Next
 			If Obj.SourceObject = "" And Obj.Unsupervised = False Then
 				If Err.Number = 0 Then
 					DadosExcel.Add Cstr(Linha), Obj.PathName & "/" & "Erro" & "/" & ObjetoMecanico & " supervisionada mas sem SourceObject"
+					Linha = Linha + 1
+				End If
+			ElseIf Obj.SourceObject <> "" And Obj.Unsupervised = True Then
+				If Err.Number = 0 Then
+					DadosExcel.Add Cstr(Linha), Obj.PathName & "/" & "Aviso" & "/" & ObjetoMecanico & " não supervisionada mas com SourceObject"
 					Linha = Linha + 1
 				End If
 			End If	
