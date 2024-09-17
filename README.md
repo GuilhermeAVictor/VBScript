@@ -15,11 +15,11 @@ Verificação de preenchimento dos SourceObject nos InfoAnalogica.
 
 Verificação dos objetos gx_InfoAnalogic.
 
-Verificação se a propriedade CorOn está vazia nos objetos pwa_LineVert.
-
-Verificação se a propriedade CorOn está vazia nos objetos pwa_LineHoriz.
+Verificação se a propriedade CorOn e CorOff está vazia nos objetos XLineX, XDisjuntor e XSeccionadora.
 
 Verificação se o background da tela está vinculado à cor do frame.
+
+Verificação se a propriedade Caption está preenchida com o texto "Screen title", ou seja, não foi configurada.
 
 ## Classificação de Objetos:
 
