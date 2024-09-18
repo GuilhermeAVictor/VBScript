@@ -276,7 +276,7 @@ Sub ClassificarLibMecanicos(Tela, Objeto)
     Next
 End Sub
 
-Sub VerificarCorEnergizacao(Tela, Objeto)
+Sub VerificarCorEnergizacao(Tela, Objeto) 
     On Error Resume Next
     Set ObjetosIgnorados = CreateObject("Scripting.Dictionary")
     ObjetosIgnorados.Add "archLineVertical", Empty
