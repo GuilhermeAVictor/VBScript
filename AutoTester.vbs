@@ -1072,7 +1072,7 @@ End Sub
 Sub VerificarCaptionTela(Tela)
     On Error Resume Next
     If Tela.Caption = "Screen Title" Then
-        DadosExcel.Add CStr(Linha), ObjectPathName & "/" & "Erro" & "/" & "A propriedade Caption não foi preenchida"
+        DadosExcel.Add CStr(Linha), ObjectPathName & "/" & "Erro" & "/" & "A propriedade Caption não foi preenchida" 
         Linha = Linha + 1
     End If
     If Err.Number <> 0 Then
