@@ -1,11 +1,11 @@
 Sub AutoTester_CustomConfig()
     'Script que faz uma verificação automática no domínio
     Resposta = MsgBox("Tem certeza que deseja iniciar o teste automático do domínio?", 0 + 4 + 32, "Iniciar teste de domínio?")
-    
+
     If Resposta = 7 Then
         Exit Sub
     End If
-    
+
     Main()
 End Sub
 
@@ -41,56 +41,67 @@ Else
 End If
 
 Sub Main()
-    ' Coletar todas as telas disponíveis no projeto
-    For Each ScreenObj In Application.ListFiles("Screen")
-        VerificarTela ScreenObj
-    Next
-    
-    ListarXObjectsDominio
-    VerificarMesmoObjetoLibsDiferentes()
-    ' Gerar relatórios
-    If GerarLogErrosScript And Not DebugMode Then
+    If Len(Trim(PathNameTelas)) > 0 Then ' Verificar se a propriedade PathNameTelas está preenchida
+        telaArray = Split(PathNameTelas, "/") ' PathNameTelas está preenchido, vamos dividir a string em uma lista de telas
+        For Each ScreenObj in Application.ListFiles("Screen")' Verificar apenas as telas listadas em PathNameTelas
+            For Each tela In telaArray
+                tela = Trim(tela) ' Remove espaços em branco ao redor do nome da tela
+                If tela <> "" And StrComp(ScreenObj.PathName, tela, vbTextCompare) = 0 Then
+                    VerificarTela ScreenObj ' Verificar apenas a tela especificada
+                End If
+            Next
+        Next
+    Else
+        For Each ScreenObj in Application.ListFiles("Screen") ' PathNameTelas está vazio, verificar todas as telas disponíveis no projeto
+            VerificarTela ScreenObj
+        Next
+    End If
+	
+	ListarXObjectsDominio
+    If GerarLogErrosScript And Not DebugMode Then ' Gerar relatórios
+        VerificarMesmoObjetoLibsDiferentes()
         GerarRelatorioExcel
         GerarRelatorioTxt
     ElseIf Not GerarLogErrosScript And Not DebugMode Then
+        VerificarMesmoObjetoLibsDiferentes()
         GerarRelatorioExcel
     End If
-    
+
     MsgBox "Fim"
-    
+
 End Sub
 
 Sub VerificarTela(ParentObj)
     Eletricos = Array("Disjuntor", "Seccionadora", "Trafo", "Gerador", "Chave", "Switch")
     Mecanicos = Array("Bomb", "Valve", "Brake")
-    Energizacao = Array("Disjuntor", "Seccionadora", "Line")
-    
+    Energizacao = Array("Disjuntor", "Seccionadora", "Line") 
+
     InfoAlarmSourceObject ParentObj ' Verifica se o SourceObject01 está preenchido dos InfoAlarmes
     If Not UsandoLibControle Then
         InfoAlarmGenericLib ParentObj ' Verifica se os InfoAlarmes estão utilizando a lib Generic
         InfoAnalogicaGenericLib ParentObj ' Verifica se os InfoAnalogica estão utilizando a lib Generic
     End If
-    
-    VerificarBotaoAbreTela ParentObj 'Verifica se foi preenchida a propriedade Config_TelaOuQuadroPathname da tela
+
     VerificarCaptionTela ParentObj 'Verifica se foi preenchida a propriedade Caption da tela
     InfoAlarmComValue ParentObj ' Verifica se os SourceObjectXX estão preenchidos incorretamente com .Value
     InfoAnalogicaSemSourceObject ParentObj ' Verifica se os SourceObject da InfoAnalogica estão preenchidos
     VerificarInfoAnalogic ParentObj ' Verifica os objetos gx_InfoAnalogic
     CorBackgroundTela ParentObj ' Verifica se o background da tela está linkado com a cor do frame
     VerificaAlarmBar ParentObj ' Veriifica as barras de alarme uhe_AlarmBar
-    
+    InfoAlarmDivergeDescricao ParentObj ' Verifica se as descrições possuem o texto relacionado ao SourceObject dos InfoAlarmes
+
     For Each Objeto In Eletricos
         ClassificarLibEletricos ParentObj, Objeto
     Next
-    
+
     For Each Objeto In Mecanicos
         ClassificarLibMecanicos ParentObj, Objeto
     Next
-    
+
     For Each Objeto In Energizacao
         VerificarCorEnergizacao ParentObj, Objeto ' Verificar objetos(que sofrem energização)está com a propriedade CorOn e CorOff vazia
     Next
-    
+
 End Sub
 
 Sub GerarRelatorioExcel()
@@ -104,14 +115,14 @@ Sub GerarRelatorioExcel()
         sheet.Cells(1, 2) = "Tipo"
         sheet.Cells(1, 3) = "Problema"
         nomeExcel = CaminhoPrj & "\RelatorioTester_" & nomeExcel & ".xlsx"
-        
+
         For Each obj In DadosExcel
             celulas = Split(DadosExcel.Item(obj), "/")
             sheet.Cells(CInt(obj), 1) = celulas(0)
             sheet.Cells(CInt(obj), 2) = celulas(1)
             sheet.Cells(CInt(obj), 3) = celulas(2)
         Next
-        
+
         objWorkBook.SaveAs nomeExcel
         objWorkBook.Close
         objExcel.Quit
@@ -124,13 +135,13 @@ Sub GerarRelatorioExcel()
             Set shell = Nothing
         End If
     End If
-    
+
     On Error GoTo 0
     If Err.Number <> 0 Then
         MsgBox "Ocorreu um erro na criação do log de erros do projeto, por favor confira o caminho definido para salvar o arquivo"
         Err.Clear
     End If
-    
+
 End Sub
 
 Sub GerarRelatorioTxt()
@@ -161,7 +172,7 @@ End Sub
 
 Sub VerificarMesmoObjetoLibsDiferentes()
     Set ExclusiveValues = CreateObject("Scripting.Dictionary")
-    
+
     For Each obj In ListaObjetosLib.Keys
         If InStr(1, obj, "_", 1) > 0 Then
             celulas = Split(obj, "_")
@@ -173,7 +184,7 @@ Sub VerificarMesmoObjetoLibsDiferentes()
             End If
         End If
     Next
-    
+
 End Sub
 
 Sub ClassificarLibEletricos(Tela, Objeto)
@@ -295,18 +306,18 @@ Sub VerificarCorEnergizacao(Tela, Objeto)
                 DadosExcel.Add CStr(Linha), Obj.PathName & "/" & "Aviso" & "/" & "Propriedade CorOn está vazia"
                 Linha = Linha + 1
             End If
-            
+
             If (Obj.Links.Item("CorOff").Source = "") Then
                 DadosExcel.Add CStr(Linha), Obj.PathName & "/" & "Aviso" & "/" & "Propriedade CorOff está vazia"
                 Linha = Linha + 1
             End If
         End If
         On Error GoTo 0
-        
+
         If Not ListaObjetosLib.Exists(TypeNameObj) Then
             ListaObjetosLib.Add TypeNameObj, Empty
         End If
-        
+
         If Err.Number <> 0 Then
             DadosTxt.Add CStr(LinhaTxt), "Erro na Sub VerificarCorEnergizacao/" & Obj.PathName & ": " & Err.Description & " Se este erro se repetir no excel ele pode ser ignorado"
             LinhaTxt = LinhaTxt + 1
@@ -315,11 +326,52 @@ Sub VerificarCorEnergizacao(Tela, Objeto)
     Next
 End Sub
 
+Sub InfoAlarmDivergeDescricao(Tela)
+    On Error Resume Next
+    For Each Obj in Tela
+        TypeNameObj = TypeName(Obj)
+        If StrComp(TypeNameObj, "DrawGroup", 1) = 0 Then ' Verifica se o objeto é um grupo
+            InfoAlarmDivergeDescricao(Obj)
+        End If
+
+        If InStr(1, TypeNameObj, "InfoAlarm", 1) > 0 Then ' Verifica se o nome do objeto contém "InfoAlarm"
+            On Error Resume Next ' Tenta acessar as propriedades "SourceObject01" e "Descricao" com tratamento de erro específico
+            sourceObject = Obj.SourceObject01
+            descricao = Obj.Descricao
+            If Err.Number <> 0 Then ' Verifica se ocorreu erro ao acessar SourceObject01 ou Descricao
+                DadosTxt.Add Cstr(LinhaTxt), "Erro ao acessar SourceObject01 ou Descricao no objeto: " & Obj.PathName & ": " & Err.Description
+                LinhaTxt = LinhaTxt + 1
+                Err.Clear
+            Else
+                
+                If Len(Trim(sourceObject)) <> 0 Then ' Se SourceObject01 estiver vazio ou contiver apenas espaços, pula o processamento do objeto atual                   
+                    If InStr(1, sourceObject, descricao, 1) = 0 Then ' Verifica se "Descricao" está contida em "SourceObject01"
+                        DadosExcel.Add Cstr(Linha), Obj.PathName & "/" & "Aviso" & "/" & "Descrição do objeto contém um texto diferente da associação"
+                        Linha = Linha + 1
+                    End If
+                End If
+            End If
+            On Error Goto 0
+        End If
+
+        If Not ListaObjetosLib.Exists(TypeNameObj) Then
+            ListaObjetosLib.Add TypeNameObj, Empty
+        End If	
+
+        If Err.Number <> 0 Then
+            DadosTxt.Add Cstr(LinhaTxt), "Erro na Sub InfoAlarmDivergeDescricao/" & Obj.PathName & ": " & Err.Description
+            LinhaTxt = LinhaTxt + 1
+            Err.Clear
+        End If
+    Next
+    On Error Goto 0
+End Sub
+
 Sub VerificaAlarmBar(Tela)
     On Error Resume Next
     Set ObjetosIgnorados = CreateObject("Scripting.Dictionary")
     'ObjetosIgnorados.Add "archLineHorizontal", Empty
-    
+
     For Each Obj In Tela
         TypeNameObj = TypeName(Obj)
         If StrComp(TypeNameObj, "DrawGroup", 1) = 0 Then
@@ -335,11 +387,11 @@ Sub VerificaAlarmBar(Tela)
             End If
         End If
         On Error GoTo 0
-        
+
         If Not ListaObjetosLib.Exists(TypeNameObj) Then
             ListaObjetosLib.Add TypeNameObj, Empty
         End If
-        
+
         If Err.Number <> 0 Then
             DadosTxt.Add CStr(LinhaTxt), "Erro na Sub VerificaAlarmBar/" & Obj.PathName & ": " & Err.Description
             LinhaTxt = LinhaTxt + 1
@@ -355,13 +407,13 @@ Sub VerificarInfoAnalogic(Tela)
         If StrComp(TypeNameObj, "DrawGroup", 1) = 0 Then
             VerificarInfoAnalogic Obj
         End If
-        
+
         If Left(TypeName(Obj), 2) = "xc" Then
             Lib = Left(TypeName(Obj), 2)
         Else
             Lib = ""
         End If
-        
+
         If Lib = "xc" And InStr(1, TypeNameObj, "InfoAnalogic", 1) > 0 Then
             'Não verifica nada pois não possui propriedade de setpoint, só está aqui para evitar erros com a lib xc
         ElseIf InStr(1, TypeNameObj, "InfoAnalogic", 1) > 0 Then ' Verificar se o objeto é do tipo InfoAnalogic
@@ -376,11 +428,11 @@ Sub VerificarInfoAnalogic(Tela)
             End If
             On Error GoTo 0
         End If
-        
+
         If Not ListaObjetosLib.Exists(TypeNameObj) Then
             ListaObjetosLib.Add TypeNameObj, Empty
         End If
-        
+
         If Err.Number <> 0 Then
             DadosTxt.Add CStr(LinhaTxt), "Erro na Sub VerificarInfoAnalogic/" & Obj.PathName & ": " & Err.Description
             LinhaTxt = LinhaTxt + 1
@@ -397,13 +449,13 @@ Sub InfoAlarmSourceObject(Tela) 'Verifica se os InfoAlarmes estão com o SourceO
         If StrComp(TypeNameObj, "DrawGroup", 1) = 0 Then 'Faz o código procurar dentro de grupos
             InfoAlarmSourceObject(Obj)
         End If
-        
+
         If Left(TypeName(Obj), 2) = "xc" Then
             Lib = Left(TypeName(Obj), 2)
         Else
             Lib = ""
         End If
-        
+
         If Lib = "xc" And InStr(1, TypeNameObj, "InfoAlarme", 1) > 0 Then
             If (Obj.AreaAlarme = "") Then
                 DadosExcel.Add CStr(Linha), Obj.PathName & "/" & "Erro" & "/" & "Sem AreaAlarme"
@@ -415,11 +467,11 @@ Sub InfoAlarmSourceObject(Tela) 'Verifica se os InfoAlarmes estão com o SourceO
                 Linha = Linha + 1
             End If
         End If
-        
+
         If Not ListaObjetosLib.Exists(TypeNameObj) Then
             ListaObjetosLib.Add TypeNameObj, Empty
         End If
-        
+
         If Err.Number <> 0 Then
             DadosTxt.Add CStr(LinhaTxt), "Erro na Sub InfoAlarmSourceObject/" & Obj.PathName & ": " & Err.Description
             LinhaTxt = LinhaTxt + 1
@@ -442,11 +494,11 @@ Sub InfoAlarmGenericLib(Tela) 'Verifica se os InfoAlarmes estão sendo utilizado
                 Linha = Linha + 1
             End If
         End If
-        
+
         If Not ListaObjetosLib.Exists(TypeNameObj) Then
             ListaObjetosLib.Add TypeNameObj, Empty
         End If
-        
+
         If Err.Number <> 0 Then
             DadosTxt.Add CStr(LinhaTxt), "Erro na Sub InfoAlarmGenericLib/" & Obj.PathName & ": " & Err.Description
             LinhaTxt = LinhaTxt + 1
@@ -463,13 +515,13 @@ Sub InfoAlarmComValue(Tela) 'Verifica se os InfoAlarmes estão com .value no Sou
         If StrComp(TypeNameObj, "DrawGroup", 1) = 0 Then 'Faz o código procurar dentro de grupos
             InfoAlarmComValue(Obj)
         End If
-        
+
         If Left(TypeName(Obj), 2) = "xc" Then
             Lib = Left(TypeName(Obj), 2)
         Else
             Lib = ""
         End If
-        
+
         If Lib = "xc" And InStr(1, TypeNameObj, "InfoAlarme", 1) > 0 Then
             'Não existe o que verificar, essa linha é só para não gerar erros com essa lib xc.
         ElseIf InStr(1, TypeNameObj, "InfoAlarme", 1) > 0 Then
@@ -484,11 +536,11 @@ Sub InfoAlarmComValue(Tela) 'Verifica se os InfoAlarmes estão com .value no Sou
                 End If
             Next
         End If
-        
+
         If Not ListaObjetosLib.Exists(TypeNameObj) Then
             ListaObjetosLib.Add TypeNameObj, Empty
         End If
-        
+
         If Err.Number <> 0 Then
             DadosTxt.Add CStr(LinhaTxt), "Erro na Sub InfoAlarmComValue/" & Obj.PathName & ": " & Err.Description
             LinhaTxt = LinhaTxt + 1
@@ -500,7 +552,7 @@ End Sub
 
 Sub ObjetoEletricoSemSourceObject(Tela, Obj, ObjetoEletrico) 'Procura sourceObject em objetos elétricos
     On Error Resume Next
-    
+
     If InStr(1, TypeName(Obj), "Chave", 1) > 0 Then
         If Obj.NaoSupervisionado = False And Obj.EstadoON = "" Then
             DadosExcel.Add CStr(Linha), Obj.PathName & "/" & "Aviso" & "/" & "Chave está supervisionada e com EstadoON em branco"
@@ -518,24 +570,24 @@ Sub ObjetoEletricoSemSourceObject(Tela, Obj, ObjetoEletrico) 'Procura sourceObje
             Linha = Linha + 1
         End If
     End If
-    
+
     If Not ListaObjetosLib.Exists(TypeName(Obj)) Then
         ListaObjetosLib.Add TypeName(Obj), Empty
     End If
-    
+
     If Err.Number <> 0 Then
         DadosTxt.Add CStr(LinhaTxt), "Erro na Sub ObjetoEletricoSemSourceObject/" & Obj.PathName & ": " & Err.Description
         LinhaTxt = LinhaTxt + 1
         Err.Clear
     End If
-    
+
     On Error GoTo 0
 End Sub
 
 
 Sub ObjetoEletricoDeviceNoteVazio(Tela, Obj, ObjetoEletrico) ' Verifica o DeviceNote vazio em disjuntores que abrem tela de comando
     On Error Resume Next
-    
+
     If InStr(1, TypeName(Obj), ObjetoEletrico, 1) > 0 Then
         If TypeName(Obj) = "pwa_Trafo3Term" Then
             DadosExcel.Add CStr(Linha), Obj.PathName & "/" & "Aviso" & "/" & ObjetoEletrico & " não suporta Notas Operacionais pois não possui a propriedade DeviceNote"
@@ -550,28 +602,28 @@ Sub ObjetoEletricoDeviceNoteVazio(Tela, Obj, ObjetoEletrico) ' Verifica o Device
             End If
         End If
     End If
-    
+
     If Not ListaObjetosLib.Exists(TypeName(Obj)) Then
         ListaObjetosLib.Add TypeName(Obj), Empty
     End If
-    
+
     If Err.Number <> 0 Then
         DadosTxt.Add CStr(LinhaTxt), "Erro na Sub ObjetoEletricoDeviceNoteVazio/" & Obj.PathName & ": " & Err.Description
         LinhaTxt = LinhaTxt + 1
         Err.Clear
     End If
-    
+
     On Error GoTo 0
 End Sub
 
 Sub ObjetoEletricoSemTelaDeComandoDeviceNote(Tela, Obj, ObjetoEletrico) ' Verifica o DeviceNote vazio em disjuntores que abrem tela de comando
     On Error Resume Next
-    
+
     If InStr(1, TypeName(Obj), ObjetoEletrico, 1) > 0 Then
         If TypeName(Obj) = "pwa_Trafo3Term" Then
-            
+
         ElseIf TypeName(Obj) = "pwa_Gerador" Then
-            
+
         ElseIf Obj.NoCommand = True And Obj.DeviceNote <> "" Then
             If Err.Number = 0 Then
                 DadosExcel.Add CStr(Linha), Obj.PathName & "/" & "Aviso" & "/" & ObjetoEletrico & " sem tela de comando mas com DeviceNote"
@@ -579,17 +631,17 @@ Sub ObjetoEletricoSemTelaDeComandoDeviceNote(Tela, Obj, ObjetoEletrico) ' Verifi
             End If
         End If
     End If
-    
+
     If Not ListaObjetosLib.Exists(TypeName(Obj)) Then
         ListaObjetosLib.Add TypeName(Obj), Empty
     End If
-    
+
     If Err.Number <> 0 Then
         DadosTxt.Add CStr(LinhaTxt), "Erro na Sub ObjetoEletricoSemTelaDeComandoDeviceNote/" & Obj.PathName & ": " & Err.Description
         LinhaTxt = LinhaTxt + 1
         Err.Clear
     End If
-    
+
     On Error GoTo 0
 End Sub
 
@@ -610,17 +662,17 @@ Sub ObjetoMecanicoDeviceNoteVazio(Tela, Obj, ObjetoMecanico) ' Verifica o Device
             End If
         End If
     End If
-    
+
     If Not ListaObjetosLib.Exists(TypeName(Obj)) Then
         ListaObjetosLib.Add TypeName(Obj), Empty
     End If
-    
+
     If Err.Number <> 0 Then
         DadosTxt.Add CStr(LinhaTxt), "Erro na Sub ObjetoMecanicoDeviceNoteVazio/" & Obj.PathName & ": " & Err.Description
         LinhaTxt = LinhaTxt + 1
         Err.Clear
     End If
-    
+
     On Error GoTo 0
 End Sub
 
@@ -631,7 +683,7 @@ Sub ObjetoMecanicoSemTelaDeComandoDeviceNote(Tela, Obj, ObjetoMecanico) ' Verifi
     ObjetosIgnorados.Add "uhe_ValveDistributing", Empty
     ObjetosIgnorados.Add "uhe_Valve3Ways", Empty
     ObjetosIgnorados.Add "uhe_Valve4Ways", Empty
-    
+
     If Not ObjetosIgnorados.Exists(TypeName(Obj)) Then
         If InStr(1, TypeName(Obj), ObjetoMecanico, 1) > 0 Then
             If Obj.DeviceNote <> "" And Obj.UseNotes = False Then
@@ -642,17 +694,17 @@ Sub ObjetoMecanicoSemTelaDeComandoDeviceNote(Tela, Obj, ObjetoMecanico) ' Verifi
             End If
         End If
     End If
-    
+
     If Not ListaObjetosLib.Exists(TypeName(Obj)) Then
         ListaObjetosLib.Add TypeName(Obj), Empty
     End If
-    
+
     If Err.Number <> 0 Then
         DadosTxt.Add CStr(LinhaTxt), "Erro na Sub ObjetoMecanicoSemTelaDeComandoDeviceNote/" & Obj.PathName & ": " & Err.Description
         LinhaTxt = LinhaTxt + 1
         Err.Clear
     End If
-    
+
     On Error GoTo 0
 End Sub
 
@@ -660,7 +712,7 @@ Sub ObjetoMecanicoSemSourceObject(Tela, Obj, ObjetoMecanico) ' Verifica se objet
     On Error Resume Next
     Set ObjetosIgnorados = CreateObject("Scripting.Dictionary")
     ObjetosIgnorados.Add "uhe_ValveDistributing", Empty
-    
+
     If Not ObjetosIgnorados.Exists(TypeName(Obj)) Then
         If InStr(1, TypeName(Obj), ObjetoMecanico, 1) > 0 And TypeName(Obj) = "uhe_ValveButterfly" Then
             If Obj.SourceObject = "" And Obj.NaoSupervisionada = False Then
@@ -693,17 +745,17 @@ Sub ObjetoMecanicoSemSourceObject(Tela, Obj, ObjetoMecanico) ' Verifica se objet
             End If
         End If
     End If
-    
+
     If Not ListaObjetosLib.Exists(TypeName(Obj)) Then
         ListaObjetosLib.Add TypeName(Obj), Empty
     End If
-    
+
     If Err.Number <> 0 Then
         DadosTxt.Add CStr(LinhaTxt), "Erro na Sub ObjetoMecanicoSemSourceObject/" & Obj.PathName & ": " & Err.Description
         LinhaTxt = LinhaTxt + 1
         Err.Clear
     End If
-    
+
     On Error GoTo 0
 End Sub
 
@@ -714,13 +766,13 @@ Sub InfoAnalogicaSemSourceObject(Tela) ' Verifica o DeviceNote vazio em disjunto
         If StrComp(TypeNameObj, "DrawGroup", 1) = 0 Then 'Faz o código procurar dentro de grupos
             InfoAnalogicaSemSourceObject Obj
         End If
-        
+
         If Left(TypeName(Obj), 2) = "xc" Then
             Lib = Left(TypeName(Obj), 2)
         Else
             Lib = ""
         End If
-        
+
         If Lib = "xc" And InStr(1, TypeNameObj, "InfoAnalogica", 1) > 0 Then
             If Obj.ValueTag = "" Then
                 If Err.Number = 0 Then
@@ -736,11 +788,11 @@ Sub InfoAnalogicaSemSourceObject(Tela) ' Verifica o DeviceNote vazio em disjunto
                 End If
             End If
         End If
-        
+
         If Not ListaObjetosLib.Exists(TypeNameObj) Then
             ListaObjetosLib.Add TypeNameObj, Empty
         End If
-        
+
         If Err.Number <> 0 Then
             DadosTxt.Add CStr(LinhaTxt), "Erro na Sub InfoAnalogicaSemSourceObject/" & Obj.PathName & ": " & Err.Description
             LinhaTxt = LinhaTxt + 1
@@ -751,7 +803,7 @@ Sub InfoAnalogicaSemSourceObject(Tela) ' Verifica o DeviceNote vazio em disjunto
 End Sub
 
 Sub InfoAnalogicaGenericLib(Tela) 'Verifica se os InfoAnalogicas estão sendo utilizados com a lib nova
-    
+
     On Error Resume Next
     For Each Obj In Tela
         TypeNameObj = TypeName(Obj)
@@ -764,11 +816,11 @@ Sub InfoAnalogicaGenericLib(Tela) 'Verifica se os InfoAnalogicas estão sendo ut
                 Linha = Linha + 1
             End If
         End If
-        
+
         If Not ListaObjetosLib.Exists(TypeNameObj) Then
             ListaObjetosLib.Add TypeNameObj, Empty
         End If
-        
+
         If Err.Number <> 0 Then
             DadosTxt.Add CStr(LinhaTxt), "Erro na Sub InfoAnalogicaGenericLib/" & Obj.PathName & ": " & Err.Description
             LinhaTxt = LinhaTxt + 1
@@ -785,7 +837,7 @@ Sub ConferirLinkObjetosMecanicos(Tela, Obj, ObjetoMecanico) 'Verifica os equipam
     ObjetosIgnorados.Add "uhe_ValveButterfly", Empty
     ObjetosIgnorados.Add "uhe_Valve3Ways", Empty
     ObjetosIgnorados.Add "uhe_Valve4Ways", Empty
-    
+
     If InStr(1, TypeName(Obj), ObjetoMecanico, 1) > 0 Then
         If ObjetoMecanico = "Bomb" Then
             If (Obj.Unsupervised = False) Then
@@ -830,59 +882,59 @@ Sub ConferirLinkObjetosMecanicos(Tela, Obj, ObjetoMecanico) 'Verifica os equipam
                 End If
             End If
         End If
-        
+
     End If
-    
+
     If Not ListaObjetosLib.Exists(TypeName(Obj)) Then
         ListaObjetosLib.Add TypeName(Obj), Empty
     End If
-    
+
     If Err.Number <> 0 Then
         DadosTxt.Add CStr(LinhaTxt), "Erro na Sub ConferirLinkObjetosMecanicos/" & Obj.PathName & ": " & Err.Description & "/Se existir o mesmo objeto no excel com um erro de link este erro é porque o link estava em branco e este erro pode ser ignorado"
         LinhaTxt = LinhaTxt + 1
         Err.Clear
     End If
-    
+
     On Error GoTo 0
 End Sub
 
 Sub CorBackgroundTela(Tela) 'Verifica se as telas estão linkadas com o background do frame
     On Error Resume Next
-    
+
     If Tela.Links.Item("BackgroundColor").Source = "" Then
         DadosExcel.Add CStr(Linha), Tela.PathName & "/" & "Aviso" & "/" & "A cor de fundo da tela deve ser feita através de um link associado com o objeto relacionado a cores do frame dentro do viewer"
         Linha = Linha + 1
     End If
-    
+
     If Err.Number <> 0 Then
         DadosTxt.Add CStr(LinhaTxt), "Erro na Sub CorBackgroundTela/" & Tela.PathName & ": " & Err.Description & "/Se existir o mesmo objeto no excel com um erro de link este erro é porque o link estava em branco e este erro pode ser ignorado"
         LinhaTxt = LinhaTxt + 1
         Err.Clear
     End If
-    
+
     On Error GoTo 0
 End Sub
 
 Sub ObjetoLibXCNotaOperacional(Tela, Obj, Objeto)
     On Error Resume Next
-    
+
     If InStr(1, TypeName(Obj), "NotaOperacional", 1) > 0 Then
         If Obj.SourceObject = "" Then
             DadosExcel.Add CStr(Linha), Obj.PathName & "/" & "Aviso" & "/" & Objeto & " sem SourceObject"
             Linha = Linha + 1
         End If
     End If
-    
+
     If Not ListaObjetosLib.Exists("xc_" & Objeto) Then
         ListaObjetosLib.Add "xc_" & Objeto, Empty
     End If
-    
+
     If Err.Number <> 0 Then
         DadosTxt.Add CStr(LinhaTxt), "Erro na Sub ObjetoLibXCNotaOperacional/" & Obj.PathName & ": " & Err.Description
         LinhaTxt = LinhaTxt + 1
         Err.Clear
     End If
-    
+
     On Error GoTo 0
 End Sub
 
@@ -899,7 +951,7 @@ Sub ObjetoMecanicoSupervisaoXC(Tela, Obj, ObjetoMecanico) ' Verifica o DeviceNot
                         DadosExcel.Add CStr(Linha), Obj.PathName & "/" & "Erro" & "/" & "Propriedade Fonte está vazia"
                         Linha = Linha + 1
                     End If
-                    
+
                     If Obj.Command = "" Then
                         DadosExcel.Add CStr(Linha), Obj.PathName & "/" & "Erro" & "/" & "Propriedade Command está vazia"
                         Linha = Linha + 1
@@ -923,7 +975,7 @@ Sub ObjetoMecanicoSupervisaoXC(Tela, Obj, ObjetoMecanico) ' Verifica o DeviceNot
             End If
         End If
     End If
-    
+
     If Not ListaObjetosLib.Exists("xc_" & ObjetoMecanico) Then
         ListaObjetosLib.Add "xc_" & ObjetoMecanico, Empty
     End If
@@ -932,7 +984,7 @@ Sub ObjetoMecanicoSupervisaoXC(Tela, Obj, ObjetoMecanico) ' Verifica o DeviceNot
         LinhaTxt = LinhaTxt + 1
         Err.Clear
     End If
-    
+
     On Error GoTo 0
 End Sub
 
@@ -949,7 +1001,7 @@ Sub ObjetoBombaSupervisionadaXC(Tela, Obj, ObjetoMecanico)
                         DadosExcel.Add CStr(Linha), Obj.PathName & "/" & "Erro" & "/" & "Propriedade Fonte está vazia"
                         Linha = Linha + 1
                     End If
-                    
+
                     If Obj.Command = "" Then
                         DadosExcel.Add CStr(Linha), Obj.PathName & "/" & "Erro" & "/" & "Propriedade Command está vazia"
                         Linha = Linha + 1
@@ -973,7 +1025,7 @@ Sub ObjetoBombaSupervisionadaXC(Tela, Obj, ObjetoMecanico)
             End If
         End If
     End If
-    
+
     If Not ListaObjetosLib.Exists("xc_" & ObjetoMecanico) Then
         ListaObjetosLib.Add "xc_" & ObjetoMecanico, Empty
     End If
@@ -988,11 +1040,11 @@ End Sub
 Sub ListarXObjectsDominio()
     Set DataServer = Application.ListFiles("DataServer")
     FiltrarXObjectsDominio DataServer
-    
+
     ' Verifica os historiadores
     Set Historiadores = Application.ListFiles("Hist")
     VerificarHistoriadores Historiadores
-    
+
 End Sub
 
 Sub FiltrarXObjectsDominio(DataServer)
@@ -1028,12 +1080,13 @@ Sub VerificarBancoDeDados(DBServerPathName, ObjectPathName, ObjectName)
         Linha = Linha + 1
     End If
     If Err.Number <> 0 Then
-        DadosTxt.Add CStr(LinhaTxt), "Erro na Sub VerificarBancoDeDados/" & Obj.PathName & ": " & Err.Description
+        DadosTxt.Add CStr(LinhaTxt), "Erro na Sub VerificarCaptionTela/" & Obj.PathName & ": " & Err.Description
         LinhaTxt = LinhaTxt + 1
         Err.Clear
     End If
     On Error GoTo 0
 End Sub
+
 
 Sub VerificarHist(DBServerPathName, ObjectPathName, ObjectName)
     On Error Resume Next
@@ -1044,7 +1097,7 @@ Sub VerificarHist(DBServerPathName, ObjectPathName, ObjectName)
         Linha = Linha + 1
     End If
     If Err.Number <> 0 Then
-        DadosTxt.Add CStr(LinhaTxt), "Erro na Sub VerificarHist/" & Obj.PathName & ": " & Err.Description
+        DadosTxt.Add CStr(LinhaTxt), "Erro na Sub VerificarCaptionTela/" & Obj.PathName & ": " & Err.Description
         LinhaTxt = LinhaTxt + 1
         Err.Clear
     End If
@@ -1061,7 +1114,7 @@ Sub VerificarHistoriadores(Historiadores)
                 VerificarHist Hist.DBServer, Hist.PathName, Hist.Name
         End Select
         If Err.Number <> 0 Then
-            DadosTxt.Add CStr(LinhaTxt), "Erro na Sub VerificarHistoriadores/" & Obj.PathName & ": " & Err.Description
+            DadosTxt.Add CStr(LinhaTxt), "Erro na Sub VerificarCaptionTela/" & Obj.PathName & ": " & Err.Description
             LinhaTxt = LinhaTxt + 1
             Err.Clear
         End If
@@ -1072,7 +1125,7 @@ End Sub
 Sub VerificarCaptionTela(Tela)
     On Error Resume Next
     If Tela.Caption = "Screen Title" Then
-        DadosExcel.Add CStr(Linha), Tela.PathName & "/" & "Erro" & "/" & "A propriedade Caption não foi preenchida"
+        DadosExcel.Add CStr(Linha), ObjectPathName & "/" & "Erro" & "/" & "A propriedade Caption não foi preenchida"
         Linha = Linha + 1
     End If
     If Err.Number <> 0 Then
@@ -1081,36 +1134,6 @@ Sub VerificarCaptionTela(Tela)
         Err.Clear
     End If
     On Error GoTo 0
-End Sub
-
-Sub VerificarBotaoAbreTela(Tela)
-    On Error Resume Next
-    Set ObjetosIgnorados = CreateObject("Scripting.Dictionary")
-    'ObjetosIgnorados.Add "archLineHorizontal", Empty
-
-    For Each Obj In Tela
-        TypeNameObj = TypeName(Obj)
-        If StrComp(TypeNameObj, "DrawGroup", 1) = 0 Then
-            VerificaAlarmBar Obj
-        ElseIf InStr(1, TypeNameObj, "BotaoAbreTela", 1) > 0 And ( Not ObjetosIgnorados.Exists(TypeNameObj)) Then
-            On Error Resume Next
-            If Obj.Config_TelaOuQuadroPathname = "" Then
-                DadosExcel.Add CStr(Linha), Obj.PathName & "/" & "Erro" & "/" & "Propriedade Config_TelaOuQuadroPathname está vazia, não é possível abrir a tela por esse objeto"
-                Linha = Linha + 1
-            End If
-        End If
-        On Error GoTo 0
-
-        If Not ListaObjetosLib.Exists(TypeNameObj) Then
-            ListaObjetosLib.Add TypeNameObj, Empty
-        End If
-
-        If Err.Number <> 0 Then
-            DadosTxt.Add CStr(LinhaTxt), "Erro na Sub VerificarBotaoAbreTela/" & Obj.PathName & ": " & Err.Description
-            LinhaTxt = LinhaTxt + 1
-            Err.Clear
-        End If
-    Next
 End Sub
 Sub Fim()
 End Sub
