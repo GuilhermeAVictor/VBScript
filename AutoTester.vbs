@@ -71,7 +71,6 @@ Sub VerificarTela(ParentObj)
         InfoAnalogicaGenericLib ParentObj ' Verifica se os InfoAnalogica estão utilizando a lib Generic
     End If
     
-    VerificarDescricaoInfoAlarme ParentObj 'Verifica se a propriedade descrição bate com a associação no sourceobject
     VerificarBotaoAbreTela ParentObj 'Verifica se foi preenchida a propriedade Config_TelaOuQuadroPathname da tela
     VerificarCaptionTela ParentObj 'Verifica se foi preenchida a propriedade Caption da tela
     InfoAlarmComValue ParentObj ' Verifica se os SourceObjectXX estão preenchidos incorretamente com .Value
@@ -1073,7 +1072,7 @@ End Sub
 Sub VerificarCaptionTela(Tela)
     On Error Resume Next
     If Tela.Caption = "Screen Title" Then
-        DadosExcel.Add CStr(Linha), ObjectPathName & "/" & "Erro" & "/" & "A propriedade Caption não foi preenchida"
+        DadosExcel.Add CStr(Linha), Tela.PathName & "/" & "Erro" & "/" & "A propriedade Caption não foi preenchida"
         Linha = Linha + 1
     End If
     If Err.Number <> 0 Then
@@ -1112,45 +1111,6 @@ Sub VerificarBotaoAbreTela(Tela)
             Err.Clear
         End If
     Next
-End Sub
-
-Sub VerificarDescricaoInfoAlarme(Tela)
-    For Each Obj In Tela
-        TypeNameObj = TypeName(Obj)
-        If StrComp(TypeNameObj, "DrawGroup", 1) = 0 Then 'Faz o código procurar dentro de grupos
-            VerificarDescricaoInfoAlarme(Obj)
-        End If
-
-        If Left(TypeName(Obj), 2) = "xc" Then
-            Lib = Left(TypeName(Obj), 2)
-        Else
-            Lib = ""
-        End If
-
-        If Lib = "xc" And InStr(1, TypeNameObj, "InfoAlarme", 1) > 0 Then
-            'Não existe o que verificar, essa linha é só para não gerar erros com essa lib xc.
-        ElseIf InStr(1, TypeNameObj, "InfoAlarme", 1) > 0 Then
-            If Not (Obj.SourceObject = "") Then
-                For i = 1 To CInt(Right(TypenameObj, 2))
-                    Execute "SourceObjectxx = Obj.SourceObject" & CStr(i)
-                    If Not (InStr(1, SourceObjectxx, Descricao, 1) > 0) Then
-                        DadosExcel.Add CStr(Linha), Obj.PathName & "/" & "Erro" & "/" & "A descrição está diferente do sourceObject"
-                        Linha = Linha + 1
-                    End If
-                Next
-            End If
-        End If
-        If Not ListaObjetosLib.Exists(TypeNameObj) Then
-            ListaObjetosLib.Add TypeNameObj, Empty
-        End If
-
-        If Err.Number <> 0 Then
-            DadosTxt.Add CStr(LinhaTxt), "Erro na Sub VerificarDescricaoInfoAlarme/" & Obj.PathName & ": " & Err.Description
-            LinhaTxt = LinhaTxt + 1
-            Err.Clear
-        End If
-    Next
-    On Error GoTo 0
 End Sub
 Sub Fim()
 End Sub
