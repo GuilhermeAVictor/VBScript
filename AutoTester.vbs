@@ -21,8 +21,8 @@ LinhaTxt = 1
 Dim DadosExcel
 Set DadosExcel = CreateObject("Scripting.Dictionary")
 
-' Criação dos dicionários para o Txt
 Dim DadosTxt
+' Criação dos dicionários para o Txt
 Set DadosTxt = CreateObject("Scripting.Dictionary")
 
 ' Criação de dicionário para armazenar os BancosDeDadaos
@@ -82,6 +82,7 @@ Sub VerificarTela(ParentObj)
         InfoAnalogicaGenericLib ParentObj ' Verifica se os InfoAnalogica estão utilizando a lib Generic
     End If
 
+    VerificarCorEnergizacao ParentObj 
     VerificarCaptionTela ParentObj 'Verifica se foi preenchida a propriedade Caption da tela
     InfoAlarmComValue ParentObj ' Verifica se os SourceObjectXX estão preenchidos incorretamente com .Value
     InfoAnalogicaSemSourceObject ParentObj ' Verifica se os SourceObject da InfoAnalogica estão preenchidos
@@ -1080,7 +1081,7 @@ Sub VerificarBancoDeDados(DBServerPathName, ObjectPathName, ObjectName)
         Linha = Linha + 1
     End If
     If Err.Number <> 0 Then
-        DadosTxt.Add CStr(LinhaTxt), "Erro na Sub VerificarCaptionTela/" & Obj.PathName & ": " & Err.Description
+        DadosTxt.Add CStr(LinhaTxt), "Erro na Sub VerificarBancoDeDados/" & Obj.PathName & ": " & Err.Description
         LinhaTxt = LinhaTxt + 1
         Err.Clear
     End If
@@ -1097,7 +1098,7 @@ Sub VerificarHist(DBServerPathName, ObjectPathName, ObjectName)
         Linha = Linha + 1
     End If
     If Err.Number <> 0 Then
-        DadosTxt.Add CStr(LinhaTxt), "Erro na Sub VerificarCaptionTela/" & Obj.PathName & ": " & Err.Description
+        DadosTxt.Add CStr(LinhaTxt), "Erro na Sub VerificarHist/" & Obj.PathName & ": " & Err.Description
         LinhaTxt = LinhaTxt + 1
         Err.Clear
     End If
@@ -1114,7 +1115,7 @@ Sub VerificarHistoriadores(Historiadores)
                 VerificarHist Hist.DBServer, Hist.PathName, Hist.Name
         End Select
         If Err.Number <> 0 Then
-            DadosTxt.Add CStr(LinhaTxt), "Erro na Sub VerificarCaptionTela/" & Obj.PathName & ": " & Err.Description
+            DadosTxt.Add CStr(LinhaTxt), "Erro na Sub VerificarHistoriadores/" & Obj.PathName & ": " & Err.Description
             LinhaTxt = LinhaTxt + 1
             Err.Clear
         End If
@@ -1135,5 +1136,32 @@ Sub VerificarCaptionTela(Tela)
     End If
     On Error GoTo 0
 End Sub
+
+Sub VerificarBotaoAbreTela(Tela)
+        On Error Resume Next
+        Set ObjetosIgnorados = CreateObject("Scripting.Dictionary")
+        'ObjetosIgnorados.Add "archLineHorizontal", Empty
+        For Each Obj In Tela
+            TypeNameObj = TypeName(Obj)
+            If StrComp(TypeNameObj, "DrawGroup", 1) = 0 Then
+                VerificaAlarmBar Obj
+            ElseIf InStr(1, TypeNameObj, "BotaoAbreTela", 1) > 0 And ( Not ObjetosIgnorados.Exists(TypeNameObj)) Then
+                On Error Resume Next
+                If Obj.Config_TelaOuQuadroPathname = "" Then
+                    DadosExcel.Add CStr(Linha), Obj.PathName & "/" & "Erro" & "/" & "Propriedade Config_TelaOuQuadroPathname está vazia, não é possível abrir a tela por esse objeto"
+                    Linha = Linha + 1
+                End If
+            End If
+            On Error GoTo 0
+            If Not ListaObjetosLib.Exists(TypeNameObj) Then
+                ListaObjetosLib.Add TypeNameObj, Empty
+            End If
+            If Err.Number <> 0 Then
+                DadosTxt.Add CStr(LinhaTxt), "Erro na Sub VerificarBotaoAbreTela/" & Obj.PathName & ": " & Err.Description
+                LinhaTxt = LinhaTxt + 1
+                Err.Clear
+            End If
+        Next
+    End Sub
 Sub Fim()
 End Sub
