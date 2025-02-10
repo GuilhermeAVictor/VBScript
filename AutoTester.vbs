@@ -62,16 +62,44 @@ Sub Main()
 
     ' 4) Se for para verificar bancos/Hist, enumerar Hist e Historian
     If VerificarBancosCustom = True Then
-        Dim histObj
-        ' Lista "Hist"
-        For Each histObj In Application.ListFiles("Hist")
-            VerificarBancoDoHist histObj
-        Next
-        ' Lista "Historian"
-        For Each histObj In Application.ListFiles("Historian")
-            VerificarBancoDoHist histObj
-        Next
-    End If
+
+    Dim histObj
+    ' ------------------------------------------------------------------
+    ' 1) Lista de objetos "Hist"
+    ' ------------------------------------------------------------------
+    For Each histObj In Application.ListFiles("Hist")
+        VerificarBancoDoHist histObj
+        Dim objType
+        objType = TypeName(histObj) 
+
+        ' BackupDiscardInterval = 12 => se estiver 12 => Aviso
+        VerificarPropriedadeValor histObj, "BackupDiscardInterval", 1, objType, 12, 0, 1
+        ' EnableBackupTable = False => se estiver False => Aviso
+        VerificarPropriedadeValor histObj, "EnableBackupTable", 1, objType, False, 0, 
+        ' EnableDiscard = 1 => se estiver 1 => Aviso
+        VerificarPropriedadeValor histObj, "EnableDiscard", 1, objType, 1, 0, 1
+        ' DiscardInterval = False => se estiver False => Aviso
+        VerificarPropriedadeValor histObj, "DiscardInterval", 1, objType, False, 0, 1
+        ' VerificationInterval = 1 => se estiver 1 => Aviso
+        VerificarPropriedadeValor histObj, "VerificationInterval", 1, objType, 1, 0, 1
+    Next
+
+    ' ------------------------------------------------------------------
+    ' 2) Lista de objetos "Historian"
+    ' ------------------------------------------------------------------
+    For Each histObj In Application.ListFiles("Historian")
+        VerificarBancoDoHist histObj
+        Dim objType2
+        objType2 = TypeName(histObj)
+
+        VerificarPropriedadeValor histObj, "BackupDiscardInterval", 1, objType2, 12, 0, 1
+        VerificarPropriedadeValor histObj, "EnableBackupTable", 1, objType2, False, 0, 1
+        VerificarPropriedadeValor histObj, "EnableDiscard", 1, objType2, 1, 0, 1
+        VerificarPropriedadeValor histObj, "DiscardInterval", 1, objType2, False, 0, 1
+        VerificarPropriedadeValor histObj, "VerificationInterval", 1, objType2, 1, 0, 1
+    Next
+
+End If
 
     ' 5) Gera relatórios
     If Not DebugMode Then
@@ -653,17 +681,28 @@ Function VerificarPropriedadesObjeto(Obj)
 			
 		'-----------------------------------------------------------------------------
 		Case "WaterDistributionNetwork"
-			VerificarPropriedadeVazia Obj, "City", 1, "WaterDistributionNetwork", 0
-			VerificarPropriedadeVazia Obj, "Company", 1, "WaterDistributionNetwork", 0
-			VerificarPropriedadeVazia Obj, "CompanyAcronym", 1, "WaterDistributionNetwork", 0
-			VerificarPropriedadeVazia Obj, "Contract", 1, "WaterDistributionNetwork", 0
-			VerificarPropriedadeVazia Obj, "Name", 1, "WaterDistributionNetwork", 0
-			VerificarPropriedadeVazia Obj, "Neighborhood", 1, "WaterDistributionNetwork", 0
-			VerificarPropriedadeVazia Obj, "Organization", 1, "WaterDistributionNetwork", 0
-			VerificarPropriedadeVazia Obj, "Region", 1, "WaterDistributionNetwork", 0
-			VerificarPropriedadeVazia Obj, "State", 1, "WaterDistributionNetwork", 0
-			VerificarPropriedadeVazia Obj, "StateAcronym", 1, "WaterDistributionNetwork", 0
-			VerificarPropriedadeVazia Obj, "Note", 0, "WaterDistributionNetwork", 0
+            VerificarPropriedadeVazia Obj, "City", 1, "WaterDistributionNetwork", 0
+            VerificarPropriedadeVazia Obj, "Company", 1, "WaterDistributionNetwork", 0
+            VerificarPropriedadeVazia Obj, "CompanyAcronym", 1, "WaterDistributionNetwork", 0
+            VerificarPropriedadeVazia Obj, "Contract", 1, "WaterDistributionNetwork", 0
+            VerificarPropriedadeVazia Obj, "Name", 1, "WaterDistributionNetwork", 0
+            VerificarPropriedadeVazia Obj, "Neighborhood", 1, "WaterDistributionNetwork", 0
+            VerificarPropriedadeVazia Obj, "Organization", 1, "WaterDistributionNetwork", 0
+            VerificarPropriedadeVazia Obj, "Region", 1, "WaterDistributionNetwork", 0
+            VerificarPropriedadeVazia Obj, "State", 1, "WaterDistributionNetwork", 0
+            VerificarPropriedadeVazia Obj, "StateAcronym", 1, "WaterDistributionNetwork", 0
+            VerificarPropriedadeVazia Obj, "Note", 0, "WaterDistributionNetwork", 0
+
+    Dim containerTypes
+    containerTypes = Array("DataFolder", "DrawGroup", "DataServer", "WaterDistributionNetwork")
+
+    If HasChildOfType(Obj, "WaterStationData", containerTypes) Then
+        Dim arrUserFields
+        arrUserFields = Array("DadosDaPlanta", "Mapa3D")
+
+        ' Chamamos VerificarUserFields, definindo Classificacao=1 => Erro (por exemplo).
+        VerificarUserFields Obj, arrUserFields, "WaterDistributionNetwork", 1
+    End If
 
 		'-----------------------------------------------------------------------------
 		Case "Frame"
@@ -871,6 +910,105 @@ Function VerificarPropriedadeVazia(Obj, Propriedade, Metodo, NomeObjeto, Classif
         AdicionarErroExcel DadosExcel, Obj.PathName, CStr(Classificacao), _
                            NomeObjeto & " com " & Propriedade & " vazia"
     End If
+End Function
+
+'*******************************************************************************
+' Nome: HasChildOfType
+' Objetivo:
+'   Percorrer recursivamente a hierarquia de 'Obj' e descobrir se
+'   existe algum objeto do tipo 'TargetType'. Para decidir
+'   quais objetos são "containers" (ou seja, que podem ter filhos),
+'   passamos 'ContainerTypes' como um Array, ex. Array("DataFolder","Screen","DrawGroup",...).
+'
+' Parâmetros:
+'   Obj           -> Objeto (folder) inicial de onde queremos varrer
+'   TargetType    -> TypeName que desejamos encontrar (ex.: "WaterStationData")
+'   ContainerTypes -> Array de strings. Tipos cujo children queremos varrer
+'                    ex.: Array("DataFolder","Screen","DrawGroup","DataServer","WaterDistributionNetwork").
+'
+' Retorno:
+'   Boolean -> True se encontrar 'TargetType' em qualquer nível,
+'              False caso contrário.
+'*******************************************************************************
+Function HasChildOfType(Obj, TargetType, ContainerTypes)
+    On Error Resume Next
+
+    Dim child, currentType
+    currentType = TypeName(Obj)
+
+    ' Se o objeto atual for do tipo que procuramos, retornamos True
+    If currentType = TargetType Then
+        HasChildOfType = True
+        Exit Function
+    End If
+
+    ' Se este objeto for um "container" (ou seja, se o seu TypeName constar na lista),
+    ' então varremos recursivamente seus filhos.
+    Dim cType
+    For Each cType In ContainerTypes
+        If currentType = cType Then
+            ' Este objeto pode ter filhos, vamos iterar:
+            Dim childObj
+            For Each childObj In Obj
+                If HasChildOfType(childObj, TargetType, ContainerTypes) = True Then
+                    HasChildOfType = True
+                    Exit Function
+                End If
+            Next
+            Exit For  ' Já processamos
+        End If
+    Next
+
+    ' Se chegamos aqui, não achamos o TargetType
+    HasChildOfType = False
+    On Error GoTo 0
+End Function
+
+'*******************************************************************************
+' Nome: VerificarUserFields
+' Objetivo:
+'   Verificar se um conjunto de userfields (definido em arrFields) existe
+'   no objeto "Obj.UserFields" e, caso exista, se não está vazio.
+'
+'   Se não existir ou estiver vazio, gera log no Excel usando AdicionarErroExcel.
+'
+' Parâmetros:
+'   Obj            -> Objeto (por ex.: "WaterDistributionNetwork")
+'   arrFields()    -> Array de strings (ex.: Array("DadosDaPlanta","Mapa3D"))
+'   NomeObjeto     -> Rótulo para aparecer no log (ex.: "WaterDistributionNetwork")
+'   Classificacao  -> Código de severidade no Excel (0=Aviso, 1=Erro, 2=Revisar, etc.)
+'
+' Exemplo de uso:
+'   Dim fields
+'   fields = Array("DadosDaPlanta", "Mapa3D", "OutroCampo")
+'   VerificarUserFields Obj, fields, "WaterDistributionNetwork", 1
+'*******************************************************************************
+Function VerificarUserFields(Obj, arrFields, NomeObjeto, Classificacao)
+    On Error Resume Next
+
+    Dim fieldName, fieldValue
+
+    ' Iteramos cada nome de userfield do array:
+    For Each fieldName In arrFields
+
+        ' Tenta acessar Obj.UserFields.Item(fieldName)
+        fieldValue = Obj.UserFields.Item(fieldName)
+        If Err.Number <> 0 Then
+            ' Se deu erro, significa que a userfield não existe ou houve outro problema
+            AdicionarErroExcel DadosExcel, Obj.PathName, CStr(Classificacao), _
+                NomeObjeto & " sem userfield '" & fieldName & "' (inexistente)."
+            Err.Clear
+        Else
+            ' Se existe mas está vazio, também gera log
+            If Trim(CStr(fieldValue)) = "" Then
+                AdicionarErroExcel DadosExcel, Obj.PathName, CStr(Classificacao), _
+                    NomeObjeto & " userfield '" & fieldName & "' vazio."
+            End If
+        End If
+
+    Next
+
+    On Error GoTo 0
 End Function
 
 Function VerificarPropriedadeCondicional(Obj, PropCond, MetodoCond, ValorEsperado, _
