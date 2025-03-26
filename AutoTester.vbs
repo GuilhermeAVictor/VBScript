@@ -22,8 +22,7 @@ End Sub
 '*  Declaração de Variáveis Globais
 '*
 '***********************************************************************
-Dim DadosExcel, DadosTxt, DadosBancoDeDados, ListaObjetosLib
-Dim CaminhoPrj
+Dim DadosExcel, DadosTxt, DadosBancoDeDados, ListaObjetosLib, TiposRegistrados, CaminhoPrj
 
 ' Variáveis/flags presumidas:
 '   VerificarBancosCustom (Boolean)
@@ -35,6 +34,7 @@ Set DadosExcel = CreateObject("Scripting.Dictionary")
 Set DadosTxt = CreateObject("Scripting.Dictionary")
 Set DadosBancoDeDados = CreateObject("Scripting.Dictionary")
 Set ListaObjetosLib = CreateObject("Scripting.Dictionary")
+Set TiposRegistrados = CreateObject("Scripting.Dictionary")
 
 If PastaParaSalvarLogs <> "" Then
     CaminhoPrj = PastaParaSalvarLogs
@@ -59,21 +59,52 @@ Sub Main()
 
     ' 3) Verificar demais objetos do domínio (exceto telas)
     VerificarObjetosDominio
+    
+    ' 4) Verificar Servidores de Alarme e Campos de Usuarios
+	VerificarServidoresDeAlarme
 
-    ' 4) Se for para verificar bancos/Hist, enumerar Hist e Historian
+    ' 5) Se for para verificar bancos/Hist, enumerar Hist e Historian
     If VerificarBancosCustom = True Then
-        Dim histObj
-        ' Lista "Hist"
-        For Each histObj In Application.ListFiles("Hist")
-            VerificarBancoDoHist histObj
-        Next
-        ' Lista "Historian"
-        For Each histObj In Application.ListFiles("Historian")
-            VerificarBancoDoHist histObj
-        Next
-    End If
 
-    ' 5) Gera relatórios
+    Dim histObj
+    ' ------------------------------------------------------------------
+    ' 1) Lista de objetos "Hist"
+    ' ------------------------------------------------------------------
+    For Each histObj In Application.ListFiles("Hist")
+        VerificarBancoDoHist histObj
+        Dim objType
+        objType = TypeName(histObj) 
+
+        ' BackupDiscardInterval = 12 => se estiver 12 => Aviso
+        VerificarPropriedadeValor histObj, "BackupDiscardInterval", 1, objType, 12, 0, 1
+        ' EnableBackupTable = False => se estiver False => Aviso
+        VerificarPropriedadeValor histObj, "EnableBackupTable", 1, objType, False, 0, 1
+        ' EnableDiscard = 1 => se estiver 1 => Aviso
+        VerificarPropriedadeValor histObj, "EnableDiscard", 1, objType, 1, 0, 1
+        ' DiscardInterval = False => se estiver False => Aviso
+        VerificarPropriedadeValor histObj, "DiscardInterval", 1, objType, False, 0, 1
+        ' VerificationInterval = 1 => se estiver 1 => Aviso
+        VerificarPropriedadeValor histObj, "VerificationInterval", 1, objType, 1, 0, 1
+    Next
+
+    ' ------------------------------------------------------------------
+    ' 2) Lista de objetos "Historian"
+    ' ------------------------------------------------------------------
+    For Each histObj In Application.ListFiles("Historian")
+        VerificarBancoDoHist histObj
+        Dim objType2
+        objType2 = TypeName(histObj)
+
+        VerificarPropriedadeValor histObj, "BackupDiscardInterval", 1, objType2, 12, 0, 1
+        VerificarPropriedadeValor histObj, "EnableBackupTable", 1, objType2, False, 0, 1
+        VerificarPropriedadeValor histObj, "EnableDiscard", 1, objType2, 1, 0, 1
+        VerificarPropriedadeValor histObj, "DiscardInterval", 1, objType2, False, 0, 1
+        VerificarPropriedadeValor histObj, "VerificationInterval", 1, objType2, 1, 0, 1
+    Next
+
+End If
+
+    ' 6) Gera relatórios
     If Not DebugMode Then
     	If GerarLogErrosScript Then
         	If Not GerarRelatorioTxt(DadosTxt, CaminhoPrj) Then
@@ -179,6 +210,221 @@ Function VerificarBancoDoHist(Obj)
 End Function
 
 '***********************************************************************
+'* Nome: VerificarServidoresDeAlarme
+'* Objetivo: Verificar a quantidade de servidores de alarme e validar 
+'*           se os campos de usuário obrigatórios estão configurados corretamente.
+'***********************************************************************
+Sub VerificarServidoresDeAlarme()
+    On Error Resume Next
+
+    Dim listaServidores, objServidor, totalServidores
+    Set listaServidores = Application.ListFiles("DB.AlarmServer")
+
+    totalServidores = listaServidores.Count
+
+    ' Verificação 1: Se houver mais de um DB.AlarmServer, gera aviso
+    If totalServidores > 1 Then
+        AdicionarErroExcel DadosExcel, "DB.AlarmServer", "0", _
+            "Foram encontrados " & totalServidores & " servidores de alarme. O recomendado é apenas um."
+    End If
+
+    ' Verificação 2: Validação dos campos de usuários para cada servidor de alarme
+    For Each objServidor In listaServidores
+        VerificarCamposUsuariosServidorAlarmes objServidor
+    Next
+
+    On Error GoTo 0
+End Sub
+
+
+'***********************************************************************
+'* Nome: VerificarCamposUsuariosServidorAlarmes
+'* Objetivo: Verificar os campos de usuário dos servidores de alarme e 
+'*           registrar inconsistências no relatório do Excel.
+'***********************************************************************
+Sub VerificarCamposUsuariosServidorAlarmes(objServidor)
+    On Error Resume Next
+
+    Dim colUserFields, qtdeCampos, i
+    Dim camposExistentes, campoAtual
+
+    ' Obtendo a coleção de campos do servidor de alarmes
+    Set colUserFields = objServidor.UserFields
+
+    If colUserFields Is Nothing Then
+        AdicionarErroExcel DadosExcel, objServidor.PathName, "1", _
+            "Não existe coleção cadastrada de campos de usuário no Servidor de Alarmes."
+        Exit Sub
+    End If
+
+    qtdeCampos = colUserFields.Count
+
+    ' Definição das listas de campos obrigatórios, opcionais e descontinuados
+    Dim obrigatorios, opcionais, descontinuados
+
+    obrigatorios = Array("[SignalName]", "[SignalCaption]", "[AOR1]", "[AOR2]", "[AOR3]", _
+                         "[Categories]", "[DeviceType]", "[Hierarchy1]", "[Hierarchy2]", _
+                         "[Hierarchy3]", "[Hierarchies]", "[Screens]", "[Note]", "[FooterAlarmAreaID]")
+
+    opcionais = Array("[SignalCaption2]", "[SignalCaption3]", "[ContainerGroup]", _
+                      "[Company]", "[Message2]", "[Message3]", "[Flags]")
+
+    descontinuados = Array("[CriticalAlarm]")
+
+    Set camposExistentes = CreateObject("Scripting.Dictionary")
+
+    ' Registrar os campos existentes
+    For i = 1 To qtdeCampos
+        campoAtual = colUserFields.Item(i).Name
+        camposExistentes.Add campoAtual, True
+    Next
+
+    ' Verificando a presença dos campos obrigatórios
+    For Each campoAtual In obrigatorios
+        If Not camposExistentes.Exists(campoAtual) Then
+            AdicionarErroExcel DadosExcel, objServidor.PathName, "1", _
+                "Campo obrigatório faltando no Servidor de Alarmes: " & campoAtual
+        End If
+    Next
+
+    ' Verificando a presença de campos descontinuados (devem ser removidos)
+    For Each campoAtual In descontinuados
+        If camposExistentes.Exists(campoAtual) Then
+            AdicionarErroExcel DadosExcel, objServidor.PathName, "0", _
+                "Campo não utilizado encontrado no Servidor de Alarmes (deve ser removido): " & campoAtual
+        End If
+    Next
+
+    ' Verificando se há campos desconhecidos (não listados como obrigatórios, opcionais ou descontinuados)
+    Dim encontrado
+    For Each campoAtual In camposExistentes.Keys
+        encontrado = False
+
+        ' Verifica se está listado entre obrigatórios, opcionais ou descontinuados
+        If UBound(Filter(obrigatorios, campoAtual)) >= 0 Or _
+           UBound(Filter(opcionais, campoAtual)) >= 0 Or _
+           UBound(Filter(descontinuados, campoAtual)) >= 0 Then
+            encontrado = True
+        End If
+
+        ' Se não está em nenhuma lista, gera aviso
+        If Not encontrado Then
+            AdicionarErroExcel DadosExcel, objServidor.PathName, "0", _
+                "Campo não previsto cadastrado no Servidor de Alarmes: " & campoAtual
+        End If
+    Next
+
+    On Error GoTo 0
+End Sub
+
+'***********************************************************************
+'* Nome: VerificarServidoresDeAlarme
+'* Objetivo: Verificar a quantidade de servidores de alarme e validar 
+'*           se os campos de usuário obrigatórios estão configurados corretamente.
+'***********************************************************************
+Sub VerificarServidoresDeAlarme()
+    On Error Resume Next
+
+    Dim listaServidores, objServidor, totalServidores
+    Set listaServidores = Application.ListFiles("DB.AlarmServer")
+
+    totalServidores = listaServidores.Count
+
+    ' Verificação 1: Se houver mais de um DB.AlarmServer, gera aviso
+    If totalServidores > 1 Then
+        AdicionarErroExcel DadosExcel, "DB.AlarmServer", "0", _
+            "Foram encontrados " & totalServidores & " servidores de alarme. O recomendado é apenas um."
+    End If
+
+    ' Verificação 2: Validação dos campos de usuários para cada servidor de alarme
+    For Each objServidor In listaServidores
+        VerificarCamposUsuariosServidorAlarmes objServidor
+    Next
+
+    On Error GoTo 0
+End Sub
+
+'***********************************************************************
+'* Nome: VerificarCamposUsuariosServidorAlarmes
+'* Objetivo: Verificar os campos de usuário dos servidores de alarme e 
+'*           registrar inconsistências no relatório do Excel.
+'***********************************************************************
+Sub VerificarCamposUsuariosServidorAlarmes(objServidor)
+    On Error Resume Next
+
+    Dim colUserFields, qtdeCampos, i
+    Dim camposExistentes, campoAtual
+
+    ' Obtendo a coleção de campos do servidor de alarmes
+    Set colUserFields = objServidor.UserFields
+
+    If colUserFields Is Nothing Then
+        AdicionarErroExcel DadosExcel, objServidor.PathName, "1", _
+            "Não existe coleção cadastrada de campos de usuário no Servidor de Alarmes."
+        Exit Sub
+    End If
+
+    qtdeCampos = colUserFields.Count
+
+    ' Definição das listas de campos obrigatórios, opcionais e descontinuados
+    Dim obrigatorios, opcionais, descontinuados
+
+    obrigatorios = Array("[SignalName]", "[SignalCaption]", "[AOR1]", "[AOR2]", "[AOR3]", _
+                         "[Categories]", "[DeviceType]", "[Hierarchy1]", "[Hierarchy2]", _
+                         "[Hierarchy3]", "[Hierarchies]", "[Screens]", "[Note]", "[FooterAlarmAreaID]")
+
+    opcionais = Array("[SignalCaption2]", "[SignalCaption3]", "[ContainerGroup]", _
+                      "[Company]", "[Message2]", "[Message3]", "[Flags]")
+
+    descontinuados = Array("[CriticalAlarm]")
+
+    Set camposExistentes = CreateObject("Scripting.Dictionary")
+
+    ' Registrar os campos existentes
+    For i = 1 To qtdeCampos
+        campoAtual = colUserFields.Item(i).Name
+        camposExistentes.Add campoAtual, True
+    Next
+
+    ' Verificando a presença dos campos obrigatórios
+    For Each campoAtual In obrigatorios
+        If Not camposExistentes.Exists(campoAtual) Then
+            AdicionarErroExcel DadosExcel, objServidor.PathName, "1", _
+                "Campo obrigatório faltando no Servidor de Alarmes: " & campoAtual
+        End If
+    Next
+
+    ' Verificando a presença de campos descontinuados (devem ser removidos)
+    For Each campoAtual In descontinuados
+        If camposExistentes.Exists(campoAtual) Then
+            AdicionarErroExcel DadosExcel, objServidor.PathName, "0", _
+                "Campo não utilizado encontrado no Servidor de Alarmes (deve ser removido): " & campoAtual
+        End If
+    Next
+
+    ' Verificando se há campos desconhecidos (não listados como obrigatórios, opcionais ou descontinuados)
+    Dim encontrado
+    For Each campoAtual In camposExistentes.Keys
+        encontrado = False
+
+        ' Verifica se está listado entre obrigatórios, opcionais ou descontinuados
+        If UBound(Filter(obrigatorios, campoAtual)) >= 0 Or _
+           UBound(Filter(opcionais, campoAtual)) >= 0 Or _
+           UBound(Filter(descontinuados, campoAtual)) >= 0 Then
+            encontrado = True
+        End If
+
+        ' Se não está em nenhuma lista, gera aviso
+        If Not encontrado Then
+            AdicionarErroExcel DadosExcel, objServidor.PathName, "0", _
+                "Campo não previsto cadastrado no Servidor de Alarmes: " & campoAtual
+        End If
+    Next
+
+    On Error GoTo 0
+End Sub
+
+'***********************************************************************
 '*
 '*  Função:       VerificarPropriedadesObjeto
 '*  Objetivo:     Verifica o tipo do objeto e chama as funções de verificação
@@ -200,19 +446,19 @@ Function VerificarPropriedadesObjeto(Obj)
         '-----------------------------------------------------------------------------
         Case "frCustomAppConfig"
             VerificarBancoDeDados Obj, "AppDBServerPathName", 1, "frCustomAppConfig", 0
-			
+
         '-----------------------------------------------------------------------------
         Case "ww_Parameters"
             VerificarBancoDeDados Obj, "DBServer", 1, "ww_Parameters", 0
-			
+
         '-----------------------------------------------------------------------------
         Case "DatabaseTags_Parameters"
             VerificarBancoDeDados Obj, "DBServerPathName", 1, "DatabaseTags_Parameters", 0
-			
+
         '-----------------------------------------------------------------------------
         Case "cmdscr_CustomCommandScreen"
             VerificarBancoDeDados Obj, "DBServerPathName", 1, "cmdscr_CustomCommandScreen", 0
-			
+
         '-----------------------------------------------------------------------------
         Case "patm_NoteDatabaseControl"
             VerificarBancoDeDados Obj, "DBServer", 1, "patm_NoteDatabaseControl", 0
@@ -220,6 +466,10 @@ Function VerificarPropriedadesObjeto(Obj)
         '-----------------------------------------------------------------------------
         Case "patm_xoAlarmHistConfig"
             VerificarBancoDeDados Obj, "MainDBServerPathName", 1, "patm_xoAlarmHistConfig", 0
+			
+		'-----------------------------------------------------------------------------
+		Case "dtRedundancyConfig"
+			VerificarPropriedadeVazia Obj, "NameOfServerToBeStopped", 1, "dtRedundancyConfig", 1
 
         '-----------------------------------------------------------------------------
         Case "pwa_Disjuntor"
@@ -287,7 +537,7 @@ Function VerificarPropriedadesObjeto(Obj)
             VerificarPropriedadeCondicional Obj, "PotenciaMedia", 0, "NOTEMPTY", "AlarmSource", 0, "InfoPotG", 1
             VerificarPropriedadeCondicional Obj, "HabilitaSetpoint", 1, False, "SetPointPotencia", 1, "InfoPotG", 1
             VerificarPropriedadeVazia Obj, "PotenciaMedia", 0, "InfoPotG", 1
-            VerificarPropriedadeValor Obj, "PotenciaMaximaNominal", 100, "InfoPotG", 0, 1, 1
+            VerificarPropriedadeValor Obj, "PotenciaMaximaNominal", 1, "InfoPotG", 100, 1, 1
             VerificarObjetoDesatualizado Obj, "InfoPotG", "generic_automalogica"
 
         '-----------------------------------------------------------------------------
@@ -295,7 +545,7 @@ Function VerificarPropriedadesObjeto(Obj)
             VerificarPropriedadeCondicional Obj, "PotenciaMedia", 0, "NOTEMPTY", "AlarmSource", 0, "InfoPotP", 1
             VerificarPropriedadeCondicional Obj, "HabilitaSetpoint", 1, False, "SetPointPotencia", 1, "InfoPotP", 1
             VerificarPropriedadeVazia Obj, "PotenciaMedia", 0, "InfoPotP", 1
-            VerificarPropriedadeValor Obj, "PotenciaMaximaNominal", 100, "InfoPotP", 0, 1, 1
+            VerificarPropriedadeValor Obj, "PotenciaMaximaNominal", 1, "InfoPotG", 100, 1, 1
             VerificarObjetoDesatualizado Obj, "InfoPotP", "generic_automalogica"
 
         '-----------------------------------------------------------------------------
@@ -361,19 +611,19 @@ Function VerificarPropriedadesObjeto(Obj)
         '-----------------------------------------------------------------------------
         Case "pwa_InfoAlarme01"
             VerificarPropriedadeVazia Obj, "SourceObject01", 0, "InfoAlarme01", 1
-            VerificarPropriedadeValor Obj, "Descricao", "XXX", "InfoAlarme01", 0, 1, 1
+            VerificarPropriedadeValor Obj, "Descricao", 1, "InfoAlarme01", "XXX", 1, 1
             VerificarObjetoDesatualizado Obj, "InfoAlarme01", "generic_automalogica"
 
         '-----------------------------------------------------------------------------
         Case "pwa_InfoAlarme05"
             VerificarPropriedadeVazia Obj, "SourceObject01", 0, "InfoAlarme05", 1
-            VerificarPropriedadeValor Obj, "Descricao", "XXX", "InfoAlarme05", 0, 1, 1
+            VerificarPropriedadeValor Obj, "Descricao", 1, "InfoAlarme01", "XXX", 1, 1
             VerificarObjetoDesatualizado Obj, "InfoAlarme05", "generic_automalogica"
 
         '-----------------------------------------------------------------------------
         Case "pwa_InfoAlarme10"
             VerificarPropriedadeVazia Obj, "SourceObject01", 0, "InfoAlarme10", 1
-            VerificarPropriedadeValor Obj, "Descricao", "XXX", "InfoAlarme10", 0, 1, 1
+            VerificarPropriedadeValor Obj, "Descricao", 1, "InfoAlarme01", "XXX", 1, 1
             VerificarObjetoDesatualizado Obj, "InfoAlarme10", "generic_automalogica"
 
         '-----------------------------------------------------------------------------
@@ -386,7 +636,7 @@ Function VerificarPropriedadesObjeto(Obj)
         '-----------------------------------------------------------------------------
         Case "pwa_InfoAnalogicaG"
             VerificarPropriedadeCondicional Obj, "SourceObject", 0, "NOTEMPTY", "AlarmSource", 0, "InfoAnalogicaG", 1
-            VerificarObjetoDesatualizado Obj, "InfoAnalogica", "generic_automalogica"
+            VerificarObjetoDesatualizado Obj, "InfoAnalogicaG", "generic_automalogica"
             VerificarPropriedadeTextoProibido Obj, "SourceObject", 0, "InfoAnalogica", ".Value", 1
 
         '-----------------------------------------------------------------------------
@@ -574,33 +824,33 @@ Function VerificarPropriedadesObjeto(Obj)
             VerificarPropriedadeCondicional Obj, "CommandPathName", 0, "NOTEMPTY", "Active", 0, "CtrlDigital", 1
             VerificarPropriedadeVazia Obj, "Tag", 0, "CtrlDigital", 1
             VerificarPropriedadeValor Obj, "Descr", "Desc", "CtrlDigital", 1, 1, 1
-        
+
         '-----------------------------------------------------------------------------
         Case "XCPump"
 			VerificarPropriedadeVazia Obj, "SourceObject", 1, "Pump", 0
-			' Se sourceobject vazio, enable=false
+
 		'-----------------------------------------------------------------------------
         Case "iconElectricity"
 			VerificarPropriedadeVazia Obj, "SourceObject", 1, "iconElectricity", 0
-			
+
 		'-----------------------------------------------------------------------------
 		Case "iconComFail"
 			VerificarPropriedadeVazia Obj, "SourceObject", 1, "iconComFail", 0
-			
+
 		'-----------------------------------------------------------------------------
 		Case "xcLabel"
 			VerificarPropriedadeVazia Obj, "Caption", 1, "Label", 1
-			
+
 		'-----------------------------------------------------------------------------
 		Case "DrawString"
 			VerificarPropriedadeVazia Obj, "Value", 1, "DrawString", 1
 			VerificarPropriedadeVazia Obj, "TextColor", 0, "DrawString", 0
-			
+
 		'-----------------------------------------------------------------------------
 		Case "xcEtiqueta_Manut"
 			VerificarPropriedadeVazia Obj, "CorObjeto", 0, "Etiqueta_Manut", 0
 			VerificarPropriedadeVazia Obj, "EtiquetaVisivel", 0, "Etiqueta_Manut", 0
-			
+
 		'-----------------------------------------------------------------------------
 		Case "xcEtiqueta"
 			VerificarPropriedadeVazia Obj, "AvisoVisivel", 0, "Etiqueta", 0
@@ -609,70 +859,65 @@ Function VerificarPropriedadesObjeto(Obj)
 			VerificarPropriedadeVazia Obj, "ForaVisivel", 0, "Etiqueta", 0
 			VerificarPropriedadeVazia Obj, "PathNote", 0, "Etiqueta", 0
 			VerificarPropriedadeVazia Obj, "Visible", 0, "Etiqueta", 0
-			
+
 		'-----------------------------------------------------------------------------
 		Case "xcWaterTank"
 			VerificarPropriedadeVazia Obj, "objSource", 1, "WaterTank", 0
 			VerificarPropriedadeVazia Obj, "objWaterDistribution", 1, "WaterTank", 0
-			
-		'-----------------------------------------------------------------------------
-		Case "xcRetArea"
-			'AdicionarErroTxt DadosTxt, "VerificarPropriedadesObjeto", Obj, "Objeto sem propriedades cadastradas para verificar: " & TypeName(Obj)
-			
+
 		'-----------------------------------------------------------------------------
 		Case "XCArrow"
 			VerificarPropriedadeVazia Obj, "Visible", 0, "Arrow", 0
-			
-		'-----------------------------------------------------------------------------
-		Case "XCVerticalPipe"
-			'AdicionarErroTxt DadosTxt, "VerificarPropriedadesObjeto", Obj, "Objeto sem propriedades cadastradas para verificar: " & TypeName(Obj)
-			
-		'-----------------------------------------------------------------------------
-		Case "XCHorizontalPipe"
-			'AdicionarErroTxt DadosTxt, "VerificarPropriedadesObjeto", Obj, "Objeto sem propriedades cadastradas para verificar: " & TypeName(Obj)
-			
+
 		'-----------------------------------------------------------------------------
 		Case "XCDistribution"
 			VerificarPropriedadeVazia Obj, "SourceObject", 0, "Distribution", 0
-			
+
 		'-----------------------------------------------------------------------------
-		Case "XCSewage_Plant"
-			'AdicionarErroTxt DadosTxt, "VerificarPropriedadesObjeto", Obj, "Objeto sem propriedades cadastradas para verificar: " & TypeName(Obj)
-			
-		'-----------------------------------------------------------------------------
-		Case "IODriver"
-			VerificarPropriedadeVazia Obj, "DriverLocation", 1, "IODriver", 0
-			VerificarPropriedadeValor Obj, "WriteSyncMode", 1, "IODriver", 2, 1, 0
-			
+        Case "IODriver"
+            VerificarPropriedadeVazia Obj, "DriverLocation", 1, "IODriver", 0
+            VerificarPropriedadeValor Obj, "WriteSyncMode", 1, "IODriver", 2, 1, 0
+			VerificarPropriedadeValor Obj, "ExposeToOpc", 1, "IODriver", 3, 0, 0
+
+            ' Verificação adicional para contagem de IOTags
+            Dim qtdeIOTags
+            qtdeIOTags = ContarObjetosDoTipo(Obj, "IOTag")
+
+            If qtdeIOTags <= 1 Then
+                AdicionarErroExcel DadosExcel, Obj.PathName, "0", _
+                    "IODriver com quantidade insuficiente de IOTags (" & qtdeIOTags & " encontrada(s))."
+            End If
+
 		'-----------------------------------------------------------------------------
 		Case "patm_DeviceNote"
 			VerificarPropriedadeVazia Obj, "AlarmSource", 1, "patm_DeviceNote", 1
 			VerificarPropriedadeVazia Obj, "NoteDatabaseControl", 1, "patm_DeviceNote", 1
 			VerificarPropriedadeVazia Obj, "SourceObject", 1, "patm_DeviceNote", 1
 			VerificarPropriedadeVazia Obj, "NotePropertyValue", 1, "patm_DeviceNote", 1
-			
+
 		'-----------------------------------------------------------------------------
 		Case "WaterDistributionNetwork"
-			VerificarPropriedadeVazia Obj, "City", 1, "WaterDistributionNetwork", 0
-			VerificarPropriedadeVazia Obj, "Company", 1, "WaterDistributionNetwork", 0
-			VerificarPropriedadeVazia Obj, "CompanyAcronym", 1, "WaterDistributionNetwork", 0
-			VerificarPropriedadeVazia Obj, "Contract", 1, "WaterDistributionNetwork", 0
-			VerificarPropriedadeVazia Obj, "Name", 1, "WaterDistributionNetwork", 0
-			VerificarPropriedadeVazia Obj, "Neighborhood", 1, "WaterDistributionNetwork", 0
-			VerificarPropriedadeVazia Obj, "Organization", 1, "WaterDistributionNetwork", 0
-			VerificarPropriedadeVazia Obj, "Region", 1, "WaterDistributionNetwork", 0
-			VerificarPropriedadeVazia Obj, "State", 1, "WaterDistributionNetwork", 0
-			VerificarPropriedadeVazia Obj, "StateAcronym", 1, "WaterDistributionNetwork", 0
-			VerificarPropriedadeVazia Obj, "Note", 0, "WaterDistributionNetwork", 0
+            VerificarPropriedadeVazia Obj, "City", 1, "WaterDistributionNetwork", 0
+            VerificarPropriedadeVazia Obj, "Company", 1, "WaterDistributionNetwork", 0
+            VerificarPropriedadeVazia Obj, "CompanyAcronym", 1, "WaterDistributionNetwork", 0
+            VerificarPropriedadeVazia Obj, "Contract", 1, "WaterDistributionNetwork", 0
+            VerificarPropriedadeVazia Obj, "Name", 1, "WaterDistributionNetwork", 0
+            VerificarPropriedadeVazia Obj, "Neighborhood", 1, "WaterDistributionNetwork", 0
+            VerificarPropriedadeVazia Obj, "Organization", 1, "WaterDistributionNetwork", 0
+            VerificarPropriedadeVazia Obj, "Region", 1, "WaterDistributionNetwork", 0
+            VerificarPropriedadeVazia Obj, "State", 1, "WaterDistributionNetwork", 0
+            VerificarPropriedadeVazia Obj, "StateAcronym", 1, "WaterDistributionNetwork", 0
+            VerificarPropriedadeVazia Obj, "Note", 0, "WaterDistributionNetwork", 0
 
-		'-----------------------------------------------------------------------------
-		Case "Frame"
+			Dim containerTypes
+			containerTypes = Array("DataFolder", "DrawGroup", "DataServer", "WaterDistributionNetwork")
 
-		'-----------------------------------------------------------------------------
-		Case "InternalTag"
-			VerificarPropriedadeVazia Obj, "Value", 0, "InternalTag", 0
-			
-			
+			If HasChildOfType(Obj, "WaterStationData", containerTypes) Then
+				Dim arrUserFields
+				arrUserFields = Array("DadosDaPlanta", "Mapa3D")
+				VerificarUserFields Obj, arrUserFields, "WaterDistributionNetwork", 1
+			End If
+
 		'-----------------------------------------------------------------------------
 		Case "xoExecuteScheduler"
 			VerificarPropriedadeVazia Obj, "aActivateCommandsGroup", 1, "xoExecuteScheduler", 0
@@ -683,128 +928,50 @@ Function VerificarPropriedadesObjeto(Obj)
 			VerificarPropriedadeVazia Obj, "objCommand", 1, "xoExecuteScheduler", 0
 			VerificarPropriedadeVazia Obj, "strSchedulerName", 1, "xoExecuteScheduler", 0
 			VerificarPropriedadeVazia Obj, "UserField01", 1, "xoExecuteScheduler", 0
-			
-		'-----------------------------------------------------------------------------
-		Case "ext_ConfigTabularWater"
-			
-		'-----------------------------------------------------------------------------
-		Case "manut_CreateNoteObjects"
-			
+
 		'-----------------------------------------------------------------------------
 		Case "DBServer"
 			VerificarPropriedadeValor Obj, "SourceType", 1, "DBServer", 2, 1, 0
-			
-		'-----------------------------------------------------------------------------
-		Case "patm_XmlObj"
-			
-		'-----------------------------------------------------------------------------
-		Case "AutoTester","PreencherPropriedade"
-			
-		'-----------------------------------------------------------------------------
-		Case "frFooterRoot"
-			
-		'-----------------------------------------------------------------------------
-		Case "Viewer"
-			
+
 		'-----------------------------------------------------------------------------
 		Case "WaterConfig"
 			VerificarPropriedadeVazia Obj, "ModelFile", 1, "WaterConfig", 0
-			
+
 		'-----------------------------------------------------------------------------
 		Case "patm_CmdBoxXmlCreator"
 			VerificarPropriedadeVazia Obj, "ConfigPower", 1, "CmdBoxXmlCreator", 0
-			
+
 		'-----------------------------------------------------------------------------
 		Case "patm_CommandLogger"
 			VerificarPropriedadeVazia Obj, "PowerConfigObj", 1, "CommandLogger", 0
-			
-		'-----------------------------------------------------------------------------
-		Case "frCustomAlarmAndEventConfig"
-			
-		'-----------------------------------------------------------------------------
-		Case "frThemeRoot"
-			
-		'-----------------------------------------------------------------------------
-		Case "DemoTag"
-			
-		'-----------------------------------------------------------------------------
-		Case "hpTheme01"
-			
+
 		'-----------------------------------------------------------------------------
 		Case "hpXMLGenerateStruct"
 			VerificarPropriedadeVazia Obj, "Log_BancoDeDados", 1, "BancoDados", 0
-			
-		'-----------------------------------------------------------------------------
-		Case "hpXMLCatalog"
-			
-		'-----------------------------------------------------------------------------
-		Case "xo_xmlDocStringInsert", "xo_1_Addr_Scan"
-			
-		'-----------------------------------------------------------------------------
-		Case "hpXMLFilterVX"
-			
-		'-----------------------------------------------------------------------------
-		Case "~hpImportXMLModel"
-			
-		'-----------------------------------------------------------------------------
-		Case "hplog", "hpLogEvent"
-			
-		'-----------------------------------------------------------------------------
-		Case "hpMultiMonitorConfig_DEPRECATED"
-			
-		'-----------------------------------------------------------------------------
-		Case "hpPopupTemplate"
-			
-		'-----------------------------------------------------------------------------
-		Case "~hpThemePublisher"
-			
-		'-----------------------------------------------------------------------------
-		Case "~hpColorPalette"
-			
-		'-----------------------------------------------------------------------------
-		Case "~hpBehaviorGroup"
-			
-		'-----------------------------------------------------------------------------
-		Case "hpTheme"
-			
-		'-----------------------------------------------------------------------------
-		Case "hpTranslatorController"
-			
+
 		'-----------------------------------------------------------------------------
 		Case "gtwFrozenMeasurements"
 			VerificarPropriedadeVazia Obj, "DateTag", 1, "gtwFrozenMeasurements", 0
-			
+
 		'-----------------------------------------------------------------------------
 		Case "AlarmServer"
 			VerificarPropriedadeVazia Obj, "DataSource", 1, "AlarmServer", 0
-			
+
 		'-----------------------------------------------------------------------------
 		Case "xoFalhaOPC"
-			
+
 		'-----------------------------------------------------------------------------
 		Case "E3Query"
 			VerificarPropriedadeVazia Obj, "DataSource", 1, "E3Query", 0
 			VerificarPropriedadeValor Obj, "QueryType", 1, "E3Query", 0, 1, 0
-			
-		'-----------------------------------------------------------------------------
-		Case "CounterTag"
-			
+
 		'-----------------------------------------------------------------------------
 		Case "aainfo_NoteController"
 			VerificarPropriedadeVazia Obj, "DBServerPathName", 1, "NoteController", 0
-			
-		'-----------------------------------------------------------------------------
-		Case "aainfoXcLibVersion"
-			
-		'-----------------------------------------------------------------------------
-		Case "manut_ConfigShelveProperties"
-			
+
 		'-----------------------------------------------------------------------------
         Case Else
-            ' Caso não haja tratamento específico
-            AdicionarErroTxt DadosTxt, "VerificarPropriedadesObjeto", Obj, _
-                "Tipo de objeto não tratado: " & TypeName(Obj)
-
+           RegistrarTipoSemPropriedade TipoObjeto
     End Select
 End Function
 
@@ -872,6 +1039,170 @@ Function VerificarPropriedadeVazia(Obj, Propriedade, Metodo, NomeObjeto, Classif
                            NomeObjeto & " com " & Propriedade & " vazia"
     End If
 End Function
+'*******************************************************************************
+' Nome: ContarObjetosDoTipo
+' Objetivo:
+'   Contar recursivamente a quantidade de objetos de um tipo específico
+'   na hierarquia de um objeto pai.
+'
+' Parâmetros:
+'   Obj          -> Objeto raiz inicial (ex.: "IODriver")
+'   TipoDesejado -> TypeName desejado para contagem (ex.: "IOTag")
+'
+' Retorno:
+'   Integer -> Quantidade de objetos do tipo solicitado.
+'*******************************************************************************
+Function ContarObjetosDoTipo(Obj, TipoDesejado)
+    On Error Resume Next
+    
+    Dim contador, childObj
+    contador = 0
+
+    ' Se o próprio objeto já for do tipo desejado, incrementamos o contador
+    If TypeName(Obj) = TipoDesejado Then
+        contador = contador + 1
+    End If
+
+    ' Percorrer os objetos filhos recursivamente
+    For Each childObj In Obj
+        contador = contador + ContarObjetosDoTipo(childObj, TipoDesejado)
+    Next
+
+    ContarObjetosDoTipo = contador
+
+    On Error GoTo 0
+End Function
+'*******************************************************************************
+' Nome: HasChildOfType
+' Objetivo:
+'   Percorrer recursivamente a hierarquia de 'Obj' e descobrir se
+'   existe algum objeto do tipo 'TargetType'. Para decidir
+'   quais objetos são "containers" (ou seja, que podem ter filhos),
+'   passamos 'ContainerTypes' como um Array, ex. Array("DataFolder","Screen","DrawGroup",...).
+'
+' Parâmetros:
+'   Obj           -> Objeto (folder) inicial de onde queremos varrer
+'   TargetType    -> TypeName que desejamos encontrar (ex.: "WaterStationData")
+'   ContainerTypes -> Array de strings. Tipos cujo children queremos varrer
+'                    ex.: Array("DataFolder","Screen","DrawGroup","DataServer","WaterDistributionNetwork").
+'
+' Retorno:
+'   Boolean -> True se encontrar 'TargetType' em qualquer nível,
+'              False caso contrário.
+'*******************************************************************************
+Function HasChildOfType(Obj, TargetType, ContainerTypes)
+    On Error Resume Next
+
+    Dim child, currentType
+    currentType = TypeName(Obj)
+
+    ' Se o objeto atual for do tipo que procuramos, retornamos True
+    If currentType = TargetType Then
+        HasChildOfType = True
+        Exit Function
+    End If
+
+    ' Se este objeto for um "container" (ou seja, se o seu TypeName constar na lista),
+    ' então varremos recursivamente seus filhos.
+    Dim cType
+    For Each cType In ContainerTypes
+        If currentType = cType Then
+            ' Este objeto pode ter filhos, vamos iterar:
+            Dim childObj
+            For Each childObj In Obj
+                If HasChildOfType(childObj, TargetType, ContainerTypes) = True Then
+                    HasChildOfType = True
+                    Exit Function
+                End If
+            Next
+            Exit For  ' Já processamos
+        End If
+    Next
+
+    ' Se chegamos aqui, não achamos o TargetType
+    HasChildOfType = False
+    On Error GoTo 0
+End Function
+
+'*******************************************************************************
+' Nome: VerificarUserFields
+' Objetivo:
+'   Verificar se um conjunto de userfields (definido em arrFields) existe
+'   no objeto "Obj.UserFields" e, caso exista, se não está vazio.
+'
+'   Se não existir ou estiver vazio, gera log no Excel usando AdicionarErroExcel.
+'
+' Parâmetros:
+'   Obj            -> Objeto (por ex.: "WaterDistributionNetwork")
+'   arrFields()    -> Array de strings (ex.: Array("DadosDaPlanta","Mapa3D"))
+'   NomeObjeto     -> Rótulo para aparecer no log (ex.: "WaterDistributionNetwork")
+'   Classificacao  -> Código de severidade no Excel (0=Aviso, 1=Erro, 2=Revisar, etc.)
+'
+' Exemplo de uso:
+'   Dim fields
+'   fields = Array("DadosDaPlanta", "Mapa3D", "OutroCampo")
+'   VerificarUserFields Obj, fields, "WaterDistributionNetwork", 1
+'*******************************************************************************
+Function VerificarUserFields(Obj, arrFields, NomeObjeto, Classificacao)
+    On Error Resume Next
+
+    Dim fieldName, fieldValue
+
+    ' Iteramos cada nome de userfield do array:
+    For Each fieldName In arrFields
+
+        ' Tenta acessar Obj.UserFields.Item(fieldName)
+        fieldValue = Obj.UserFields.Item(fieldName)
+        If Err.Number <> 0 Then
+            ' Se deu erro, significa que a userfield não existe ou houve outro problema
+            AdicionarErroExcel DadosExcel, Obj.PathName, CStr(Classificacao), _
+                NomeObjeto & " sem userfield '" & fieldName & "' (inexistente)."
+            Err.Clear
+        Else
+            ' Se existe mas está vazio, também gera log
+            If Trim(CStr(fieldValue)) = "" Then
+                AdicionarErroExcel DadosExcel, Obj.PathName, CStr(Classificacao), _
+                    NomeObjeto & " userfield '" & fieldName & "' vazio."
+            End If
+        End If
+
+    Next
+
+    On Error GoTo 0
+End Function
+
+'*******************************************************************************
+'* Nome: RegistrarTipoSemPropriedade
+'* Objetivo: Registrar no log TXT os tipos de objetos que não possuem propriedades
+'*           específicas cadastradas para verificação. Cada TypeName é registrado
+'*           uma única vez, evitando repetições no arquivo de log.
+'*
+'* Parâmetros:
+'*   TipoObjeto -> String contendo o TypeName do objeto não tratado
+'*******************************************************************************
+
+Function RegistrarTipoSemPropriedade(TipoObjeto)
+    On Error Resume Next
+
+    ' Verifica se o tipo de objeto já foi registrado anteriormente
+    If Not TiposRegistrados.Exists(TipoObjeto) Then
+        ' Registra o novo tipo de objeto
+        TiposRegistrados.Add TipoObjeto, True
+
+        ' Adiciona mensagem ao log
+        AdicionarErroTxt DadosTxt, "VerificarPropriedadesObjeto", TipoObjeto, _
+            "Tipo de objeto não tratado ou sem propriedades cadastradas para verificar: " & TipoObjeto
+
+        ' Retorna True indicando que o tipo foi registrado agora
+        RegistrarTipoSemPropriedade = True
+    Else
+        ' O tipo já havia sido registrado antes, retorna False
+        RegistrarTipoSemPropriedade = False
+    End If
+
+    On Error GoTo 0
+End Function
+
 
 Function VerificarPropriedadeCondicional(Obj, PropCond, MetodoCond, ValorEsperado, _
                                          PropVerif, MetodoVerif, NomeObjeto, TipoProblema)
@@ -1037,7 +1368,6 @@ Function VerificarPropriedadeTextoProibido(Obj, Propriedade, MetodoProp, _
     On Error GoTo 0
 End Function
 
-
 Function VerificarObjetoDesatualizado(Obj, NomeAntigo, NovaBiblioteca)
     ' Exemplo de mensagem:
     ' "O objeto pwa_Gerador é obsoleto e deve ser substituído por generic_automalogica."
@@ -1073,8 +1403,19 @@ Function AdicionarErroTxt(DadosTxt, NomeSub, Obj, DescricaoErro)
         Exit Function
     End If
 
+    Dim ObjPath
+    If IsObject(Obj) Then
+        ObjPath = Obj.PathName
+        If Err.Number <> 0 Then
+            ObjPath = "[Sem PathName]"
+            Err.Clear
+        End If
+    Else
+        ObjPath = Obj 'Se for uma string, usa diretamente.
+    End If
+
     Dim MensagemErro
-    MensagemErro = "Erro na Sub " & NomeSub & "/" & Obj.PathName & ": " & DescricaoErro
+    MensagemErro = "Erro na Sub " & NomeSub & "/" & ObjPath & ": " & DescricaoErro
     DadosTxt.Add keyTxt, MensagemErro
 End Function
 
@@ -1087,7 +1428,7 @@ End Function
 Function GerarRelatorioTxt(DadosTxt, CaminhoPrj)
     On Error GoTo 0
 
-    If Not DadosTxt.Exists(CStr(1)) Then
+    If DadosTxt.Count = 0 Then
         MsgBox "Nenhum dado disponível para gerar o relatório TXT.", vbExclamation
         GerarRelatorioTxt = False
         Exit Function
@@ -1101,7 +1442,9 @@ Function GerarRelatorioTxt(DadosTxt, CaminhoPrj)
     Set ArquivoTxt = FSO.CreateTextFile(NomeTxt, True)
 
     For Each Linha In DadosTxt
-        ArquivoTxt.WriteLine DadosTxt.Item(Linha)
+        If Trim(DadosTxt.Item(Linha)) <> "" Then
+            ArquivoTxt.WriteLine DadosTxt.Item(Linha)
+        End If
     Next
     ArquivoTxt.Close
 
@@ -1114,7 +1457,6 @@ Function GerarRelatorioTxt(DadosTxt, CaminhoPrj)
     End If
 
     GerarRelatorioTxt = True
-    Exit Function
 End Function
 
 '***********************************************************************
@@ -1208,7 +1550,6 @@ Function GerarRelatorioExcel(DadosExcel, CaminhoPrj)
             sheet.Cells(CInt(Linha) + 1, 3).Value = celulas(2)
         End If
     Next
-
     objWorkBook.SaveAs NomeExcel
     objWorkBook.Close
     objExcel.Quit
