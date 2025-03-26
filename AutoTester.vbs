@@ -1550,7 +1550,6 @@ Function GerarRelatorioExcel(DadosExcel, CaminhoPrj)
             sheet.Cells(CInt(Linha) + 1, 3).Value = celulas(2)
         End If
     Next
-
     objWorkBook.SaveAs NomeExcel
     objWorkBook.Close
     objExcel.Quit
