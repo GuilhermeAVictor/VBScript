@@ -1,5 +1,5 @@
 O objeto AutoTester, pertencente à biblioteca Manuttester.lib, é utilizado para automação de testes e geração de logs.
-
+ 
 Propriedades
 
 GerarLogErrosScript
