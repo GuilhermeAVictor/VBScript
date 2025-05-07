@@ -186,12 +186,10 @@ Sub Main()
                 connDB.Close
                 Set connDB = Nothing
 
-                MsgBox "Inconsistências registradas com sucesso no banco QA.", vbInformation
+                MsgBox "Inconsistências registradas com sucesso no banco de dados QA.", vbInformation
             End If
         End If
     End If
-
-    MsgBox "Fim"
 
 End Sub
 
@@ -222,7 +220,6 @@ Sub VerificarTelas(telaArray)
                 VerificarPropriedadesObjeto Objeto
             End If
         Next
-
     Else
 
         '--------------------------------------------------------------
@@ -296,14 +293,11 @@ Function IsTelaNaLista(PathName, telaArray)
     Dim tela
 
     For Each tela In telaArray
-
-        tela = Trim(tela)
-
-        If tela <> "" And StrComp(PathName, tela, vbTextCompare) = 0 Then
+        tela = Replace(Trim(tela), "\", "/")  ' Normaliza para barra /
+        If tela <> "" And StrComp(Replace(PathName, "\", "/"), tela, vbTextCompare) = 0 Then
             IsTelaNaLista = True
             Exit Function
         End If
-
     Next
 
     IsTelaNaLista = False
@@ -926,13 +920,14 @@ Function VerificarPropriedadesObjeto(Obj)
 
         '-----------------------------------------------------------------------------
         Case "pwa_Trafo2"
-            VerificarPropriedadeCondicional Obj, "Enable", 1, False, "SourceObject", 0, "Trafo2", 1
-            VerificarPropriedadeCondicional Obj, "SourceObject", 0, "NOTEMPTY", "DeviceNote", 0, "Trafo2", 1
-            VerificarPropriedadeCondicional Obj, "TAPSPShow", 1, False, "TAPSPTag", 0, "Trafo2", 1
-            VerificarPropriedadeVazia Obj, "CorOff", 0, "Trafo2", 1
-            VerificarPropriedadeVazia Obj, "CorOnTerminal1", 0, "Trafo2", 1
-            VerificarPropriedadeVazia Obj, "CorOnTerminal2", 0, "Trafo2", 1
-            VerificarPropriedadeVazia Obj, "CorOnTerminal3", 0, "Trafo2", 1
+            VerificarPropriedadeCondicional Obj, "pwa_Trafo2", "SourceObject", 0, "Enable", 1, False, "Telas", 1
+            VerificarPropriedadeCondicional Obj, "pwa_Trafo2", "DeviceNote", 0, "SourceObject", 0, "NOTEMPTY", "Telas", 1
+            VerificarPropriedadeCondicional Obj, "pwa_Trafo2", "TAPSPTag", 0, "TAPSPShow", 1, False, "Telas", 1
+            VerificarPropriedadeVazia Obj, "pwa_Trafo2", "CorOff", 0, "Telas", 0
+            VerificarPropriedadeVazia Obj, "pwa_Trafo2", "CorOnTerminal1", 0, "Telas", 0
+            VerificarPropriedadeVazia Obj, "pwa_Trafo2", "CorOnTerminal2", 0, "Telas", 0
+            VerificarPropriedadeVazia Obj, "pwa_Trafo2", "CorOnTerminal3", 0, "Telas", 0
+
         '-----------------------------------------------------------------------------
         Case "gx_AbnormalityIndicator"
             VerificarPropriedadeVazia Obj, "gx_AbnormalityIndicator", "Measurement01Active", 0, "Telas", 1
@@ -1036,16 +1031,16 @@ Function VerificarPropriedadesObjeto(Obj)
 
         '-----------------------------------------------------------------------------
         Case "gx_RadarChart04"
-            VerificarPropriedadeValor Obj, "gx_RadarChart04", "Meas01", 0, "Telas", 1
+            VerificarPropriedadeVazia Obj, "gx_RadarChart04", "Meas01", 0, "Telas", 1
             VerificarPropriedadeValor Obj, "gx_RadarChart04", "Meas01MaxLim", 1, 100, 1, "Telas", 0
             VerificarPropriedadeValor Obj, "gx_RadarChart04", "Meas01MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart04", "Meas02", 0, "Telas", 1
+            VerificarPropriedadeVazia Obj, "gx_RadarChart04", "Meas02", 0, "Telas", 1
             VerificarPropriedadeValor Obj, "gx_RadarChart04", "Meas02MaxLim", 1, 100, 1, "Telas", 0
             VerificarPropriedadeValor Obj, "gx_RadarChart04", "Meas02MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart04", "Meas03", 0, "Telas", 1
+            VerificarPropriedadeVazia Obj, "gx_RadarChart04", "Meas03", 0, "Telas", 1
             VerificarPropriedadeValor Obj, "gx_RadarChart04", "Meas03MaxLim", 1, 100, 1, "Telas", 0
             VerificarPropriedadeValor Obj, "gx_RadarChart04", "Meas03MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart04", "Meas04", 0, "Telas", 1
+            VerificarPropriedadeVazia Obj, "gx_RadarChart04", "Meas04", 0, "Telas", 1
             VerificarPropriedadeValor Obj, "gx_RadarChart04", "Meas04MaxLim", 1, 100, 1, "Telas", 0
             VerificarPropriedadeValor Obj, "gx_RadarChart04", "Meas04MinLim", 1, 15, 1, "Telas", 0
             VerificarPropriedadeValor Obj, "gx_RadarChart04", "ZoneMaxLim", 1, 100, 1, "Telas", 0
@@ -1053,7 +1048,7 @@ Function VerificarPropriedadesObjeto(Obj)
 
         '-----------------------------------------------------------------------------
         Case "gx_RadarChart05"
-            VerificarPropriedadeValor Obj, "gx_RadarChart05", "Meas01", 0, "Telas", 1
+            VerificarPropriedadeVazia Obj, "gx_RadarChart05", "Meas01", 0, "Telas", 1
             VerificarPropriedadeValor Obj, "gx_RadarChart05", "Meas01MaxLim", 1, 100, 1, "Telas", 0
             VerificarPropriedadeValor Obj, "gx_RadarChart05", "Meas01MinLim", 1, 15, 1, "Telas", 0
             VerificarPropriedadeVazia Obj, "gx_RadarChart05", "Meas02", 0, "Telas", 1
@@ -1305,11 +1300,11 @@ Function VerificarPropriedadesObjeto(Obj)
         '-----------------------------------------------------------------------------
         Case "gx_RadarChart12"
             VerificarPropriedadeVazia Obj, "gx_RadarChart12", "Meas01", 0, "Telas", 1
-            VerificarPropriedadeVazia Obj, "gx_RadarChart12", "Meas01MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart12", "Meas01MinLim", 1, 15, 1, "Telas", 0
+            VerificarPropriedadeValor Obj, "gx_RadarChart12", "Meas01MaxLim", 1, 100, 1, "Telas", 0
+            VerificarPropriedadeValor Obj, "gx_RadarChart12", "Meas01MinLim", 1, 15, 1, "Telas", 0
             VerificarPropriedadeVazia Obj, "gx_RadarChart12", "Meas02", 0, "Telas", 1
-            VerificarPropriedadeVazia Obj, "gx_RadarChart12", "Meas02MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart12", "Meas02MinLim", 1, 15, 1, "Telas", 0
+            VerificarPropriedadeValor Obj, "gx_RadarChart12", "Meas02MaxLim", 1, 100, 1, "Telas", 0
+            VerificarPropriedadeValor Obj, "gx_RadarChart12", "Meas02MinLim", 1, 15, 1, "Telas", 0
             VerificarPropriedadeVazia Obj, "gx_RadarChart12", "Meas03", 0, "Telas", 1
             VerificarPropriedadeValor Obj, "gx_RadarChart12", "Meas03MaxLim", 1, 100, 1, "Telas", 0
             VerificarPropriedadeValor Obj, "gx_RadarChart12", "Meas03MinLim", 1, 15, 1, "Telas", 0
@@ -2257,27 +2252,48 @@ Function VerificarObjetoDesatualizado(Obj, TypeName, TextoAuxiliar, AreaErro, Ti
 
 End Function
 
-'***********************************************************************
-'*  Função : VerificarObjetoDesatualizado
-'*----------------------------------------------------------------------
-'*  Finalidade :
-'*     Registrar no Excel que um objeto de biblioteca antiga deve ser
-'*     substituído por outro de biblioteca atual.
-'*
-'*  Parâmetros :
-'*     ‑ Obj            : Objeto a ser analisado.
-'*     ‑ TypeName       : TypeName do objeto.
-'*     ‑ TextoAuxiliar  : Nome da biblioteca recomendada.
-'*     ‑ AreaErro       : Área onde o erro foi encontrado.
-'*     ‑ TipoErro       : Tipo de erro (0 = Aviso, 1 = Erro, 2 = Revisar).
-'***********************************************************************
-Function VerificarObjetoDesatualizado(Obj, TypeName, TextoAuxiliar, AreaErro, TipoErro)
-   Dim Mensagem
-   Mensagem = "O objeto " & TypeName & _
-              " é obsoleto e deve ser substituído pela biblioteca " & _
-              TextoAuxiliar & "."
-   
-   AdicionarErroExcel DadosExcel, Obj.PathName, CStr(TipoErro), Mensagem, AreaErro
+'********************************************************************************
+' Nome: VerificarPropriedadeTextoProibido
+' Objetivo: Verificar se a propriedade (via link ou valor) contém um texto proibido.
+'
+' Parâmetros:
+'   Obj            -> Objeto a verificar (ex.: pwa_Disjuntor, pwa_BarraAlarme)
+'   Propriedade    -> Nome da propriedade (ex.: "SourceObject")
+'   MetodoProp     -> 0 => Link (GetPropertyLink), 1 => Valor (GetPropertyValue)
+'   NomeObjeto     -> Rótulo para o log (ex.: "pwa_Disjuntor")
+'   TextoProibido  -> Texto que não deve aparecer (ex.: ".Value")
+'   Classificacao  -> Código de severidade no Excel (0=Aviso, 1=Erro, etc.)
+'   Area           -> Área onde o erro foi encontrado (ex: "Telas", "Biblioteca")
+'********************************************************************************
+Function VerificarPropriedadeTextoProibido(Obj, Propriedade, MetodoProp, _
+                                           NomeObjeto, TextoProibido, Classificacao, Area)
+    On Error Resume Next
+
+    ' 1) Ler a propriedade via Link ou Valor
+    Dim ValorAtual
+    ValorAtual = GetPropriedade(Obj, Propriedade, MetodoProp)
+
+    ' 2) Se contiver o texto proibido, registrar inconsistência
+    If InStr(1, ValorAtual, TextoProibido, vbTextCompare) > 0 Then
+        Dim mensagem
+        mensagem = "A propriedade " & Propriedade & " não deve conter '" & TextoProibido & "'. " & _
+                   "(Atual: " & ValorAtual & ")"
+
+        If GerarCSV Then
+            AdicionarErroExcel DadosExcel, Obj.PathName, CStr(Classificacao), mensagem, Area, NomeObjeto
+        Else
+            AdicionarErroBanco DadosExcel, Obj.PathName, CStr(Classificacao), mensagem, NomeObjeto, Area
+        End If
+    End If
+
+    ' 3) Tratamento de erro de acesso
+    If Err.Number <> 0 Then
+        AdicionarErroTxt DadosTxt, "VerificarPropriedadeTextoProibido", Obj, _
+            "Erro ao acessar " & Propriedade & " em " & NomeObjeto
+        Err.Clear
+    End If
+
+    On Error GoTo 0
 End Function
 
 '***********************************************************************
