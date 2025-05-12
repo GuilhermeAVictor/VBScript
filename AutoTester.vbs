@@ -1994,9 +1994,7 @@ End Function
 '*     ‑ AreaErro       : Área onde o erro foi encontrado.
 '*     ‑ TipoErro       : Tipo de erro (0 = Aviso, 1 = Erro, 2 = Revisar).
 '***********************************************************************
-Function VerificarPropriedadeCondicional(Obj, TypeName, Propriedade1, TipoBusca1, _
-                                       Propriedade2, TipoBusca2, TextoAuxiliar, _
-                                       AreaErro, TipoErro)
+Function VerificarPropriedadeCondicional(Obj, TypeName, Propriedade1, TipoBusca1, Propriedade2, TipoBusca2, TextoAuxiliar, AreaErro, TipoErro)
     On Error Resume Next
 
     Dim ValorCondicional, ValorAVerificar, Mensagem
@@ -2167,8 +2165,7 @@ End Function
 '*     ‑ AreaErro       : Área onde o erro foi encontrado.
 '*     ‑ TipoErro       : Tipo de erro (0 = Aviso, 1 = Erro, 2 = Revisar).
 '***********************************************************************
-Function VerificarPropriedadeValor(Obj, TypeName, Propriedade1, TipoBusca1, _
-                                 TextoAuxiliar, MetodoAuxiliar, AreaErro, TipoErro)
+Function VerificarPropriedadeValor(Obj, TypeName, Propriedade1, TipoBusca1, TextoAuxiliar, MetodoAuxiliar, AreaErro, TipoErro)
 
     On Error Resume Next
 
@@ -2258,15 +2255,14 @@ End Function
 '
 ' Parâmetros:
 '   Obj            -> Objeto a verificar (ex.: pwa_Disjuntor, pwa_BarraAlarme)
+'   TypeName     -> Rótulo para o log (ex.: "pwa_Disjuntor")
 '   Propriedade    -> Nome da propriedade (ex.: "SourceObject")
 '   MetodoProp     -> 0 => Link (GetPropertyLink), 1 => Valor (GetPropertyValue)
-'   NomeObjeto     -> Rótulo para o log (ex.: "pwa_Disjuntor")
 '   TextoProibido  -> Texto que não deve aparecer (ex.: ".Value")
 '   Classificacao  -> Código de severidade no Excel (0=Aviso, 1=Erro, etc.)
 '   Area           -> Área onde o erro foi encontrado (ex: "Telas", "Biblioteca")
 '********************************************************************************
-Function VerificarPropriedadeTextoProibido(Obj, Propriedade, MetodoProp, _
-                                           NomeObjeto, TextoProibido, Classificacao, Area)
+Function VerificarPropriedadeTextoProibido(Obj, TypeName, Propriedade, MetodoProp, TextoProibido, Classificacao, Area)
     On Error Resume Next
 
     ' 1) Ler a propriedade via Link ou Valor
@@ -2280,16 +2276,16 @@ Function VerificarPropriedadeTextoProibido(Obj, Propriedade, MetodoProp, _
                    "(Atual: " & ValorAtual & ")"
 
         If GerarCSV Then
-            AdicionarErroExcel DadosExcel, Obj.PathName, CStr(Classificacao), mensagem, Area, NomeObjeto
+            AdicionarErroExcel DadosExcel, Obj.PathName, CStr(Classificacao), mensagem, Area, TypeName
         Else
-            AdicionarErroBanco DadosExcel, Obj.PathName, CStr(Classificacao), mensagem, NomeObjeto, Area
+            AdicionarErroBanco DadosExcel, Obj.PathName, CStr(Classificacao), mensagem, TypeName, Area
         End If
     End If
 
     ' 3) Tratamento de erro de acesso
     If Err.Number <> 0 Then
         AdicionarErroTxt DadosTxt, "VerificarPropriedadeTextoProibido", Obj, _
-            "Erro ao acessar " & Propriedade & " em " & NomeObjeto
+            "Erro ao acessar " & Propriedade & " em " & TypeName
         Err.Clear
     End If
 
@@ -2327,6 +2323,68 @@ Function VerificarObjetoInternoIndevido(Obj, TypeName, AreaErro, TipoErro)
 
     On Error GoTo 0
 
+End Function
+
+'***********************************************************************
+'*  Função : VerificarTipoPai
+'*---------------------------------------------------------------------- 
+'*  Finalidade :
+'*     Verificar se o pai de determinado objeto é ou não do tipo desejado,
+'*     e registrar uma inconsistência caso a regra de posicionamento não
+'*     esteja sendo respeitada.
+'*
+'*  Parâmetros :
+'*     ‑ Obj            : Objeto a ser verificado.
+'*     ‑ TypeName       : TypeName do objeto.
+'*     ‑ TipoEsperado   : Tipo que o pai do objeto deveria (ou não) ser.
+'*     ‑ Regra          : Define a regra de verificação:
+'*                        0 = O pai NÃO pode ser do tipo indicado.
+'*                        1 = O pai DEVE ser do tipo indicado.
+'*     ‑ AreaErro       : Área onde o erro foi identificado.
+'*     ‑ TipoErro       : Severidade do erro (0 = Aviso, 1 = Erro, 2 = Revisar).
+'*
+'***********************************************************************
+Function VerificarTipoPai(Obj, TypeName, TipoEsperado, Regra, AreaErro, TipoErro)
+    On Error Resume Next
+
+    Dim Pai, TipoPai, Msg, PathName
+    Set Pai = Obj.Parent
+    PathName = Obj.PathName
+
+    If Pai Is Nothing Then Exit Function
+
+    TipoPai = TypeName(Pai)
+
+    '----------------------------------------------
+    ' Regra 0: Pai não deve ser do tipo informado
+    '----------------------------------------------
+    If Regra = 0 Then
+        If StrComp(TipoPai, TipoEsperado, vbTextCompare) = 0 Then
+            Msg = TypeName & " está localizado dentro de um objeto do tipo '" & TipoEsperado & _
+                  "', o que não é permitido."
+            If GerarCSV Then
+                AdicionarErroExcel DadosExcel, PathName, CStr(TipoErro), Msg, AreaErro, TypeName
+            Else
+                AdicionarErroBanco DadosExcel, PathName, CStr(TipoErro), Msg, TypeName, AreaErro
+            End If
+        End If
+
+    '----------------------------------------------
+    ' Regra 1: Pai deve ser do tipo informado
+    '----------------------------------------------
+    ElseIf Regra = 1 Then
+        If StrComp(TipoPai, TipoEsperado, vbTextCompare) <> 0 Then
+            Msg = TypeName & " deveria estar contido em um objeto do tipo '" & TipoEsperado & _
+                  "', mas está dentro de '" & TipoPai & "'."
+            If GerarCSV Then
+                AdicionarErroExcel DadosExcel, PathName, CStr(TipoErro), Msg, AreaErro, TypeName
+            Else
+                AdicionarErroBanco DadosExcel, PathName, CStr(TipoErro), Msg, TypeName, AreaErro
+            End If
+        End If
+    End If
+
+    On Error GoTo 0
 End Function
 
 '***********************************************************************
