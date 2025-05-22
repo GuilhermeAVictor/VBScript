@@ -3090,9 +3090,11 @@ End Function
 Function InserirInconsistenciasBanco(DadosExcel, conn)
     On Error Resume Next
 
-    Dim linha, campos
+    Dim linha, campos, loteSQL
     Dim PathName, TipoErro, Descricao, TypeName, Area, Categoria
-    Dim LocalidadeFinal, SQLInsert
+    Dim LocalidadeFinal, insertCount
+    insertCount = 0
+    loteSQL = ""
 
     For Each linha In DadosExcel
 
@@ -3105,41 +3107,50 @@ Function InserirInconsistenciasBanco(DadosExcel, conn)
             TypeName = campos(3)
             Area = campos(4)
 
-            ' Tradução do código para texto
             Select Case TipoErro
-                Case "0" : Categoria = "Aviso"
-                Case "1" : Categoria = "Erro"
-                Case "2" : Categoria = "Revisar"
-                Case Else : Categoria = "Desconhecido"
+                Case "0": Categoria = "Aviso"
+                Case "1": Categoria = "Erro"
+                Case "2": Categoria = "Revisar"
+                Case Else: Categoria = "Desconhecido"
             End Select
 
-            ' Localidade pode ser NULL
             If Trim(Localidade) = "" Then
                 LocalidadeFinal = "NULL"
             Else
                 LocalidadeFinal = "'" & Replace(Localidade, "'", "''") & "'"
             End If
 
-            ' Comando SQL seguro contra aspas simples
-            SQLInsert = "INSERT INTO AutoTester " & _
-                "(Empreendimento, Projeto, Localidade, Responsavel_QA, PathName, TypeName, Categoria, Area, Descricao) " & _
-                "VALUES (" & _
-                "'" & Replace(Empreendimento, "'", "''") & "', " & _
-                "'" & Replace(Projeto, "'", "''") & "', " & _
-                LocalidadeFinal & ", " & _
-                "'" & Replace(IIf(ResponsavelQA = "", "AutoTester", ResponsavelQA), "'", "''") & "', " & _
-                "'" & Replace(PathName, "'", "''") & "', " & _
-                "'" & Replace(TypeName, "'", "''") & "', " & _
-                "'" & Replace(Categoria, "'", "''") & "', " & _
-                "'" & Replace(Area, "'", "''") & "', " & _
-                "'" & Replace(Descricao, "'", "''") & "'" & _
-                ");"
+            Dim SQLLinha
+            SQLLinha = "INSERT INTO AutoTester " & _
+                       "(Empreendimento, Projeto, Localidade, Responsavel_QA, PathName, TypeName, Categoria, Area, Descricao) " & _
+                       "VALUES (" & _
+                       "'" & Replace(Empreendimento, "'", "''") & "', " & _
+                       "'" & Replace(Projeto, "'", "''") & "', " & _
+                       LocalidadeFinal & ", " & _
+                       "'" & Replace(IIf(ResponsavelQA = "", "AutoTester", ResponsavelQA), "'", "''") & "', " & _
+                       "'" & Replace(PathName, "'", "''") & "', " & _
+                       "'" & Replace(TypeName, "'", "''") & "', " & _
+                       "'" & Replace(Categoria, "'", "''") & "', " & _
+                       "'" & Replace(Area, "'", "''") & "', " & _
+                       "'" & Replace(Descricao, "'", "''") & "');"
 
-            ' Executa o INSERT
-            conn.Execute SQLInsert
+            loteSQL = loteSQL & vbCrLf & SQLLinha
+            insertCount = insertCount + 1
+
+            ' A cada 100 registros, executa o lote
+            If insertCount >= 100 Then
+                conn.Execute loteSQL
+                loteSQL = ""
+                insertCount = 0
+            End If
+
         End If
-
     Next
+
+    ' Executa o restante se sobrou menos de 100
+    If insertCount > 0 And loteSQL <> "" Then
+        conn.Execute loteSQL
+    End If
 
     On Error GoTo 0
 End Function
