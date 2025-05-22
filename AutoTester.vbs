@@ -114,7 +114,7 @@ Sub Main()
     '------------------------------------------------------------------
     ' 4) Verificar Servidores de Alarme e Campos de Usuário
     '------------------------------------------------------------------
-    VerificarServidoresDeAlarme
+    	VerificarServidoresDeAlarme
 
     '------------------------------------------------------------------
     ' 5) Verificar Hist / Historian, se solicitado
@@ -122,39 +122,32 @@ Sub Main()
     
         Dim Obj
 
-        '--------------------------------------------------------------
-        ' 5.1) Objetos "Hist"
-        '--------------------------------------------------------------
+    '--------------------------------------------------------------
+    ' 5.1) Objetos "Hist"
+    '--------------------------------------------------------------
         For Each Obj In Application.ListFiles("Hist")
 
-            Dim objType
-            objType = TypeName(Obj)
-
-            VerificarPropriedadeValor Obj, "Hist", "BackupDiscardInterval", 1, 12, 1, "Domínio", 0
-            VerificarPropriedadeHabilitada Obj, "Hist", "EnableBackupTable", 1, False, "Telas", 0
-            VerificarPropriedadeValor Obj, "Hist", "EnableDiscard", 1, 1, 1, "Domínio", 0
-            VerificarPropriedadeHabilitada Obj, "Hist", "DiscardInterval", 1, False, "Telas", 1
-            VerificarPropriedadeValor Obj, "Hist", "VerificationInterval", 1, 1, 1, "Domínio", 0
-            VerificarPropriedadeVazia Obj, "Hist", "DBServer", 1, "Domínio", 1
-            VerificarBancoDeDados Obj, "Hist", "DBServer", 1, "Domínio", 0
+	VerificarPropriedadeValor Obj, "Hist", "BackupDiscardInterval", 12, 1, "Domínio", 0
+	VerificarPropriedadeHabilitada Obj, "Hist", "EnabledBackupTable", False, "Domínio", 0
+	VerificarPropriedadeValor Obj, "Hist", "Enablediscard", 1, 1, "Domínio", 0
+	VerificarPropriedadeHabilitada Obj, "Hist", "DiscardInterval", False, "Domínio", 1
+	VerificarPropriedadeValor Obj, "Hist", "VerificationInterval", 1, 1, "Domínio", 0
+	VerificarPropriedadeVazia Obj, "Hist", "DBServer", "Domínio", 1
+	VerificarBancoDeDados Obj, "Hist", "DBServer", "Domínio", 0
         Next
 
-        '--------------------------------------------------------------
-        ' 5.2) Objetos "Historian"
-        '--------------------------------------------------------------
+    '--------------------------------------------------------------
+    ' 5.2) Objetos "Historian"
+    '--------------------------------------------------------------
         For Each Obj In Application.ListFiles("Historian")
 
-            Dim objType2
-            objType2 = TypeName(Obj)
-
-            VerificarPropriedadeValor Obj, "Historian", "BackupDiscardInterval", 1, 12, 1, "Domínio", 0
-            VerificarPropriedadeHabilitada Obj, "Historian", "EnableBackupTable", 1, False, "Domínio", 0
-            VerificarPropriedadeValor Obj, "Historian", "EnableDiscard", 1, 1, 1, "Domínio", 0
-            VerificarPropriedadeHabilitada Obj, "Historian", "DiscardInterval", 1, False, "Domínio", 1
-            VerificarPropriedadeValor Obj, "Historian", "VerificationInterval", 1, 1, 1, "Domínio", 0
-            VerificarPropriedadeVazia Obj, "Historian", "DBServer", 1, "Domínio", 1
-            VerificarBancoDeDados Obj, "Historian", "DBServer", 1, "Domínio", 0
-
+	VerificarPropriedadeValor Obj, "Historian", "BackupDiscardInterval", 12, 1, "Domínio", 0
+	VerificarPropriedadeHabilitada Obj, "Historian", "EnabledBackupTable", False, "Domínio", 0
+	VerificarPropriedadeValor Obj, "Historian", "Enablediscard", 1, 1, "Domínio", 0
+	VerificarPropriedadeHabilitada Obj, "Historian", "DiscardInterval", False, "Domínio", 1
+	VerificarPropriedadeValor Obj, "Historian", "VerificationInterval", 1, 1, "Domínio", 0
+	VerificarPropriedadeVazia Obj, "Historian", "DBServer", "Domínio", 1
+	VerificarBancoDeDados Obj, "Historian", "DBServer", "Domínio", 0
         Next
 
     End If
@@ -246,7 +239,7 @@ Function SplitTelas(PathNameTelas)
     If Len(Trim(PathNameTelas)) > 0 Then
         SplitTelas = Split(PathNameTelas, "/")
     Else
-        SplitTelas = Array() ' Retorna array vazio
+        SplitTelas = Array()' Retorna array vazio
     End If
 
 End Function
@@ -256,7 +249,7 @@ End Function
 '*----------------------------------------------------------------------
 '*  Finalidade :
 '*     Verificar se o PathName de uma tela está contido em telaArray.
-'*     A comparação é case‑insensitive.
+'*     A comparação é case-insensitive e baseada apenas em "/".
 '*
 '*  Parâmetros :
 '*     ‑ PathName  (String)  : Path completo da tela analisada.
@@ -268,8 +261,8 @@ Function IsTelaNaLista(PathName, telaArray)
     Dim tela
 
     For Each tela In telaArray
-        tela = Replace(Trim(tela), "\", "/") ' Normaliza para barra /
-        If tela <> "" And StrComp(Replace(PathName, "\", "/"), tela, vbTextCompare) = 0 Then
+        tela = Trim(tela)
+        If tela <> "" And StrComp(PathName, tela, vbTextCompare) = 0 Then
             IsTelaNaLista = True
             Exit Function
         End If
@@ -278,158 +271,6 @@ Function IsTelaNaLista(PathName, telaArray)
     IsTelaNaLista = False
 
 End Function
-
-'*********************************************************************** 
-'*  Sub‑rotina : VerificarServidoresDeAlarme
-'*---------------------------------------------------------------------- 
-'*  Finalidade :
-'*     • Contar quantos objetos "DB.AlarmServer" existem no domínio e
-'*       emitir aviso caso haja mais de um.
-'*     • Para cada servidor de alarme, validar se os campos de usuário
-'*       obrigatórios estão corretamente configurados.
-'***********************************************************************
-Sub VerificarServidoresDeAlarme()
-
-    On Error Resume Next
-
-    Dim listaServidores, objServidor, totalServidores
-    Set listaServidores = Application.ListFiles("DB.AlarmServer")
-    totalServidores = listaServidores.Count
-
-    '------------------------------------------------------------------
-    ' Verificação 1 : mais de um servidor de alarme → aviso
-    '------------------------------------------------------------------
-    If totalServidores > 1 Then
-        Dim mensagem, pathAlvo
-        pathAlvo = "DB.AlarmServer"
-        mensagem = "Foram encontrados " & totalServidores & _
-            " servidores de alarme. O recomendado é apenas um."
-
-        If GerarCSV Then
-            AdicionarErroExcel DadosExcel, pathAlvo, "0", mensagem, "Banco de dados", "DB.AlarmServer"
-        Else
-            AdicionarErroBanco DadosExcel, pathAlvo, "0", mensagem, "DB.AlarmServer", "Banco de dados"
-        End If
-    End If
-
-    '------------------------------------------------------------------
-    ' Verificação 2 : campos de usuário obrigatórios em cada servidor
-    '------------------------------------------------------------------
-    For Each objServidor In listaServidores
-        VerificarCamposUsuariosServidorAlarmes objServidor
-    Next
-
-    On Error GoTo 0
-
-End Sub
-
-'***********************************************************************
-'*  Sub‑rotina : VerificarCamposUsuariosServidorAlarmes
-'*---------------------------------------------------------------------- 
-'*  Finalidade :
-'*     • Validar os campos de usuário (UserFields) configurado no objeto DB.AlarmServer.
-'*     • Registrar inconsistências no relatório Excel ou banco.
-'***********************************************************************
-Sub VerificarCamposUsuariosServidorAlarmes(objServidor)
-
-    On Error Resume Next
-
-    Dim colUserFields, qtdeCampos, i
-    Dim campoAtual, objUserFieldsPath, mensagem
-
-    objUserFieldsPath = objServidor.PathName & ".UserFieldsCount"
-
-    Dim objServidorUserFields
-    Set objServidorUserFields = Application.GetObject(objUserFieldsPath)
-
-    If objServidorUserFields Is Nothing Then
-        mensagem = "Não foi possível obter referência ao Servidor de Alarmes (verifique se está rodando)."
-        If GerarCSV Then
-            AdicionarErroExcel DadosExcel, objUserFieldsPath, "1", mensagem, "Banco de dados", "DB.AlarmServer"
-        Else
-            AdicionarErroBanco DadosExcel, objUserFieldsPath, "1", mensagem, "DB.AlarmServer", "Banco de dados"
-        End If
-        Exit Sub
-    End If
-
-    Set colUserFields = objServidorUserFields.UserFields
-
-    If colUserFields Is Nothing Then
-        mensagem = "Não existe coleção cadastrada de campos de usuário no Servidor de Alarmes."
-        If GerarCSV Then
-            AdicionarErroExcel DadosExcel, objUserFieldsPath, "1", mensagem, "Banco de dados", "DB.AlarmServer"
-        Else
-            AdicionarErroBanco DadosExcel, objUserFieldsPath, "1", mensagem, "DB.AlarmServer", "Banco de dados"
-        End If
-        Exit Sub
-    End If
-
-    qtdeCampos = colUserFields.Count
-
-    Dim camposExistentes
-    Set camposExistentes = CreateObject("Scripting.Dictionary")
-
-    Dim obrigatorios, opcionais, descontinuados
-
-    obrigatorios = Array("SignalName", "SignalCaption", "AOR1", "AOR2", "AOR3", _
-        "Categories", "DeviceType", "Hierarchy1", "Hierarchy2", _
-        "Hierarchy3", "Hierarchies", "Screens", "Note", "FooterAlarmAreaID")
-
-    opcionais = Array("SignalCaption2", "SignalCaption3", "ContainerGroup", _
-        "Company", "Message2", "Message3", "Flags")
-
-    descontinuados = Array("CriticalAlarm")
-
-    For i = 1 To qtdeCampos
-        campoAtual = colUserFields.Item(i).Name
-        camposExistentes.Add campoAtual, True
-    Next
-
-    For Each campoAtual In obrigatorios
-        If Not camposExistentes.Exists(campoAtual) Then
-            mensagem = "Campo de usuário obrigatório faltando no Servidor de Alarmes: " & campoAtual
-            If GerarCSV Then
-                AdicionarErroExcel DadosExcel, objUserFieldsPath, "1", mensagem, "Banco de dados", "DB.AlarmServer"
-            Else
-                AdicionarErroBanco DadosExcel, objUserFieldsPath, "1", mensagem, "DB.AlarmServer", "Banco de dados"
-            End If
-        End If
-    Next
-
-    For Each campoAtual In descontinuados
-        If camposExistentes.Exists(campoAtual) Then
-            mensagem = "Campo de usuário não utilizado encontrado no Servidor de Alarmes (deve ser removido): " & campoAtual
-            If GerarCSV Then
-                AdicionarErroExcel DadosExcel, objUserFieldsPath, "0", mensagem, "Banco de dados", "DB.AlarmServer"
-            Else
-                AdicionarErroBanco DadosExcel, objUserFieldsPath, "0", mensagem, "DB.AlarmServer", "Banco de dados"
-            End If
-        End If
-    Next
-
-    Dim encontrado
-    For Each campoAtual In camposExistentes.Keys
-        encontrado = False
-
-        If UBound(Filter(obrigatorios, campoAtual)) >= 0 Or _
-                UBound(Filter(opcionais, campoAtual)) >= 0 Or _
-                UBound(Filter(descontinuados, campoAtual)) >= 0 Then
-            encontrado = True
-        End If
-
-        If Not encontrado Then
-            mensagem = "Campo de usuário não previsto cadastrado no Servidor de Alarmes: " & campoAtual
-            If GerarCSV Then
-                AdicionarErroExcel DadosExcel, objUserFieldsPath, "0", mensagem, "Banco de dados", "DB.AlarmServer"
-            Else
-                AdicionarErroBanco DadosExcel, objUserFieldsPath, "0", mensagem, "DB.AlarmServer", "Banco de dados"
-            End If
-        End If
-    Next
-
-    On Error GoTo 0
-
-End Sub
 
 '***********************************************************************
 '*  Função : VerificarPropriedadesObjetoBase
@@ -447,109 +288,90 @@ Function VerificarPropriedadesObjetoBase(Obj)
 
     Select Case TipoObjeto
 
-            '=================================================================
-            ' Objetos contêineres  →  verificação recursiva
-            '=================================================================
-        Case "DataServer", "DataFolder", "Screen", "DrawGroup"
+    '=================================================================
+    ' Objetos contêineres  →  verificação recursiva
+    '=================================================================
+Case "DataServer", "DataFolder", "Screen", "DrawGroup"
+    For Each child In Obj
+        VerificarPropriedadesObjetoBase child
+    Next
 
-            For Each child In Obj
-                VerificarPropriedadesObjetoBase child
-            Next
-
-            '=================================================================
-            ' Objetos de configuração de banco de dados, drivers e customizações.
-            '=================================================================
-        Case "frCustomAppConfig"
-            VerificarBancoDeDados Obj, "frCustomAppConfig", "AppDBServerPathName", 1, "Domínio", 0
-            VerificarTipoPai Obj, "frCustomAppConfig", "DataServer", 1, "Domínio", 1
-
-            '-----------------------------------------------------------------------------
-        Case "ww_Parameters"
-            VerificarBancoDeDados Obj, "ww_Parameters", "DBServer", 1, "Domínio", 0
-            VerificarTipoPai Obj, "ww_Parameters", "DataServer", 1, "Domínio", 1
-
-            '-----------------------------------------------------------------------------
-        Case "DatabaseTags_Parameters"
-            VerificarBancoDeDados Obj, "DatabaseTags_Parameters", "DBServerPathName", 1, "Domínio", 0
-            VerificarTipoPai Obj, "DatabaseTags_Parameters", "DataServer", 1, "Domínio", 1
-
-            '-----------------------------------------------------------------------------
-        Case "cmdscr_CustomCommandScreen"
-            VerificarBancoDeDados Obj, "cmdscr_CustomCommandScreen", "DBServerPathName", 1, "Domínio", 0
-
-            '-----------------------------------------------------------------------------
-        Case "patm_CmdBoxXmlCreator"
-            VerificarPropriedadeVazia Obj, "patm_CmdBoxXmlCreator", "ConfigPower", 1, "Domínio", 0
-
-            '-----------------------------------------------------------------------------
-        Case "patm_DeviceNote"
-            VerificarPropriedadeVazia Obj, "patm_DeviceNote", "AlarmSource", 1, "Domínio", 1
-            VerificarPropriedadeVazia Obj, "patm_DeviceNote", "NoteDatabaseControl", 1, "Domínio", 1
-            VerificarPropriedadeVazia Obj, "patm_DeviceNote", "SourceObject", 1, "Domínio", 1
-            VerificarTipoPai Obj, "patm_DeviceNote", "DataServer", 1, "Domínio", 1
-
-            '-----------------------------------------------------------------------------
-        Case "patm_NoteDatabaseControl"
-            VerificarBancoDeDados Obj, "patm_NoteDatabaseControl", "DBServer", 1, "Domínio", 0
-            VerificarPropriedadeValor Obj, "patm_NoteDatabaseControl", "GroupCanAddModifyNote", 1, "Operação", 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "patm_NoteDatabaseControl", "Level", 1, "2=[EquipeSCADA, Instrutor]/3=[Supervisão]/4=[EquipeDeTestes]/5=[Operação]", 1, "Telas", 0
-            VerificarTipoPai Obj, "patm_NoteDatabaseControl", "DataServer", 1, "Domínio", 1
-
-            '-----------------------------------------------------------------------------
-        Case "patm_xoAlarmHistConfig"
-            VerificarBancoDeDados Obj, "patm_xoAlarmHistConfig", "MainDBServerPathName", 1, "Domínio", 0
-            VerificarTipoPai Obj, "patm_xoAlarmHistConfig", "DataServer", 1, "Domínio", 1
-
-            '-----------------------------------------------------------------------------
-        Case "dtRedundancyConfig"
-            VerificarPropriedadeVazia Obj, "dtRedundancyConfig", "NameOfServerToBeStopped", 1, "Domínio", 1
-            VerificarTipoPai Obj, "dtRedundancyConfig", "DataServer", 1, "Domínio", 1
-
-            '-----------------------------------------------------------------------------
-        Case "patm_CommandLogger"
-            VerificarPropriedadeVazia Obj, "patm_CommandLogger", "PowerConfigObj", 1, "Domínio", 0
-            VerificarTipoPai Obj, "patm_CommandLogger", "DataServer", 1, "Domínio", 1
-
-            '-----------------------------------------------------------------------------
-        Case "hpXMLGenerateStruct"
-            VerificarPropriedadeVazia Obj, "hpXMLGenerateStruct", "Log_BancoDeDados", 1, "Domínio", 0
-            VerificarTipoPai Obj, "hpXMLGenerateStruct", "DataServer", 1, "Domínio", 1
-
-            '-----------------------------------------------------------------------------
-        Case "gtwFrozenMeasurements"
-            VerificarPropriedadeVazia Obj, "gtwFrozenMeasurements", "DateTag", 1, "Domínio", 0
-            VerificarTipoPai Obj, "gtwFrozenMeasurements", "DataServer", 1, "Domínio", 1
-
-            '-----------------------------------------------------------------------------
-        Case "aainfo_NoteController"
-            VerificarPropriedadeVazia Obj, "aainfo_NoteController", "DBServerPathName", 1, "Domínio", 0
-            VerificarTipoPai Obj, "aainfo_NoteController", "DataServer", 1, "Domínio", 1
-
-            '-----------------------------------------------------------------------------
-        Case "AlarmServer"
-            VerificarPropriedadeVazia Obj, "AlarmServer", "DataSource", 1, "Domínio", 0
-
-            '-----------------------------------------------------------------------------
-        Case "DBServer"
-            VerificarPropriedadeValor Obj, "DBServer", "SourceType", 1, 2, 0, "Domínio", 0
-
-            '-----------------------------------------------------------------------------
-        Case "DrawString"
-            VerificarPropriedadeVazia Obj, "DrawString", "Value", 1, "Telas", 1
-            VerificarPropriedadeVazia Obj, "DrawString", "TextColor", 0, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "E3Query"
-            VerificarPropriedadeVazia Obj, "E3Query", "DataSource", 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "E3Query", "QueryType", 1, 0, 0, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "IODriver"
-            VerificarPropriedadeVazia Obj, "IODriver", "DriverLocation", 1, "Drivers", 0
-            VerificarPropriedadeValor Obj, "IODriver", "WriteSyncMode", 1, 2, 0, "Drivers", 0
-            VerificarPropriedadeValor Obj, "IODriver", "ExposeToOpc", 1, 3, 0, "Drivers", 0
-
-            ' Verificação adicional: contagem de IOTags associadas ao driver
+    '=================================================================
+    ' Objetos de configuração de banco de dados, drivers e customizações.
+    '=================================================================
+Case "frCustomAppConfig"
+	VerificarBancoDeDados Obj, "frCustomAppConfig", "AppDBServerPathName", "Domínio", 0
+	VerificarTipoPai Obj, "frCustomAppConfig", "DataServer", 0, "Domínio", 1
+	'-----------------------------------------------------------------------------
+Case "ww_Parameters"
+	VerificarBancoDeDados Obj, "ww_Parameters", "DBServer", "Domínio", 0
+	VerificarTipoPai Obj, "ww_Parameters", "DataServer", 0, "Domínio", 1
+	'-----------------------------------------------------------------------------
+Case "DatabaseTags_Parameters"
+	VerificarBancoDeDados Obj, "DatabaseTags_Parameters", "DBServerPathName", "Domínio", 0
+	VerificarTipoPai Obj, "DatabaseTags_Parameters", "DataServer", 0, "Domínio", 1
+	'-----------------------------------------------------------------------------
+Case "cmdscr_CustomCommandScreen"
+	VerificarBancoDeDados Obj, "cmdscr_CustomCommandScreen", "DBServerPathName", "Domínio", 0
+	'-----------------------------------------------------------------------------
+Case "patm_CmdBoxXmlCreator"
+	VerificarPropriedadeVazia Obj, "patm_CmdBoxXmlCreator", "ConfigPower", "Domínio", 0
+	'-----------------------------------------------------------------------------
+Case "patm_DeviceNote"
+	VerificarPropriedadeVazia Obj, "patm_DeviceNote", "AlarmSource", "Domínio", 1
+	VerificarPropriedadeVazia Obj, "patm_DeviceNote", "NoteDatabaseControl", "Domínio", 1
+	VerificarPropriedadeVazia Obj, "patm_DeviceNote", "SourceObject", "Domínio", 1
+	VerificarTipoPai Obj, "patm_DeviceNote", "DataServer", 0, "Domínio", 1
+	'-----------------------------------------------------------------------------
+Case "patm_NoteDatabaseControl"
+	VerificarBancoDeDados Obj, "patm_NoteDatabaseControl", "DBServer", "Domínio", 0
+	VerificarPropriedadeValor Obj, "patm_NoteDatabaseControl", "GroupCanAddModifyNote", "Operação", 1, "Domínio", 0
+	VerificarPropriedadeValor Obj, "patm_NoteDatabaseControl", "Level", "2=[EquipeSCADA, Instrutor]/3=[Supervisão]/4=[EquipeDeTestes]/5=[Operação]", 1, "Domínio", 0
+	VerificarTipoPai Obj, "patm_NoteDatabaseControl", "DataServer", 0, "Domínio", 1
+	'-----------------------------------------------------------------------------
+Case "patm_xoAlarmHistConfig"
+	VerificarBancoDeDados Obj, "patm_xoAlarmHistConfig", "MainDBServerPathName", "Domínio", 0
+	VerificarTipoPai Obj, "patm_xoAlarmHistConfig", "DataServer", 0, "Domínio", 1
+	'-----------------------------------------------------------------------------
+Case "dtRedundancyConfig"
+	VerificarPropriedadeVazia Obj, "dtRedundancyConfig", "NameOfServerToBeStopped", "Domínio", 1
+	VerificarTipoPai Obj, "dtRedundancyConfig", "DataServer", 0, "Domínio", 1
+	'-----------------------------------------------------------------------------
+Case "patm_CommandLogger"
+	VerificarPropriedadeVazia Obj, "patm_CommandLogger", "PowerConfigObj", "Domínio", 0
+	VerificarTipoPai Obj, "patm_CommandLogger", "DataServer", 0, "Domínio", 1
+	'-----------------------------------------------------------------------------
+Case "hpXMLGenerateStruct"
+	VerificarPropriedadeVazia Obj, "hpXMLGenerateStruct", "Log_BancoDeDados", "Domínio", 0
+	VerificarTipoPai Obj, "hpXMLGenerateStruct", "DataServer", 0, "Domínio", 1
+	'-----------------------------------------------------------------------------
+Case "gtwFrozenMeasurements"
+	VerificarPropriedadeVazia Obj, "gtwFrozenMeasurements", "DateTag", "Domínio", 0
+	VerificarTipoPai Obj, "gtwFrozenMeasurements", "DataServer", 0, "Domínio", 1
+	'-----------------------------------------------------------------------------
+Case "aainfo_NoteController"
+	VerificarPropriedadeVazia Obj, "aainfo_NoteController", "DBServerPathName", "Domínio", 0
+	VerificarTipoPai Obj, "aainfo_NoteController", "DataServer", 0, "Domínio", 1
+	'-----------------------------------------------------------------------------
+Case "AlarmServer"
+	VerificarPropriedadeVazia Obj, "AlarmServer", "DataSource", "Domínio", 0
+	'-----------------------------------------------------------------------------
+Case "DBServer"
+	VerificarPropriedadeValor Obj, "DBServer", "SourceType", 2, 0, "Domínio", 0
+	'-----------------------------------------------------------------------------
+Case "DrawString"
+	VerificarPropriedadeVazia Obj, "DrawString", "Value", "Telas", 1
+	VerificarPropriedadeVazia Obj, "DrawString", "TextColor", "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "E3Query"
+	VerificarPropriedadeVazia Obj, "E3Query", "DataSource", "Telas", 0
+	VerificarPropriedadeValor Obj, "E3Query", "QueryType", 0, 0, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "IODriver"
+	VerificarPropriedadeVazia Obj, "IODriver", "DriverLocation", "Drivers", 0
+	VerificarPropriedadeValor Obj, "IODriver", "WriteSyncMode", 2, 0, "Drivers", 0
+	VerificarPropriedadeValor Obj, "IODriver", "ExposeToOpc", 3, 0, "Drivers", 0
+	            ' Verificação adicional: contagem de IOTags associadas ao driver
              Dim qtdeIOTags, mensagem
             qtdeIOTags = ContarObjetosDoTipo(Obj, "IOTag")
 
@@ -561,66 +383,52 @@ Function VerificarPropriedadesObjetoBase(Obj)
                         Call AdicionarErroBanco(DadosExcel, Obj.PathName, "0", mensagem, "IODriver", "Drivers")
                     End If
                 End If
-
-            '-----------------------------------------------------------------------------
-        Case "WaterConfig"
-            VerificarPropriedadeVazia Obj, "WaterConfig", "ModelFile", 1, "Biblioteca", 0
-
-            '-----------------------------------------------------------------------------
-        Case "WaterDistributionNetwork"
-            VerificarPropriedadeVazia Obj, "WaterDistributionNetwork", "City", 1, "Biblioteca", 0
-            VerificarPropriedadeVazia Obj, "WaterDistributionNetwork", "Company", 1, "Biblioteca", 0
-            VerificarPropriedadeVazia Obj, "WaterDistributionNetwork", "CompanyAcronym", 1, "Biblioteca", 0
-            VerificarPropriedadeVazia Obj, "WaterDistributionNetwork", "Contract", 1, "Biblioteca", 0
-            VerificarPropriedadeVazia Obj, "WaterDistributionNetwork", "Name", 1, "Biblioteca", 0
-            VerificarPropriedadeVazia Obj, "WaterDistributionNetwork", "Neighborhood", 1, "Biblioteca", 0
-            VerificarPropriedadeVazia Obj, "WaterDistributionNetwork", "Organization", 1, "Biblioteca", 0
-            VerificarPropriedadeVazia Obj, "WaterDistributionNetwork", "Region", 1, "Biblioteca", 0
-            VerificarPropriedadeVazia Obj, "WaterDistributionNetwork", "State", 1, "Biblioteca", 0
-            VerificarPropriedadeVazia Obj, "WaterDistributionNetwork", "StateAcronym", 1, "Biblioteca", 0
-            VerificarPropriedadeVazia Obj, "WaterDistributionNetwork", "Note", 0, "Biblioteca", 0
-
-            Dim containerTypes
-            containerTypes = Array("DataFolder", "DrawGroup", "DataServer", "WaterDistributionNetwork")
-
-            If HasChildOfType(Obj, "WaterStationData", containerTypes) Then
-                Dim arrUserFields
-                arrUserFields = Array("DadosDaPlanta", "Mapa3D")
-                VerificarUserFields Obj, arrUserFields, "WaterDistributionNetwork", 1
-            End If
-
-            '-----------------------------------------------------------------------------
-        Case "xoExecuteScheduler"
-            VerificarPropriedadeVazia Obj, "xoExecuteScheduler", "aActivateCommandsGroup", 1, "Domínio", 0
-            VerificarPropriedadeVazia Obj, "xoExecuteScheduler", "dteEndEvent", 1, "Domínio", 0
-            VerificarPropriedadeVazia Obj, "xoExecuteScheduler", "dteEndRepeatDate", 1, "Domínio", 0
-            VerificarPropriedadeVazia Obj, "xoExecuteScheduler", "dteNextEndEvent", 1, "Domínio", 0
-            VerificarPropriedadeVazia Obj, "xoExecuteScheduler", "dteNextStartEvent", 1, "Domínio", 0
-            VerificarPropriedadeVazia Obj, "xoExecuteScheduler", "objCommand", 1, "Domínio", 0
-            VerificarPropriedadeVazia Obj, "xoExecuteScheduler", "strSchedulerName", 1, "Domínio", 0
-            VerificarPropriedadeVazia Obj, "xoExecuteScheduler", "UserField01", 1, "Domínio", 0
-
-            '-----------------------------------------------------------------------------
-        Case "patm_CmdBoxXmlCreator"
-            VerificarPropriedadeVazia Obj, "ConfigPower", 1, "CmdBoxXmlCreator", 0
-
-            '-----------------------------------------------------------------------------
-        Case "manut_ImportMeasAndCmdList"
-            VerificarObjetoInternoIndevido Obj, "manut_ImportMeasAndCmdList", , "Domínio", 1
-
-            '-----------------------------------------------------------------------------
-        Case "xots_StandardStudioSettings"
-            VerificarObjetoInternoIndevido Obj, "xots_StandardStudioSettings", , "Domínio", 1
-
-            '-----------------------------------------------------------------------------
-        Case "xots_ConvertAqDriversIntoVbScri"
-            VerificarObjetoInternoIndevido Obj, "xots_ConvertAqDriversIntoVbScri", , "Domínio", 1
-
-            '-----------------------------------------------------------------
-        Case Else
-            RegistrarTipoSemPropriedade TipoObjeto
-
-    End Select
+	'-----------------------------------------------------------------------------
+Case "WaterConfig"
+	VerificarPropriedadeVazia Obj, "WaterConfig", "ModelFile", "Biblioteca", 0
+	'-----------------------------------------------------------------------------
+Case "WaterDistributionNetwork"
+	VerificarPropriedadeVazia Obj, "WaterDistributionNetwork", "City", "Biblioteca", 0
+	VerificarPropriedadeVazia Obj, "WaterDistributionNetwork", "Company", "Biblioteca", 0
+	VerificarPropriedadeVazia Obj, "WaterDistributionNetwork", "CompanyAcronym", "Biblioteca", 0
+	VerificarPropriedadeVazia Obj, "WaterDistributionNetwork", "Contract", "Biblioteca", 0
+	VerificarPropriedadeVazia Obj, "WaterDistributionNetwork", "Name", "Biblioteca", 0
+	VerificarPropriedadeVazia Obj, "WaterDistributionNetwork", "Neighborhood", "Biblioteca", 0
+	VerificarPropriedadeVazia Obj, "WaterDistributionNetwork", "Organization", "Biblioteca", 0
+	VerificarPropriedadeVazia Obj, "WaterDistributionNetwork", "Region", "Biblioteca", 0
+	VerificarPropriedadeVazia Obj, "WaterDistributionNetwork", "State", "Biblioteca", 0
+	VerificarPropriedadeVazia Obj, "WaterDistributionNetwork", "StateAcronym", "Biblioteca", 0
+	VerificarPropriedadeVazia Obj, "WaterDistributionNetwork", "Note", "Biblioteca", 0
+	Dim containerTypes
+	containerTypes = Array("DataFolder", "DrawGroup", "DataServer", "WaterDistributionNetwork")
+	If HasChildOfType(Obj, "WaterStationData", containerTypes) Then
+		Dim arrUserFields
+		arrUserFields = Array("DadosDaPlanta", "Mapa3D")
+		VerificarUserFields Obj, arrUserFields, "WaterDistributionNetwork", 1
+	End If
+	'-----------------------------------------------------------------------------
+Case "xoExecuteScheduler"
+	VerificarPropriedadeVazia Obj, "xoExecuteScheduler", "aActivateCommandsGroup", "Domínio", 0
+	VerificarPropriedadeVazia Obj, "xoExecuteScheduler", "dteEndEvent", "Domínio", 0
+	VerificarPropriedadeVazia Obj, "xoExecuteScheduler", "dteEndRepeatDate", "Domínio", 0
+	VerificarPropriedadeVazia Obj, "xoExecuteScheduler", "dteNextEndEvent", "Domínio", 0
+	VerificarPropriedadeVazia Obj, "xoExecuteScheduler", "dteNextStartEvent", "Domínio", 0
+	VerificarPropriedadeVazia Obj, "xoExecuteScheduler", "objCommand", "Domínio", 0
+	VerificarPropriedadeVazia Obj, "xoExecuteScheduler", "strSchedulerName", "Domínio", 0
+	VerificarPropriedadeVazia Obj, "xoExecuteScheduler", "UserField01", "Domínio", 0
+	'-----------------------------------------------------------------------------
+Case "manut_ImportMeasAndCmdList"
+	VerificarObjetoInternoIndevido Obj, "manut_ImportMeasAndCmdList", "Domínio", 1
+	'-----------------------------------------------------------------------------
+Case "xots_StandardStudioSettings"
+	VerificarObjetoInternoIndevido Obj, "xots_StandardStudioSettings", "Domínio", 1
+	'-----------------------------------------------------------------------------
+Case "xots_ConvertAqDriversIntoVbScri"
+	VerificarObjetoInternoIndevido Obj, "xots_ConvertAqDriversIntoVbScri", "Domínio", 1
+	'-----------------------------------------------------------------------------
+Case Else
+    RegistrarTipoSemPropriedade TipoObjeto
+End Select
 
 End Function
 
@@ -640,1509 +448,1343 @@ Function VerificarPropriedadesObjetoTela(Obj)
 
     Select Case TipoObjeto
 
-            '=================================================================
-            ' Objetos contêineres  →  verificação recursiva
-            '=================================================================
-        Case "DataServer", "DataFolder", "Screen", "DrawGroup"
-
-            For Each child In Obj
-                VerificarPropriedadesObjetoTela child
-            Next
-
-            '=================================================================
-            ' A partir daqui: blocos por tipo de objeto de tela/biblioteca
-            '=================================================================
-        Case "pwa_Disjuntor"
-            VerificarPropriedadeCondicional Obj, "pwa_Disjuntor", "SourceObject", 0, "NaoSupervisionado", 1, False, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "pwa_Disjuntor", "PositionMeas", 0, "NaoSupervisionado", 1, False, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "pwa_Disjuntor", "DeviceNote", 0, "NaoSupervisionado", 1, False, "Telas", 1
-            VerificarPropriedadeVazia Obj, "pwa_Disjuntor", "CorOff", 0, "Telas", 0
-            VerificarPropriedadeVazia Obj, "pwa_Disjuntor", "CorOn", 0, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "pwa_DisjuntorP"
-            VerificarPropriedadeCondicional Obj, "pwa_DisjuntorP", "SourceObject", 0, "NaoSupervisionado", 1, False, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "pwa_DisjuntorP", "PositionMeas", 0, "NaoSupervisionado", 1, False, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "pwa_DisjuntorP", "DeviceNote", 0, "NaoSupervisionado", 1, False, "Telas", 1
-            VerificarPropriedadeVazia Obj, "pwa_DisjuntorP", "CorOff", 0, "Telas", 0
-            VerificarPropriedadeVazia Obj, "pwa_DisjuntorP", "CorOn", 0, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "pwa_DisjuntorPP"
-            VerificarPropriedadeCondicional Obj, "pwa_DisjuntorPP", "SourceObject", 0, "NaoSupervisionado", 1, False, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "pwa_DisjuntorPP", "PositionMeas", 0, "NaoSupervisionado", 1, False, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "pwa_DisjuntorPP", "DeviceNote", 0, "NaoSupervisionado", 1, False, "Telas", 1
-            VerificarPropriedadeVazia Obj, "pwa_DisjuntorPP", "CorOff", 0, "Telas", 0
-            VerificarPropriedadeVazia Obj, "pwa_DisjuntorPP", "CorOn", 0, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "pwa_Seccionadora"
-            VerificarPropriedadeCondicional Obj, "pwa_Seccionadora", "SourceObject", 0, "NaoSupervisionado", 1, False, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "pwa_Seccionadora", "PositionMeas", 0, "NaoSupervisionado", 1, False, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "pwa_Seccionadora", "DeviceNote", 0, "NaoSupervisionado", 1, False, "Telas", 1
-            VerificarPropriedadeVazia Obj, "pwa_Seccionadora", "CorOff", 0, "Telas", 0
-            VerificarPropriedadeVazia Obj, "pwa_Seccionadora", "CorOn", 0, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "pwa_BarraAlarme"
-            VerificarPropriedadeCondicional Obj, "pwa_BarraAlarme", "AnalogMeas", 0, "NaoSupervisionado", 1, False, "Telas", 0
-            VerificarPropriedadeCondicional Obj, "pwa_BarraAlarme", "AlarmSource", 0, "NaoSupervisionado", 1, False, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "pwa_BarraAlarme", "AlarmSource", 0, "AnalogMeas", 1, "NOTEMPTY", "Telas", 1
-
-            '-----------------------------------------------------------------------------
-        Case "pwa_Barra"
-            VerificarPropriedadeCondicional Obj, "pwa_Barra", "SourceObject", 0, "Enable", 1, False, "Telas", 1
-            VerificarPropriedadeVazia Obj, "pwa_Barra", "CorOff", 0, "Telas", 0
-            VerificarPropriedadeVazia Obj, "pwa_Barra", "CorOn", 0, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "pwa_Barra2"
-            VerificarPropriedadeCondicional Obj, "pwa_Barra2", "SourceObject", 0, "Enable", 1, False, "Telas", 1
-            VerificarPropriedadeVazia Obj, "pwa_Barra2", "CorOff", 0, "Telas", 0
-            VerificarPropriedadeVazia Obj, "pwa_Barra2", "CorOn", 0, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "pwa_Barra2Vert"
-            VerificarPropriedadeCondicional Obj, "pwa_Barra2Vert", "SourceObject", 0, "Enable", 1, False, "Telas", 1
-            VerificarPropriedadeVazia Obj, "pwa_Barra2Vert", "CorOff", 0, "Telas", 0
-            VerificarPropriedadeVazia Obj, "pwa_Barra2Vert", "CorOn", 0, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "pwa_Bateria"
-            VerificarPropriedadeVazia Obj, "pwa_Bateria", "Energizado", 0, "Telas", 1
-            VerificarPropriedadeVazia Obj, "pwa_Bateria", "CorOff", 0, "Telas", 0
-            VerificarPropriedadeVazia Obj, "pwa_Bateria", "CorOn", 0, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "pwa_BotaoAbreTela"
-            VerificarPropriedadeVazia Obj, "pwa_BotaoAbreTela", "Config_Zoom", 1, "Telas", 1
-            VerificarPropriedadeVazia Obj, "pwa_BotaoAbreTela", "Config_TelaQuadroPatName", 1, "Telas", 1
-            VerificarPropriedadeValor Obj, "pwa_BotaoAbreTela", "Config_Descricao", 1, "Desccrição", 1, "Telas", 1
-            VerificarObjetoDesatualizado Obj, "pwa_BotaoAbreTela", "generic_automalogica", "Telas", 0
-
-            '-----------------------------------------------------------------------------
-       Case "pwa_Gerador"
-            VerificarPropriedadeCondicional Obj, "pwa_Gerador", "SourceObject", 0, "Enable", 1, False, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "pwa_Gerador", "GenEstado", 0, "SourceObject", 1, "NOTEMPTY", "Telas", 1
-
-            '-----------------------------------------------------------------------------
-        Case "pwa_GeradorG"
-            VerificarPropriedadeCondicional Obj, "pwa_GeradorG", "AlarmSource", 0, "PotenciaMedia", 0, "NOTEMPTY", "Telas", 1
-            VerificarPropriedadeVazia Obj, "pwa_GeradorG", "PotenciaMedia", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "pwa_GeradorG", "PotenciaMaximaNominal", 0, 0, 1, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "pwa_HomeButton"
-            VerificarPropriedadeVazia Obj, "pwa_HomeButton", "ScreenOrFramePathName", 1, "Telas", 1
-            VerificarPropriedadeVazia Obj, "pwa_HomeButton", "ScreenDescription", 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "pwa_HomeButton", "Description", 1, "Alarmes", 1, "Telas", 1
-
-            '-----------------------------------------------------------------------------
-        Case "pwa_GrupoVSL"
-            VerificarPropriedadeVazia Obj, "pwa_GrupoVSL", "PositionMeasObject", 0, "Telas", 1
-            VerificarPropriedadeVazia Obj, "pwa_GrupoVSL", "AnalogMeas", 0, "Telas", 1
-
-            '-----------------------------------------------------------------------------
-        Case "pwa_InfoAlarme01"
-            VerificarPropriedadeVazia Obj, "pwa_InfoAlarme01", "SourceObject01", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "pwa_InfoAlarme01", "Descricao", 1, "XXX", 1, "Telas", 1
-            VerificarObjetoDesatualizado Obj, "pwa_InfoAlarme01", "generic_automalogica", "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "pwa_InfoAlarme05"
-            VerificarPropriedadeVazia Obj, "pwa_InfoAlarme05", "SourceObject01", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "pwa_InfoAlarme05", "Descricao", 1, "XXX", 1, "Telas", 1
-            VerificarObjetoDesatualizado Obj, "pwa_InfoAlarme05", "generic_automalogica", "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "pwa_InfoAlarme10"
-            VerificarPropriedadeVazia Obj, "pwa_InfoAlarme10", "SourceObject01", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "pwa_InfoAlarme10", "Descricao", 1, "XXX", 1, "Telas", 1
-            VerificarObjetoDesatualizado Obj, "pwa_InfoAlarme10", "generic_automalogica", "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "pwa_InfoAnalogica"
-            VerificarPropriedadeVazia Obj, "pwa_InfoAnalogica", "SourceObject", 0, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "pwa_InfoAnalogica", "AlarmSource", 0, "SourceObject", 0, "NOTEMPTY", "Telas", 1
-            VerificarPropriedadeCondicional Obj, "pwa_InfoAnalogica", "SPTag", 0, "SPShow", 1, False, "Telas", 1
-            VerificarPropriedadeTextoProibido Obj, "pwa_InfoAnalogica", "SourceObject", 0, ".Value", "Telas", 1
-            VerificarPropriedadeHabilitada Obj, "pwa_InfoAnalogica", "ShowUE", 1, True, "Telas", 1
-            VerificarObjetoDesatualizado Obj, "pwa_InfoAnalogica", "generic_automalogica", "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "pwa_InfoAnalogicaG"
-            VerificarPropriedadeVazia Obj, "pwa_InfoAnalogicaG", "SourceObject", 0, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "pwa_InfoAnalogicaG", "AlarmSource", 0, "SourceObject", 0, "NOTEMPTY", "Telas", 1
-            VerificarPropriedadeCondicional Obj, "pwa_InfoAnalogicaG", "SPTag", 0, "SPShow", 1, False, "Telas", 1
-            VerificarPropriedadeTextoProibido Obj, "pwa_InfoAnalogicaG", "SourceObject", 0, ".Value", "Telas", 1
-            VerificarPropriedadeHabilitada Obj, "pwa_InfoAnalogicaG", "ShowUE", 1, True, "Telas", 1
-            VerificarObjetoDesatualizado Obj, "pwa_InfoAnalogicaG", "generic_automalogica", "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "pwa_InfoPot"
-            VerificarPropriedadeVazia Obj, "pwa_InfoPot", "PotenciaMedida", 0, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "pwa_InfoPot", "AlarmSource", 0, "PotenciaMedida", 0, "NOTEMPTY", "Telas", 1
-            VerificarPropriedadeCondicional Obj, "pwa_InfoPot", "SetPointPotencia", 0, "HabilitaSetpoint", 1, False, "Telas", 1
-            VerificarPropriedadeVazia Obj, "pwa_InfoPot", "PotenciaMedia", 0, "Telas", 0
-            VerificarPropriedadeValor Obj, "pwa_InfoPot", "PotenciaMaximaNominal", 1, 0, 1, "Telas", 0
-            VerificarObjetoDesatualizado Obj, "pwa_InfoPot", "generic_automalogica", "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "pwa_InfoPotP"
-            VerificarPropriedadeVazia Obj, "pwa_InfoPot", "PotenciaMedida", 0, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "pwa_InfoPot", "AlarmSource", 0, "PotenciaMedida", 0, "NOTEMPTY", "Telas", 1
-            VerificarPropriedadeCondicional Obj, "pwa_InfoPot", "SetPointPotencia", 0, "HabilitaSetpoint", 1, False, "Telas", 1
-            VerificarPropriedadeVazia Obj, "pwa_InfoPot", "PotenciaMedia", 0, "Telas", 0
-            VerificarPropriedadeValor Obj, "pwa_InfoPot", "PotenciaMaximaNominal", 1, 0, 1, "Telas", 0
-            VerificarObjetoDesatualizado Obj, "pwa_InfoPot", "generic_automalogica", "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "pwa_InfoPotG"
-            VerificarPropriedadeVazia Obj, "pwa_InfoPotP", "PotenciaMedida", 0, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "pwa_InfoPotP", "AlarmSource", 0, "PotenciaMedida", 0, "NOTEMPTY", "Telas", 1
-            VerificarPropriedadeCondicional Obj, "pwa_InfoPotP", "SetPointPotencia", 0, "HabilitaSetpoint", 1, False, "Telas", 1
-            VerificarPropriedadeVazia Obj, "pwa_InfoPotP", "PotenciaMedia", 0, "Telas", 0
-            VerificarPropriedadeValor Obj, "pwa_InfoPotP", "PotenciaMaximaNominal", 1, 100, 1, "Telas", 0
-            VerificarObjetoDesatualizado Obj, "pwa_InfoPotP", "generic_automalogica", "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "pwa_Inversor"
-            VerificarPropriedadeVazia Obj, "pwa_Inversor", "Energizado", 0, "Telas", 1
-
-            '-----------------------------------------------------------------------------
-        Case "pwa_LineHoriz"
-            VerificarPropriedadeVazia Obj, "pwa_LineHoriz", "Energizado", 0, "Telas", 1
-            VerificarPropriedadeVazia Obj, "pwa_LineHoriz", "CorOff", 0, "Telas", 0
-            VerificarPropriedadeVazia Obj, "pwa_LineHoriz", "CorOn", 0, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "pwa_LineVert"
-            VerificarPropriedadeVazia Obj, "pwa_LineVert", "Energizado", 0, "Telas", 1
-            VerificarPropriedadeVazia Obj, "pwa_LineVert", "CorOff", 0, "Telas", 0
-            VerificarPropriedadeVazia Obj, "pwa_LineVert", "CorOn", 0, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-
-        Case "pwa_AutoTrafo"
-            VerificarPropriedadeCondicional Obj, "pwa_AutoTrafo", "SourceObject", 0, "Enable", 1, False, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "pwa_AutoTrafo", "DeviceNote", 0, "SourceObject", 0, "NOTEMPTY", "Telas", 1
-            VerificarPropriedadeVazia Obj, "pwa_AutoTrafo", "CorOff", 0, "Telas", 0
-            VerificarPropriedadeVazia Obj, "pwa_AutoTrafo", "CorOnTerminal1", 0, "Telas", 0
-            VerificarPropriedadeVazia Obj, "pwa_AutoTrafo", "CorOnTerminal2", 0, "Telas", 0
-            VerificarPropriedadeVazia Obj, "pwa_AutoTrafo", "CorOnTerminal3", 0, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "pwa_Capacitor"
-            VerificarPropriedadeCondicional Obj, "pwa_Capacitor", "SourceObject", 0, "Enable", 1, False, "Telas", 1
-            VerificarPropriedadeVazia Obj, "pwa_Capacitor", "CorOff", 0, "Telas", 0
-            VerificarPropriedadeVazia Obj, "pwa_Capacitor", "CorOn", 0, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "pwa_Carga"
-            VerificarPropriedadeCondicional Obj, "pwa_Carga", "SourceObject", 0, "Enable", 1, False, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "pwa_Carga", "DeviceNote", 0, "SourceObject", 0, "NOTEMPTY", "Telas", 1
-            VerificarPropriedadeVazia Obj, "pwa_Carga", "CorOff", 0, "Telas", 0
-            VerificarPropriedadeVazia Obj, "pwa_Carga", "CorOn", 0, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "pwa_Conexao"
-            VerificarPropriedadeVazia Obj, "pwa_Conexao", "CorObjeto", 0, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "pwa_Jumper"
-            VerificarPropriedadeVazia Obj, "pwa_Jumper", "CorObjeto", 0, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "pwa_Retificador"
-            VerificarPropriedadeVazia Obj, "pwa_Retificador", "CorObjeto", 0, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "pwa_Terra"
-            VerificarPropriedadeVazia Obj, "pwa_Terra", "CorTerrra", 0, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "pwa_Terra2"
-            VerificarPropriedadeVazia Obj, "pwa_Terra2", "CorTerrra", 0, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "pwa_Reactor"
-            VerificarPropriedadeCondicional Obj, "pwa_Reactor", "SourceObject", 0, "Enable", 1, False, "Telas", 1
-            VerificarPropriedadeVazia Obj, "pwa_Reactor", "CorOff", 0, "Telas", 0
-            VerificarPropriedadeVazia Obj, "pwa_Reactor", "CorOn", 0, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "pwa_Relig"
-            VerificarPropriedadeCondicional Obj, "pwa_Relig", "SourceObject", 0, "NaoSupervisionado", 1, False, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "pwa_Relig", "PositionMeas", 0, "NaoSupervisionado", 1, False, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "pwa_Relig", "DeviceNote", 0, "NaoSupervisionado", 1, False, "Telas", 1
-            VerificarPropriedadeVazia Obj, "pwa_Relig", "CorOff", 0, "Telas", 0
-            VerificarPropriedadeVazia Obj, "pwa_Relig", "CorOn", 0, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "pwa_Sensor"
-            VerificarPropriedadeCondicional Obj, "pwa_Sensor", "SourceObject", 0, "Enable", 1, False, "Telas", 1
-            VerificarPropriedadeVazia Obj, "pwa_Sensor", "BorderColor", 0, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "pwa_VentForc"
-            VerificarPropriedadeCondicional Obj, "pwa_VentForc", "SourceObject", 0, "Unsupervised", 1, False, "Telas", 1
-
-            '-----------------------------------------------------------------------------
-        Case "pwa_TapV"
-            VerificarPropriedadeVazia Obj, "pwa_TapV", "Measure", 0, "Telas", 1
-            VerificarPropriedadeVazia Obj, "pwa_TapV", "CmdDown", 0, "Telas", 1
-            VerificarPropriedadeVazia Obj, "pwa_TapV", "CmdUp", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "pwa_TapV", "MaxLimit", 0, 8, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "pwa_TapV", "MinLimit", 0, 2, 1, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "pwa_InfoPotRea"
-            VerificarPropriedadeVazia Obj, "pwa_InfoPotRea", "PotRea", 0, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "pwa_InfoPotRea", "AlarmSource", 0, "PotRea", 0, "NOTEMPTY", "Telas", 1
-            VerificarPropriedadeCondicional Obj, "pwa_InfoPotRea", "SetPointPotencia", 0, "SpShow", 1, False, "Telas", 1
-            VerificarPropriedadeValor Obj, "pwa_InfoPotRea", "MaxPotReaPos", 0, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "pwa_InfoPotRea", "MinPotReaPos", 0, -100, 1, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "pwa_ReguladorTensao"
-            VerificarPropriedadeCondicional Obj, "pwa_ReguladorTensao", "SourceObject", 0, "Enable", 1, False, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "pwa_ReguladorTensao", "DeviceNote", 0, "SourceObject", 0, "NOTEMPTY", "Telas", 1
-            VerificarPropriedadeCondicional Obj, "pwa_ReguladorTensao", "TAPMeas", 0, "MostraTAP", 1, False, "Telas", 1
-            VerificarPropriedadeVazia Obj, "pwa_ReguladorTensao", "CorOff", 0, "Telas", 0
-            VerificarPropriedadeVazia Obj, "pwa_ReguladorTensao", "CorOnTerminal1", 0, "Telas", 0
-            VerificarPropriedadeVazia Obj, "pwa_ReguladorTensao", "CorOnTerminal2", 0, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "pwa_Menu"
-            VerificarPropriedadeVazia Obj, "pwa_Menu", "Hierarchy1", 1, "Telas", 1
-            VerificarPropriedadeVazia Obj, "pwa_Menu", "SpecificTabularArea", 1, "Telas", 1
-
-            '-----------------------------------------------------------------------------
-        Case "pwa_TrafoSA"
-            VerificarPropriedadeCondicional Obj, "pwa_TrafoSA", "SourceObject", 0, "Enable", 1, False, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "pwa_TrafoSA", "DeviceNote", 0, "SourceObject", 0, "NOTEMPTY", "Telas", 1
-            VerificarPropriedadeVazia Obj, "pwa_TrafoSA", "CorOff", 0, "Telas", 0
-            VerificarPropriedadeVazia Obj, "pwa_TrafoSA", "CorOnTerminal1", 0, "Telas", 0
-            VerificarPropriedadeVazia Obj, "pwa_TrafoSA", "CorOnTerminal2", 0, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "pwa_Trafo3Type01"
-            VerificarPropriedadeCondicional Obj, "pwa_Trafo3Type01", "SourceObject", 0, "Enable", 1, False, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "pwa_Trafo3Type01", "DeviceNote", 0, "SourceObject", 0, "NOTEMPTY", "Telas", 1
-            VerificarPropriedadeCondicional Obj, "pwa_Trafo3Type01", "TAPSPShow", 1, "TAPSPTag", 1, False, "Telas", 1
-            VerificarPropriedadeVazia Obj, "pwa_Trafo3Type01", "CorOff", 0, "Telas", 0
-            VerificarPropriedadeVazia Obj, "pwa_Trafo3Type01", "CorOnTerminal1", 0, "Telas", 0
-            VerificarPropriedadeVazia Obj, "pwa_Trafo3Type01", "CorOnTerminal2", 0, "Telas", 0
-            VerificarPropriedadeVazia Obj, "pwa_Trafo3Type01", "CorOnTerminal3", 0, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "pwa_Trafo3_P"
-            VerificarPropriedadeCondicional Obj, "pwa_Trafo3_P", "SourceObject", 0, "Enable", 1, False, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "pwa_Trafo3_P", "DeviceNote", 0, "SourceObject", 0, "NOTEMPTY", "Telas", 1
-            VerificarPropriedadeCondicional Obj, "pwa_Trafo3_P", "TAPSPTag", 0, "TAPSPShow", 1, False, "Telas", 1
-            VerificarPropriedadeVazia Obj, "pwa_Trafo3_P", "CorOff", 0, "Telas", 0
-            VerificarPropriedadeVazia Obj, "pwa_Trafo3_P", "CorOnTerminal1", 0, "Telas", 0
-            VerificarPropriedadeVazia Obj, "pwa_Trafo3_P", "CorOnTerminal2", 0, "Telas", 0
-            VerificarPropriedadeVazia Obj, "pwa_Trafo3_P", "CorOnTerminal3", 0, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "pwa_Trafo3"
-            VerificarPropriedadeCondicional Obj, "pwa_Trafo3", "SourceObject", 0, "Enable", 1, False, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "pwa_Trafo3", "DeviceNote", 0, "SourceObject", 0, "NOTEMPTY", "Telas", 1
-            VerificarPropriedadeCondicional Obj, "pwa_Trafo3", "TAPSPTag", 0, "TAPSPShow", 1, False, "Telas", 1
-            VerificarPropriedadeVazia Obj, "pwa_Trafo3", "CorOff", 0, "Telas", 0
-            VerificarPropriedadeVazia Obj, "pwa_Trafo3", "CorOnTerminal1", 0, "Telas", 0
-            VerificarPropriedadeVazia Obj, "pwa_Trafo3", "CorOnTerminal2", 0, "Telas", 0
-            VerificarPropriedadeVazia Obj, "pwa_Trafo3", "CorOnTerminal3", 0, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "pwa_Trafo2Term"
-            VerificarPropriedadeCondicional Obj, "pwa_Trafo2Term", "SourceObject", 0, "Enable", 1, False, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "pwa_Trafo2Term", "DeviceNote", 0, "SourceObject", 0, "NOTEMPTY", "Telas", 1
-            VerificarPropriedadeCondicional Obj, "pwa_Trafo2Term", "TAPSPTag", 0, "TAPSPShow", 1, False, "Telas", 1
-            VerificarPropriedadeVazia Obj, "pwa_Trafo2Term", "CorOff", 0, "Telas", 0
-            VerificarPropriedadeVazia Obj, "pwa_Trafo2Term", "CorOnTerminal1", 0, "Telas", 0
-            VerificarPropriedadeVazia Obj, "pwa_Trafo2Term", "CorOnTerminal2", 0, "Telas", 0
-            VerificarPropriedadeVazia Obj, "pwa_Trafo2Term", "CorOnTerminal3", 0, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "pwa_Trafo2"
-            VerificarPropriedadeCondicional Obj, "pwa_Trafo2", "SourceObject", 0, "Enable", 1, False, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "pwa_Trafo2", "DeviceNote", 0, "SourceObject", 0, "NOTEMPTY", "Telas", 1
-            VerificarPropriedadeCondicional Obj, "pwa_Trafo2", "TAPSPTag", 0, "TAPSPShow", 1, False, "Telas", 1
-            VerificarPropriedadeVazia Obj, "pwa_Trafo2", "CorOff", 0, "Telas", 0
-            VerificarPropriedadeVazia Obj, "pwa_Trafo2", "CorOnTerminal1", 0, "Telas", 0
-            VerificarPropriedadeVazia Obj, "pwa_Trafo2", "CorOnTerminal2", 0, "Telas", 0
-            VerificarPropriedadeVazia Obj, "pwa_Trafo2", "CorOnTerminal3", 0, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "gx_AbnormalityIndicator"
-            VerificarPropriedadeVazia Obj, "gx_AbnormalityIndicator", "Measurement01Active", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_AbnormalityIndicator", "Measurement01Desc", 1, "XXX", 1, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_AbnormalityIndicator", "SideToGrowing", 1, 1, 1, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "gx_Analogic"
-            VerificarPropriedadeVazia Obj, "gx_Analogic", "Measure", 0, "Telas", 1
-
-            '-----------------------------------------------------------------------------
-        Case "gx_ButtonOpenCommandScreen"
-            VerificarPropriedadeVazia Obj, "gx_ButtonOpenCommandScreen", "SourceObject", 0, "Telas", 1
-
-            '-----------------------------------------------------------------------------
-        Case "gx_Counter"
-            VerificarPropriedadeVazia Obj, "gx_Counter", "Value", 0, "Telas", 1
-
-            '-----------------------------------------------------------------------------
-        Case "gx_CtrlDigital"
-            VerificarPropriedadeCondicional Obj, "gx_CtrlDigital", "CommandPathName", 0, "Enable", 1, "NOTEMPTY", "Telas", 1
-            VerificarPropriedadeVazia Obj, "gx_CtrlDigital", "Active", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_CtrlDigital", "Descr", 1, "Desc", 1, "Telas", 1
-
-            '-----------------------------------------------------------------------------
-        Case "gx_CtrlDigital1Op"
-            VerificarPropriedadeCondicional Obj, "gx_CtrlDigital1Op", "CommandPathName", 0, "Enable", 1, "NOTEMPTY", "Telas", 1
-            VerificarPropriedadeVazia Obj, "gx_CtrlDigital1Op", "Tag", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_CtrlDigital1Op", "Descr", 1, "Desc", 1, "Telas", 1
-
-            '-----------------------------------------------------------------------------
-        Case "gx_CtrlDigital2Op"
-            VerificarPropriedadeCondicional Obj, "gx_CtrlDigital2Op", "CommandPathName1", 0, "Enable", 1, "NOTEMPTY", "Telas", 1
-            VerificarPropriedadeVazia Obj, "gx_CtrlDigital2Op", "Tag1", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_CtrlDigital2Op", "Descr1", 1, "Desc1", 1, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "gx_CtrlDigital2Op", "CommandPathName2", 0, "Enable", 1, "NOTEMPTY", "Telas", 1
-            VerificarPropriedadeVazia Obj, "gx_CtrlDigital2Op", "Tag2", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_CtrlDigital2Op", "Descr2", 1, "Desc2", 1, "Telas", 1
-
-            '-----------------------------------------------------------------------------
-        Case "gx_CtrlDigital3Op"
-            VerificarPropriedadeCondicional Obj, "gx_CtrlDigital3Op", "CommandPathName1", 0, "Enable", 1, "NOTEMPTY", "Telas", 1
-            VerificarPropriedadeVazia Obj, "gx_CtrlDigital3Op", "Tag1", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_CtrlDigital3Op", "Descr1", 1, "Desc1", 1, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "gx_CtrlDigital3Op", "CommandPathName2", 0, "Enable", 1, "NOTEMPTY", "Telas", 1
-            VerificarPropriedadeVazia Obj, "gx_CtrlDigital3Op", "Tag2", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_CtrlDigital3Op", "Descr2", 1, "Desc2", 1, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "gx_CtrlDigital3Op", "CommandPathName3", 0, "Enable", 1, "NOTEMPTY", "Telas", 1
-            VerificarPropriedadeVazia Obj, "gx_CtrlDigital3Op", "Tag3", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_CtrlDigital3Op", "Descr3", 1, "Desc3", 1, "Telas", 1
-
-            '-----------------------------------------------------------------------------
-        Case "gx_CtrlDigital4Op"
-            VerificarPropriedadeCondicional Obj, "gx_CtrlDigital4Op", "CommandPathName1", 0, "Enable", 1, "NOTEMPTY", "Telas", 1
-            VerificarPropriedadeVazia Obj, "gx_CtrlDigital4Op", "Tag1", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_CtrlDigital4Op", "Descr1", 1, "Desc1", 1, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "gx_CtrlDigital4Op", "CommandPathName2", 0, "Enable", 1, "NOTEMPTY", "Telas", 1
-            VerificarPropriedadeVazia Obj, "gx_CtrlDigital4Op", "Tag2", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_CtrlDigital4Op", "Descr2", 1, "Desc2", 1, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "gx_CtrlDigital4Op", "CommandPathName3", 0, "Enable", 1, "NOTEMPTY", "Telas", 1
-            VerificarPropriedadeVazia Obj, "gx_CtrlDigital4Op", "Tag3", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_CtrlDigital4Op", "Descr3", 1, "Desc3", 1, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "gx_CtrlDigital4Op", "CommandPathName4", 0, "Enable", 1, "NOTEMPTY", "Telas", 1
-            VerificarPropriedadeVazia Obj, "gx_CtrlDigital4Op", "Tag4", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_CtrlDigital4Op", "Descr4", 1, "Desc4", 1, "Telas", 1
-
-            '-----------------------------------------------------------------------------
-        Case "gx_InfoAnalogic"
-            VerificarPropriedadeVazia Obj, "gx_InfoAnalogic", "SourceObject", 0, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "gx_InfoAnalogic", "AlarmSource", 0, "SourceObject", 0, "NOTEMPTY", "Telas", 1
-            VerificarPropriedadeCondicional Obj, "gx_InfoAnalogic", "SPTag", 0, "SPShow", 1, False, "Telas", 1
-            VerificarPropriedadeTextoProibido Obj, "gx_InfoAnalogic", "SourceObject", 0, ".Value", "Telas", 1
-            VerificarPropriedadeHabilitada Obj, "gx_InfoAnalogic", "ShowUE", 1, True, "Telas", 1
-
-            '-----------------------------------------------------------------------------
-        Case "gx_InfoAnalogic2"
-            VerificarPropriedadeVazia Obj, "gx_InfoAnalogic2", "SourceObject", 0, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "gx_InfoAnalogic2", "AlarmSource", 0, "SourceObject", 0, "NOTEMPTY", "Telas", 1
-            VerificarPropriedadeCondicional Obj, "gx_InfoAnalogic2", "SPTag", 0, "SPShow", 1, False, "Telas", 1
-            VerificarPropriedadeTextoProibido Obj, "gx_InfoAnalogic2", "SourceObject", 0, ".Value", "Telas", 1
-            VerificarPropriedadeHabilitada Obj, "gx_InfoAnalogic2", "ShowUE", 1, True, "Telas", 1
-
-            '-----------------------------------------------------------------------------
-        Case "gx_InfoDoughnutChart"
-            VerificarPropriedadeVazia Obj, "gx_InfoDoughnutChart", "Measure", 0, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "gx_InfoDoughnutChart", "Measure", 0, "AlarmSource", 0, "NOTEMPTY", "Telas", 1
-            VerificarPropriedadeCondicional Obj, "gx_InfoDoughnutChart", "SPTag", 0, "SPShow", 1, False, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_InfoDoughnutChart", "NominalValue", 1, 100, 1, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "gx_InfoSetpoint"
-            VerificarPropriedadeVazia Obj, "gx_InfoSetpoint", "SPTag", 0, "Telas", 1
-            VerificarPropriedadeHabilitada Obj, "gx_InfoSetpoint", "ShowUE", 1, True, "Telas", 1
-
-            '-----------------------------------------------------------------------------
-        Case "gx_Notes"
-            VerificarPropriedadeVazia Obj, "gx_Notes", "DeviceNote", 0, "Telas", 1
-
-            '-----------------------------------------------------------------------------
-        Case "gx_OpenTabularArea1"
-            VerificarPropriedadeValor Obj, "gx_OpenTabularArea1", "Descricao", 1, "XXX", 1, "Telas", 1
-            VerificarPropriedadeVazia Obj, "gx_OpenTabularArea1", "Areas", 1, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "gx_OpenTabularArea1", "ScreenPathNames ", 1, "ScreenZoom", 1, "NOTEMPTY", "Telas", 1
-
-            '-----------------------------------------------------------------------------
-        Case "gx_QualityIcon"
-            VerificarPropriedadeVazia Obj, "gx_QualityIcon", "Measurement", 0, "Telas", 1
-
-            '-----------------------------------------------------------------------------
-        Case "gx_RadarChart03"
-            VerificarPropriedadeVazia Obj, "gx_RadarChart03", "Meas01", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart03", "Meas01MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart03", "Meas01MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart03", "Meas02", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart03", "Meas02MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart03", "Meas02MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart03", "Meas03", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart03", "Meas03MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart03", "Meas03MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart03", "ZoneMaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart03", "ZoneMinLim", 1, 0, 1, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "gx_RadarChart04"
-            VerificarPropriedadeVazia Obj, "gx_RadarChart04", "Meas01", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart04", "Meas01MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart04", "Meas01MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart04", "Meas02", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart04", "Meas02MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart04", "Meas02MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart04", "Meas03", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart04", "Meas03MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart04", "Meas03MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart04", "Meas04", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart04", "Meas04MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart04", "Meas04MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart04", "ZoneMaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart04", "ZoneMinLim", 1, 0, 1, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "gx_RadarChart05"
-            VerificarPropriedadeVazia Obj, "gx_RadarChart05", "Meas01", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart05", "Meas01MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart05", "Meas01MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart05", "Meas02", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart05", "Meas02MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart05", "Meas02MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart05", "Meas03", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart05", "Meas03MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart05", "Meas03MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart05", "Meas04", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart05", "Meas04MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart05", "Meas04MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart05", "Meas05", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart05", "Meas05MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart05", "Meas05MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart05", "ZoneMaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart05", "ZoneMinLim", 1, 0, 1, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "gx_RadarChart06"
-            VerificarPropriedadeVazia Obj, "gx_RadarChart06", "Meas01", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart06", "Meas01MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart06", "Meas01MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart06", "Meas02", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart06", "Meas02MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart06", "Meas02MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart06", "Meas03", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart06", "Meas03MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart06", "Meas03MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart06", "Meas04", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart06", "Meas04MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart06", "Meas04MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart06", "Meas05", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart06", "Meas05MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart06", "Meas05MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart06", "Meas06", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart06", "Meas06MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart06", "Meas06MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart06", "ZoneMaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart06", "ZoneMinLim", 1, 0, 1, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "gx_RadarChart07"
-            VerificarPropriedadeVazia Obj, "gx_RadarChart07", "Meas01", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart07", "Meas01MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart07", "Meas01MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart07", "Meas02", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart07", "Meas02MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart07", "Meas02MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart07", "Meas03", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart07", "Meas03MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart07", "Meas03MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart07", "Meas04", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart07", "Meas04MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart07", "Meas04MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart07", "Meas05", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart07", "Meas05MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart07", "Meas05MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart07", "Meas06", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart07", "Meas06MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart07", "Meas06MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart07", "Meas07", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart07", "Meas07MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart07", "Meas07MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart07", "ZoneMaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart07", "ZoneMinLim", 1, 0, 1, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "gx_RadarChart08"
-            VerificarPropriedadeVazia Obj, "gx_RadarChart08", "Meas01", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart08", "Meas01MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart08", "Meas01MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart08", "Meas02", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart08", "Meas02MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart08", "Meas02MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart08", "Meas03", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart08", "Meas03MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart08", "Meas03MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart08", "Meas04", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart08", "Meas04MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart08", "Meas04MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart08", "Meas05", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart08", "Meas05MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart08", "Meas05MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart08", "Meas06", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart08", "Meas06MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart08", "Meas06MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart08", "Meas07", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart08", "Meas07MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart08", "Meas07MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart08", "Meas08", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart08", "Meas08MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart08", "Meas08MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart08", "ZoneMaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart08", "ZoneMinLim", 1, 0, 1, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "gx_RadarChart08_2Z"
-            VerificarPropriedadeVazia Obj, "gx_RadarChart08_2Z", "Meas01_z1", 0, "Telas", 1
-            VerificarPropriedadeVazia Obj, "gx_RadarChart08_2Z", "Meas01_z2", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart08_2Z", "Meas01MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart08_2Z", "Meas01MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart08_2Z", "Meas02_z1", 0, "Telas", 1
-            VerificarPropriedadeVazia Obj, "gx_RadarChart08_2Z", "Meas02_z2", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart08_2Z", "Meas02MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart08_2Z", "Meas02MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart08_2Z", "Meas03_z1", 0, "Telas", 1
-            VerificarPropriedadeVazia Obj, "gx_RadarChart08_2Z", "Meas03_z2", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart08_2Z", "Meas03MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart08_2Z", "Meas03MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart08_2Z", "Meas04_z1", 0, "Telas", 1
-            VerificarPropriedadeVazia Obj, "gx_RadarChart08_2Z", "Meas04_z2", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart08_2Z", "Meas04MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart08_2Z", "Meas04MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart08_2Z", "Meas05_z1", 0, "Telas", 1
-            VerificarPropriedadeVazia Obj, "gx_RadarChart08_2Z", "Meas05_z2", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart08_2Z", "Meas05MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart08_2Z", "Meas05MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart08_2Z", "Meas06_z1", 0, "Telas", 1
-            VerificarPropriedadeVazia Obj, "gx_RadarChart08_2Z", "Meas06_z2", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart08_2Z", "Meas06MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart08_2Z", "Meas06MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart08_2Z", "Meas07_z1", 0, "Telas", 1
-            VerificarPropriedadeVazia Obj, "gx_RadarChart08_2Z", "Meas07_z2", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart08_2Z", "Meas07MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart08_2Z", "Meas07MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart08_2Z", "Meas08_z1", 0, "Telas", 1
-            VerificarPropriedadeVazia Obj, "gx_RadarChart08_2Z", "Meas08_z2", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart08_2Z", "Meas08MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart08_2Z", "Meas08MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart08_2Z", "ZoneMaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart08_2Z", "ZoneMinLim", 1, 0, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart08_2Z", "Title01", 1, "Quente", 1, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart08_2Z", "Title02", 1, "Frio", 1, "Telas", 1
-
-            '-----------------------------------------------------------------------------
-        Case "gx_RadarChart09"
-            VerificarPropriedadeVazia Obj, "gx_RadarChart09", "Meas01", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart09", "Meas01MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart09", "Meas01MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart09", "Meas02", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart09", "Meas02MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart09", "Meas02MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart09", "Meas03", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart09", "Meas03MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart09", "Meas03MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart09", "Meas04", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart09", "Meas04MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart09", "Meas04MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart09", "Meas05", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart09", "Meas05MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart09", "Meas05MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart09", "Meas06", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart09", "Meas06MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart09", "Meas06MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart09", "Meas07", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart09", "Meas07MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart09", "Meas07MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart09", "Meas08", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart09", "Meas08MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart09", "Meas08MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart09", "Meas09", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart09", "Meas09MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart09", "Meas09MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart09", "ZoneMaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart09", "ZoneMinLim", 1, 0, 1, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "gx_RadarChart10"
-            VerificarPropriedadeVazia Obj, "gx_RadarChart10", "Meas01", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart10", "Meas01MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart10", "Meas01MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart10", "Meas02", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart10", "Meas02MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart10", "Meas02MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart10", "Meas03", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart10", "Meas03MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart10", "Meas03MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart10", "Meas04", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart10", "Meas04MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart10", "Meas04MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart10", "Meas05", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart10", "Meas05MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart10", "Meas05MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart10", "Meas06", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart10", "Meas06MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart10", "Meas06MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart10", "Meas07", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart10", "Meas07MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart10", "Meas07MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart10", "Meas08", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart10", "Meas08MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart10", "Meas08MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart10", "Meas09", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart10", "Meas09MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart10", "Meas09MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart10", "Meas10", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart10", "Meas10MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart10", "Meas10MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart10", "ZoneMaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart10", "ZoneMinLim", 1, 0, 1, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "gx_RadarChart10_2Z"
-            VerificarPropriedadeVazia Obj, "gx_RadarChart10_2Z", "Meas01_z1", 0, "Telas", 1
-            VerificarPropriedadeVazia Obj, "gx_RadarChart10_2Z", "Meas01_z2", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart10_2Z", "Meas01MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart10_2Z", "Meas01MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart10_2Z", "Meas02_z1", 0, "Telas", 1
-            VerificarPropriedadeVazia Obj, "gx_RadarChart10_2Z", "Meas02_z2", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart10_2Z", "Meas02MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart10_2Z", "Meas02MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart10_2Z", "Meas03_z1", 0, "Telas", 1
-            VerificarPropriedadeVazia Obj, "gx_RadarChart10_2Z", "Meas03_z2", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart10_2Z", "Meas03MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart10_2Z", "Meas03MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart10_2Z", "Meas04_z1", 0, "Telas", 1
-            VerificarPropriedadeVazia Obj, "gx_RadarChart10_2Z", "Meas04_z2", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart10_2Z", "Meas04MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart10_2Z", "Meas04MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart10_2Z", "Meas05_z1", 0, "Telas", 1
-            VerificarPropriedadeVazia Obj, "gx_RadarChart10_2Z", "Meas05_z2", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart10_2Z", "Meas05MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart10_2Z", "Meas05MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart10_2Z", "Meas06_z1", 0, "Telas", 1
-            VerificarPropriedadeVazia Obj, "gx_RadarChart10_2Z", "Meas06_z2", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart10_2Z", "Meas06MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart10_2Z", "Meas06MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart10_2Z", "Meas07_z1", 0, "Telas", 1
-            VerificarPropriedadeVazia Obj, "gx_RadarChart10_2Z", "Meas07_z2", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart10_2Z", "Meas07MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart10_2Z", "Meas07MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart10_2Z", "Meas08_z1", 0, "Telas", 1
-            VerificarPropriedadeVazia Obj, "gx_RadarChart10_2Z", "Meas08_z2", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart10_2Z", "Meas08MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart10_2Z", "Meas08MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart10_2Z", "Meas09_z1", 0, "Telas", 1
-            VerificarPropriedadeVazia Obj, "gx_RadarChart10_2Z", "Meas09_z2", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart10_2Z", "Meas09MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart10_2Z", "Meas09MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart10_2Z", "Meas10_z1", 0, "Telas", 1
-            VerificarPropriedadeVazia Obj, "gx_RadarChart10_2Z", "Meas10_z2", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart10_2Z", "Meas10MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart10_2Z", "Meas10MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart10_2Z", "ZoneMaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart10_2Z", "ZoneMinLim", 1, 0, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart10_2Z", "Title01", 1, "Quente", 1, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart10_2Z", "Title02", 1, "Frio", 1, "Telas", 1
-
-            '-----------------------------------------------------------------------------
-        Case "gx_RadarChart12"
-            VerificarPropriedadeVazia Obj, "gx_RadarChart12", "Meas01", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart12", "Meas01MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart12", "Meas01MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart12", "Meas02", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart12", "Meas02MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart12", "Meas02MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart12", "Meas03", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart12", "Meas03MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart12", "Meas03MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart12", "Meas04", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart12", "Meas04MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart12", "Meas04MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart12", "Meas05", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart12", "Meas05MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart12", "Meas05MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart12", "Meas06", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart12", "Meas06MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart12", "Meas06MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart12", "Meas07", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart12", "Meas07MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart12", "Meas07MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart12", "Meas08", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart12", "Meas08MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart12", "Meas08MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart12", "Meas09", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart12", "Meas09MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart12", "Meas09MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart12", "Meas10", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart12", "Meas10MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart12", "Meas10MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart12", "Meas11", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart12", "Meas11MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart12", "Meas11MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart12", "Meas12", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart12", "Meas12MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart12", "Meas12MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart12", "ZoneMaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart12", "ZoneMinLim", 1, 0, 1, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "gx_RadarChart16"
-            VerificarPropriedadeVazia Obj, "gx_RadarChart16", "Meas01", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart16", "Meas01MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart16", "Meas01MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart16", "Meas02", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart16", "Meas02MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart16", "Meas02MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart16", "Meas03", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart16", "Meas03MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart16", "Meas03MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart16", "Meas04", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart16", "Meas04MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart16", "Meas04MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart16", "Meas05", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart16", "Meas05MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart16", "Meas05MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart16", "Meas06", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart16", "Meas06MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart16", "Meas06MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart16", "Meas07", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart16", "Meas07MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart16", "Meas07MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart16", "Meas08", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart16", "Meas08MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart16", "Meas08MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart16", "Meas09", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart16", "Meas09MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart16", "Meas09MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart16", "Meas10", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart16", "Meas10MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart16", "Meas10MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart16", "Meas11", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart16", "Meas11MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart16", "Meas11MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart16", "Meas12", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart16", "Meas12MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart16", "Meas12MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart16", "Meas13", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart16", "Meas13MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart16", "Meas13MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart16", "Meas14", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart16", "Meas14MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart16", "Meas14MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart16", "Meas15", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart16", "Meas15MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart16", "Meas15MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart16", "Meas16", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart16", "Meas16MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart16", "Meas16MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart16", "ZoneMaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart16", "ZoneMinLim", 1, 0, 1, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "gx_RadarChart20"
-            VerificarPropriedadeVazia Obj, "gx_RadarChart20", "Meas01", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas01MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas01MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart20", "Meas02", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas02MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas02MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart20", "Meas03", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas03MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas03MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart20", "Meas04", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas04MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas04MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart20", "Meas05", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas05MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas05MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart20", "Meas06", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas06MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas06MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart20", "Meas07", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas07MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas07MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart20", "Meas08", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas08MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas08MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart20", "Meas09", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas09MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas09MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart20", "Meas10", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas10MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas10MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart20", "Meas11", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas11MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas11MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart20", "Meas12", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas12MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas12MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart20", "Meas13", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas13MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas13MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart20", "Meas14", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas14MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas14MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart20", "Meas15", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas15MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas15MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart20", "Meas16", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas16MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas16MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart20", "Meas17", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas17MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas17MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart20", "Meas18", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas18MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas18MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart20", "Meas19", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas19MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas19MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "gx_RadarChart20", "Meas20", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas20MaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas20MinLim", 1, 15, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart20", "ZoneMaxLim", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "gx_RadarChart20", "ZoneMinLim", 1, 0, 1, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "uhe_AbnormalityIndicator"
-            VerificarPropriedadeVazia Obj, "uhe_AbnormalityIndicator", "Measurement01Active", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "uhe_AbnormalityIndicator", "Measurement01Desc", 1, "XXX", 1, "Telas", 1
-            VerificarPropriedadeValor Obj, "uhe_AbnormalityIndicator", "SideToGrowing", 1, 1, 1, "Telas", 0
-            VerificarObjetoDesatualizado Obj, "uhe_AbnormalityIndicator", "generic_automalogica", "Telas", 1
-
-            '-----------------------------------------------------------------------------
-        Case "uhe_AirCompressor"
-            VerificarPropriedadeCondicional Obj, "uhe_AirCompressor", "SourceObject", 0, "Unsupervised", 1, False, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "uhe_AirCompressor", "CompressorOff", 0, "Unsupervised", 1, False, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "uhe_AirCompressor", "CompressorOn", 0, "Unsupervised", 1, False, "Telas", 1
-
-            '-----------------------------------------------------------------------------
-        Case "uhe_AirOilTank"
-            VerificarPropriedadeVazia Obj, "uhe_AirOilTank", "Measure", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "uhe_AirOilTank", "MaxLimit", 1, 3, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "uhe_AirOilTank", "MinLimit", 1, 0, 1, "Telas", 0
-            VerificarPropriedadeTextoProibido Obj, "uhe_AirOilTank", "Measure", 0, ".Value", "Telas", 1
-
-            '-----------------------------------------------------------------------------
-        Case "uhe_AlarmBar"
-            VerificarPropriedadeVazia Obj, "uhe_AlarmBar", "Measure", 0, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "uhe_AlarmBar", "AlarmSource", 0, "Measure", 1, "NOTEMPTY", "Telas", 1
-            VerificarPropriedadeValor Obj, "uhe_AlarmBar", "ValorMaximo", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "uhe_AlarmBar", "ValorMinimo", 1, 0, 1, "Telas", 0
-            VerificarPropriedadeTextoProibido Obj, "uhe_AlarmBar", "Measure", 0, ".Value", "Telas", 1
-
-            '-----------------------------------------------------------------------------
-        Case "uhe_AnalogBar"
-            VerificarPropriedadeVazia Obj, "uhe_AnalogBar", "Measure", 0, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "uhe_AnalogBar", "AlarmSource", 0, "Measure", 1, "NOTEMPTY", "Telas", 1
-            VerificarPropriedadeValor Obj, "uhe_AnalogBar", "MaxValue", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "uhe_AnalogBar", "MinValue", 1, 0, 1, "Telas", 0
-            VerificarPropriedadeTextoProibido Obj, "uhe_AnalogBar", "Measure", 0, ".Value", "Telas", 1
-
-            '-----------------------------------------------------------------------------
-        Case "uhe_AnalogBar5Limits"
-            VerificarPropriedadeVazia Obj, "uhe_AnalogBar5Limits", "Measure", 0, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "uhe_AnalogBar5Limits", "AlarmSource", 0, "Measure", 1, "NOTEMPTY", "Telas", 1
-            VerificarPropriedadeValor Obj, "uhe_AnalogBar5Limits", "MaxValue", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "uhe_AnalogBar5Limits", "MinValue", 1, 0, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "uhe_AnalogBar5Limits", "Limit01", 1, 50, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "uhe_AnalogBar5Limits", "Limit02", 1, 60, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "uhe_AnalogBar5Limits", "Limit03", 1, 70, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "uhe_AnalogBar5Limits", "Limit04", 1, 80, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "uhe_AnalogBar5Limits", "Limit05", 1, 90, 1, "Telas", 0
-            VerificarPropriedadeTextoProibido Obj, "uhe_AnalogBar5Limits", "Measure", 0, ".Value", "Telas", 1
-
-            '-----------------------------------------------------------------------------
-        Case "uhe_AnalogBar5LimitsH"
-            VerificarPropriedadeVazia Obj, "uhe_AnalogBar5LimitsH", "Measure", 0, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "uhe_AnalogBar5LimitsH", "AlarmSource", 0, "Measure", 1, "NOTEMPTY", "Telas", 1
-            VerificarPropriedadeValor Obj, "uhe_AnalogBar5LimitsH", "MaxValue", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "uhe_AnalogBar5LimitsH", "MinValue", 1, 0, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "uhe_AnalogBar5LimitsH", "Limit01", 1, 50, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "uhe_AnalogBar5LimitsH", "Limit02", 1, 60, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "uhe_AnalogBar5LimitsH", "Limit03", 1, 70, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "uhe_AnalogBar5LimitsH", "Limit04", 1, 80, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "uhe_AnalogBar5LimitsH", "Limit05", 1, 90, 1, "Telas", 0
-            VerificarPropriedadeTextoProibido Obj, "uhe_AnalogBar5LimitsH", "Measure", 0, ".Value", "Telas", 1
-
-            '-----------------------------------------------------------------------------
-        Case "uhe_AnalogBarHor"
-            VerificarPropriedadeVazia Obj, "uhe_AnalogBarHor", "Measure", 0, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "uhe_AnalogBarHor", "AlarmSource", 0, "Measure", 1, "NOTEMPTY", "Telas", 1
-            VerificarPropriedadeValor Obj, "uhe_AnalogBarHor", "MaxValue", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "uhe_AnalogBarHor", "MinValue", 1, 0, 1, "Telas", 0
-            VerificarPropriedadeTextoProibido Obj, "uhe_AnalogBarHor", "Measure", 0, ".Value", "Telas", 1
-
-            '-----------------------------------------------------------------------------
-        Case "uhe_AnalogBarP"
-            VerificarPropriedadeVazia Obj, "uhe_AnalogBarP", "Measure", 0, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "uhe_AnalogBarP", "AlarmSource", 0, "Measure", 1, "NOTEMPTY", "Telas", 1
-            VerificarPropriedadeValor Obj, "uhe_AnalogBarP", "MaxValue", 1, 100, 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "uhe_AnalogBarP", "MinValue", 1, 0, 1, "Telas", 0
-            VerificarPropriedadeTextoProibido Obj, "uhe_AnalogBarP", "Measure", 0, ".Value", "Telas", 1
-
-            '-----------------------------------------------------------------------------
-        Case "uhe_BielaHidraulica"
-            VerificarPropriedadeVazia Obj, "uhe_BielaHidraulica", "Flambada", 0, "Telas", 1
-
-            '-----------------------------------------------------------------------------
-        Case "uhe_BielaMecanica"
-            VerificarPropriedadeVazia Obj, "uhe_BielaMecanica", "Flambada", 0, "Telas", 1
-
-            '-----------------------------------------------------------------------------
-        Case "uhe_Block"
-            VerificarPropriedadeVazia Obj, "uhe_Block", "Block_Tag", 0, "Telas", 1
-            VerificarPropriedadeVazia Obj, "uhe_Block", "BlockArea", 0, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "uhe_Block", "SourceObject", 0, "OpenCommandSelectMenu", 1, True, "Telas", 1
-
-            '-----------------------------------------------------------------------------
-        Case "uhe_Bomb"
-            VerificarPropriedadeCondicional Obj, "uhe_Bomb", "SourceObject", 0, "Unsupervised", 1, False, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "uhe_Bomb", "SourceObject", 0, "OpenCommandSelectMenu", 1, True, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "uhe_Bomb", "DeviceNote", 0, "Unsupervised", 1, False, "Telas", 1
-            VerificarPropriedadeVazia Obj, "uhe_Bomb", "BombOff", 0, "Telas", 1
-            VerificarPropriedadeVazia Obj, "uhe_Bomb", "BombOn", 0, "Telas", 1
-
-            '-----------------------------------------------------------------------------
-        Case "uhe_Bomb2"
-            VerificarPropriedadeCondicional Obj, "uhe_Bomb2", "SourceObject", 0, "Unsupervised", 1, False, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "uhe_Bomb2", "SourceObject", 0, "OpenCommandSelectMenu", 1, True, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "uhe_Bomb2", "DeviceNote", 0, "Unsupervised", 1, False, "Telas", 1
-            VerificarPropriedadeVazia Obj, "uhe_Bomb2", "BombOff", 0, "Telas", 1
-            VerificarPropriedadeVazia Obj, "uhe_Bomb2", "BombOn", 0, "Telas", 1
-
-            '-----------------------------------------------------------------------------
-        Case "uhe_BrakeAlert"
-            VerificarPropriedadeCondicional Obj, "uhe_BrakeAlert", "SourceObject", 0, "Enable", 1, False, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "uhe_BrakeAlert", "DeviceNote", 0, "SourceObject", 0, "NOTEMPTY", "Telas", 1
-            VerificarPropriedadeVazia Obj, "uhe_BrakeAlert", "BrakeTag", 0, "Telas", 1
-
-            '-----------------------------------------------------------------------------
-        Case "uhe_BulbTurbine"
-            VerificarPropriedadeVazia Obj, "uhe_BulbTurbine", "Distributor_Tag", 0, "Telas", 1
-
-            '-----------------------------------------------------------------------------
-        Case "uhe_BusBar"
-            VerificarPropriedadeVazia Obj, "uhe_BusBar", "SourceObject", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "uhe_BusBar", "ObjectColor", 1, 0, 1, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "uhe_Buzzer"
-            VerificarPropriedadeCondicional Obj, "uhe_Buzzer", "SourceObject", 0, "Enable", 1, False, "Telas", 1
-            VerificarPropriedadeVazia Obj, "uhe_Buzzer", "Playing", 0, "Telas", 1
-
-            '-----------------------------------------------------------------------------
-        Case "uhe_Caixa"
-            VerificarPropriedadeVazia Obj, "uhe_Caixa", "Energized", 0, "Telas", 1
-
-            '-----------------------------------------------------------------------------
-        Case "uhe_Chart"
-            VerificarPropriedadeVazia Obj, "uhe_Chart", "PenData1", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "uhe_Chart", "ObjectColor", 1, 0, 1, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "uhe_ChartP"
-            VerificarPropriedadeVazia Obj, "uhe_ChartP", "PenData1", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "uhe_ChartP", "ObjectColor", 1, 0, 1, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "uhe_Command"
-            VerificarPropriedadeVazia Obj, "uhe_Command", "CommandPathNames", 1, "Telas", 1
-            VerificarPropriedadeValor Obj, "uhe_Command", "Descr", 1, "Desccrição", 1, "Telas", 1
-
-            '-----------------------------------------------------------------------------
-        Case "uhe_CommandButton"
-            VerificarPropriedadeVazia Obj, "uhe_CommandButton", "CommandPathNames", 1, "Telas", 1
-            VerificarPropriedadeVazia Obj, "uhe_CommandButton", "Description", 1, "Telas", 1
-            VerificarPropriedadeVazia Obj, "uhe_CommandButton", "Measure", 0, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "uhe_Conduto"
-            VerificarPropriedadeVazia Obj, "uhe_Conduto", "ComAgua", 0, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "uhe_ControlGate"
-            VerificarPropriedadeCondicional Obj, "uhe_ControlGate", "SourceObject", 0, "Unsupervised", 1, False, "Telas", 1
-            VerificarPropriedadeVazia Obj, "uhe_ControlGate", "StateOff_Tag", 0, "Telas", 0
-            VerificarPropriedadeVazia Obj, "uhe_ControlGate", "StateOn_Tag", 0, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "uhe_CtrlDigital"
-            VerificarPropriedadeCondicional Obj, "uhe_CtrlDigital", "CommandPathName", 0, "Enable", 1, "NOTEMPTY", "Telas", 1
-            VerificarPropriedadeVazia Obj, "uhe_CtrlDigital", "Active", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "uhe_CtrlDigital", "Descr", 1, "Desc", 1, "Telas", 1
-            VerificarObjetoDesatualizado Obj, "uhe_CtrlDigital", "generic_automalogica", "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "uhe_CtrlDigital1Op"
-            VerificarPropriedadeCondicional Obj, "uhe_CtrlDigital1Op", "CommandPathName", 0, "Enable", 1, "NOTEMPTY", "Telas", 1
-            VerificarPropriedadeVazia Obj, "uhe_CtrlDigital1Op", "Tag", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "uhe_CtrlDigital1Op", "Descr", 1, "Desc", 1, "Telas", 1
-            VerificarObjetoDesatualizado Obj, "uhe_CtrlDigital1Op", "generic_automalogica", "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "uhe_CtrlDigital2Op"
-            VerificarPropriedadeCondicional Obj, "uhe_CtrlDigital2Op", "CommandPathName1", 0, "Enable", 1, "NOTEMPTY", "Telas", 1
-            VerificarPropriedadeVazia Obj, "uhe_CtrlDigital2Op", "Tag1", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "uhe_CtrlDigital2Op", "Descr1", 1, "Desc1", 1, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "uhe_CtrlDigital2Op", "CommandPathName2", 0, "Enable", 1, "NOTEMPTY", "Telas", 1
-            VerificarPropriedadeVazia Obj, "uhe_CtrlDigital2Op", "Tag2", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "uhe_CtrlDigital2Op", "Descr2", 1, "Desc2", 1, "Telas", 1
-            VerificarObjetoDesatualizado Obj, "uhe_CtrlDigital2Op", "generic_automalogica", "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "uhe_CtrlDigital3Op"
-            VerificarPropriedadeCondicional Obj, "uhe_CtrlDigital3Op", "CommandPathName1", 0, "Enable", 1, "NOTEMPTY", "Telas", 1
-            VerificarPropriedadeVazia Obj, "uhe_CtrlDigital3Op", "Tag1", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "uhe_CtrlDigital3Op", "Descr1", 1, "Desc1", 1, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "uhe_CtrlDigital3Op", "CommandPathName2", 0, "Enable", 1, "NOTEMPTY", "Telas", 1
-            VerificarPropriedadeVazia Obj, "uhe_CtrlDigital3Op", "Tag2", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "uhe_CtrlDigital3Op", "Descr2", 1, "Desc2", 1, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "uhe_CtrlDigital3Op", "CommandPathName3", 0, "Enable", 1, "NOTEMPTY", "Telas", 1
-            VerificarPropriedadeVazia Obj, "uhe_CtrlDigital3Op", "Tag3", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "uhe_CtrlDigital3Op", "Descr3", 1, "Desc3", 1, "Telas", 1
-            VerificarObjetoDesatualizado Obj, "uhe_CtrlDigital3Op", "generic_automalogica", "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "uhe_CtrlDigital4Op"
-            VerificarPropriedadeCondicional Obj, "uhe_CtrlDigital4Op", "CommandPathName1", 0, "Enable", 1, "NOTEMPTY", "Telas", 1
-            VerificarPropriedadeVazia Obj, "uhe_CtrlDigital4Op", "Tag1", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "uhe_CtrlDigital4Op", "Descr1", 1, "Desc1", 1, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "uhe_CtrlDigital4Op", "CommandPathName2", 0, "Enable", 1, "NOTEMPTY", "Telas", 1
-            VerificarPropriedadeVazia Obj, "uhe_CtrlDigital4Op", "Tag2", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "uhe_CtrlDigital4Op", "Descr2", 1, "Desc2", 1, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "uhe_CtrlDigital4Op", "CommandPathName3", 0, "Enable", 1, "NOTEMPTY", "Telas", 1
-            VerificarPropriedadeVazia Obj, "uhe_CtrlDigital4Op", "Tag3", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "uhe_CtrlDigital4Op", "Descr3", 1, "Desc3", 1, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "uhe_CtrlDigital4Op", "CommandPathName4", 0, "Enable", 1, "NOTEMPTY", "Telas", 1
-            VerificarPropriedadeVazia Obj, "uhe_CtrlDigital4Op", "Tag4", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "uhe_CtrlDigital4Op", "Descr4", 1, "Desc4", 1, "Telas", 1
-            VerificarObjetoDesatualizado Obj, "uhe_CtrlDigital4Op", "generic_automalogica", "Telas", 0
-            VerificarPropriedadeCondicional Obj, "uhe_CtrlDigitalOp", "CommandPathName", 0, "Enable", 1, "NOTEMPTY", "Telas", 1
-
-            '-----------------------------------------------------------------------------
-        Case "uhe_CtrlDigitalOp"
-            VerificarPropriedadeVazia Obj, "uhe_CtrlDigitalOp", "Active", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "uhe_CtrlDigitalOp", "Descr", 1, "Desc", 1, "Telas", 1
-            VerificarObjetoDesatualizado Obj, "uhe_CtrlDigitalOp", "generic_automalogica", "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "uhe_Device"
-            VerificarPropriedadeVazia Obj, "uhe_Device", "CmdDecrement", 0, "Telas", 1
-            VerificarPropriedadeVazia Obj, "uhe_CtrlPulse", "CmdIncrement", 0, "Telas", 1
-
-            '-----------------------------------------------------------------------------
-        Case "uhe_Device"
-            VerificarPropriedadeVazia Obj, "uhe_Device", "SourceObject", 0, "Telas", 1
-
-            '-----------------------------------------------------------------------------
-        Case "uhe_DieselGenerator"
-            VerificarPropriedadeCondicional Obj, "uhe_DieselGenerator", "SourceObject", 0, "Enable", 1, False, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "uhe_DieselGenerator", "DeviceNote", 0, "UseNotes", 1, True, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "uhe_DieselGenerator", "DeviceNote", 0, "SourceObject", 0, "NOTEMPTY", "Telas", 1
-            VerificarPropriedadeVazia Obj, "uhe_DieselGenerator", "Estado_Tag", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "uhe_DieselGenerator", "Descricao", 1, "GDE", 1, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "uhe_Direction"
-            VerificarPropriedadeCondicional Obj, "uhe_Direction", "AnalogMeasure", 0, "Enable", 1, False, "Telas", 0
-            VerificarPropriedadeVazia Obj, "uhe_Direction", "ObjectColor", 1, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "uhe_EarthSwitch"
-            VerificarPropriedadeValor Obj, "uhe_EarthSwitch", "CorTerrra", 1, 16777215, 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "uhe_EarthSwitch", "ObjectColor", 1, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "uhe_ExcitationTransformer"
-            VerificarPropriedadeCondicional Obj, "uhe_ExcitationTransformer", "SourceObject", 0, "Enable", 1, False, "Telas", 1
-            VerificarPropriedadeVazia Obj, "uhe_ExcitationTransformer", "Off", 0, "Telas", 0
-            VerificarPropriedadeVazia Obj, "uhe_ExcitationTransformer", "On", 0, "Telas", 0
-            VerificarPropriedadeCondicional Obj, "uhe_ExcitationTransformer", "CommandPathNames", 0, "OpenCommandSelectMenu", 1, True, "Telas", 1
-
-            '-----------------------------------------------------------------------------
-        Case "uhe_Filter"
-            VerificarPropriedadeHabilitada Obj, "uhe_Filter", "Enable", 1, False, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "uhe_Fan"
-            VerificarPropriedadeCondicional Obj, "uhe_Fan", "SourceObject", 0, "Unsupervised", 1, False, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "uhe_Fan", "DeviceNote", 0, "UseNotes", 1, True, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "uhe_Fan", "DeviceNote", 0, "SourceObject", 0, "NOTEMPTY", "Telas", 1
-            VerificarPropriedadeVazia Obj, "uhe_Fan", "FanOff", 0, "Telas", 1
-            VerificarPropriedadeVazia Obj, "uhe_Fan", "FanOn", 0, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "uhe_Fan", "CommandPathNames", 0, "OpenCommandSelectMenu", 1, True, "Telas", 1
-
-            '-----------------------------------------------------------------------------
-        Case "XCPump"
-            VerificarPropriedadeVazia Obj, "XCPump", "SourceObject", 1, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "iconElectricity"
-            VerificarPropriedadeVazia Obj, "iconElectricity", "SourceObject", 1, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "iconComFail"
-            VerificarPropriedadeVazia Obj, "iconComFail", "SourceObject", 1, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "xcLabel"
-            VerificarPropriedadeVazia Obj, "xcLabel", "Caption", 1, "Telas", 1
-
-            '-----------------------------------------------------------------------------
-        Case "xcEtiqueta_Manut"
-            VerificarPropriedadeVazia Obj, "xcEtiqueta_Manut", "CorObjeto", 0, "Telas", 0
-            VerificarPropriedadeVazia Obj, "xcEtiqueta_Manut", "EtiquetaVisivel", 0, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "xcEtiqueta"
-            VerificarPropriedadeVazia Obj, "xcEtiqueta", "AvisoVisivel", 0, "Telas", 0
-            VerificarPropriedadeVazia Obj, "xcEtiqueta", "EventoVisivel", 0, "Telas", 0
-            VerificarPropriedadeVazia Obj, "xcEtiqueta", "FonteObjeto", 0, "Telas", 0
-            VerificarPropriedadeVazia Obj, "xcEtiqueta", "ForaVisivel", 0, "Telas", 0
-            VerificarPropriedadeVazia Obj, "xcEtiqueta", "PathNote", 0, "Telas", 0
-            VerificarPropriedadeVazia Obj, "xcEtiqueta", "Visible", 0, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "xcWaterTank"
-            VerificarPropriedadeVazia Obj, "xcWaterTank", "objSource", 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "xcWaterTank", "objWaterDistribution", 1, "Telas", 0
-            VerificarPropriedadeVazia Obj, "xcWaterTank", "Visible", 0, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "XCDistribution"
-            VerificarPropriedadeVazia Obj, "XCDistribution", "SourceObject", 0, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "XCArrow"
-            VerificarPropriedadeVazia Obj, "XCArrow", "Visible", 0, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "archAeroGenerator"
-            VerificarPropriedadeVazia Obj, "archAeroGenerator", "CommunicationFailure", 0, "Telas", 0
-            VerificarPropriedadeHabilitada Obj, "archAeroGenerator", "Enable", 1, False, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "archCloud"
-            VerificarPropriedadeVazia Obj, "archCloud", "CommunicationFailure", 0, "Telas", 0
-            VerificarPropriedadeHabilitada Obj, "archCloud", "Enable", 1, False, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "archNuclearPlant"
-            VerificarPropriedadeVazia Obj, "archNuclearPlant", "CommunicationFailure", 0, "Telas", 0
-            VerificarPropriedadeHabilitada Obj, "archNuclearPlant", "Enable", 1, False, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "archServerRackmountMultiple"
-            VerificarPropriedadeVazia Obj, "archServerRackmountMultiple", "CommunicationFailure", 0, "Telas", 0
-            VerificarPropriedadeHabilitada Obj, "archServerRackmountMultiple", "Enable", 1, False, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "archSolarPanel"
-            VerificarPropriedadeVazia Obj, "archSolarPanel", "CommunicationFailure", 0, "Telas", 0
-            VerificarPropriedadeHabilitada Obj, "archSolarPanel", "Enable", 1, False, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "archSurveillanceCamera"
-            VerificarPropriedadeVazia Obj, "archSurveillanceCamera", "CommunicationFailure", 0, "Telas", 0
-            VerificarPropriedadeHabilitada Obj, "archSurveillanceCamera", "Enable", 1, False, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "archWifi"
-            VerificarPropriedadeVazia Obj, "archWifi", "CommunicationFailure", 0, "Telas", 0
-            VerificarPropriedadeHabilitada Obj, "archWifi", "Enable", 1, False, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "archDatabase"
-            VerificarPropriedadeHabilitada Obj, "archDatabase", "Enable", 1, False, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "archFirewall"
-            VerificarPropriedadeHabilitada Obj, "archFirewall", "Enable", 1, False, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "archPCH"
-            VerificarPropriedadeHabilitada Obj, "archPCH", "Enable", 1, False, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "archUHE"
-            VerificarPropriedadeHabilitada Obj, "archUHE", "Enable", 1, False, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "archVideoWall"
-            VerificarPropriedadeHabilitada Obj, "archVideoWall", "Enable", 1, False, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "archSwitch"
-            VerificarPropriedadeVazia Obj, "archSwitch", "CommunicationFailure", 0, "Telas", 0
-            VerificarPropriedadeCondicional Obj, "archSwitch", "SourceObject", 0, "Enable", 1, False, "Telas", 1
-
-            '-----------------------------------------------------------------------------
-        Case "archServerDesktop"
-            VerificarPropriedadeVazia Obj, "archServerDesktop", "CommunicationFailure", 0, "Telas", 0
-            VerificarPropriedadeCondicional Obj, "archServerDesktop", "SourceObject", 0, "Enable", 1, False, "Telas", 1
-
-            '-----------------------------------------------------------------------------
-        Case "archRouter"
-            VerificarPropriedadeVazia Obj, "archRouter", "CommunicationFailure", 0, "Telas", 0
-            VerificarPropriedadeCondicional Obj, "archRouter", "SourceObject", 0, "Enable", 1, False, "Telas", 1
-
-            '-----------------------------------------------------------------------------
-        Case "archServerRackmountSingle"
-            VerificarPropriedadeVazia Obj, "archServerRackmountSingle", "CommunicationFailure", 0, "Telas", 0
-            VerificarPropriedadeValor Obj, "archServerRackmountSingle", "Description_Text", 1, "Server name", 1, "Telas", 1
-
-            '-----------------------------------------------------------------------------
-        Case "archViewer"
-            VerificarPropriedadeVazia Obj, "archViewer", "CommunicationFailure", 0, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "archElectricalMeter"
-            VerificarPropriedadeVazia Obj, "archElectricalMeter", "CommunicationFailure", 0, "Telas", 0
-            VerificarPropriedadeValor Obj, "archElectricalMeter", "Description_Text", 1, "IED NAME", 1, "Telas", 1
-
-            '-----------------------------------------------------------------------------
-        Case "archGPSAntenna"
-            VerificarPropriedadeVazia Obj, "archGPSAntenna", "CommunicationFailure", 0, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "archLineHorizontal"
-            VerificarPropriedadeHabilitada Obj, "archLineHorizontal", "Visible", 1, False, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "archLineHorizontal", "FlhCom", 0, "Enable", 1, "NOTEMPTY", "Telas", 0
-            VerificarPropriedadeValor Obj, "archLineHorizontal", "BorderColor", 1, 0, 1, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "archLineVertical"
-            VerificarPropriedadeHabilitada Obj, "archLineVertical", "Visible", 1, False, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "archLineVertical", "FlhCom", 0, "Enable", 1, "NOTEMPTY", "Telas", 0
-            VerificarPropriedadeValor Obj, "archLineVertical", "BorderColor", 1, 0, 1, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "archChannelPanel"
-            VerificarPropriedadeHabilitada Obj, "archChannelPanel", "Visible", 1, False, "Telas", 1
-            Dim tipoPortas, i, qtdEsperada, propFailure
-            tipoPortas = GetPropriedade(Obj, "Type", 1)
-            Select Case CStr(tipoPortas)
-                Case "3": qtdEsperada = 4
-                Case "2": qtdEsperada = 8
-                Case "1": qtdEsperada = 20
-                Case "0": qtdEsperada = 24
-                Case Else
-                    qtdEsperada = 0 ' não definido ou inválido
-            End Select
-            If qtdEsperada > 0 Then
-                For i = 1 To qtdEsperada
-                    propFailure = "FailureState" & Right("0" & i, 2)
-                    VerificarPropriedadeVazia Obj, TypeName(Obj), propFailure, 1, Area, 0
-                Next
-            End If
-
-            '-----------------------------------------------------------------------------
-        Case "archChannelPanelG"
-            VerificarPropriedadeHabilitada Obj, "archChannelPanelG", "Visible", 1, False, "Telas", 1
-            Dim tipoPortasG, iG, qtdEsperadaG, propFailureG
-            tipoPortasG = GetPropriedade(Obj, "Type", 1)
-            Select Case CStr(tipoPortasG)
-                Case "3": qtdEsperadaG = 4
-                Case "2": qtdEsperadaG = 8
-                Case "1": qtdEsperadaG = 20
-                Case "0": qtdEsperadaG = 24
-                Case Else
-                    qtdEsperadaG = 0 ' não definido ou inválido
-            End Select
-            If qtdEsperadaG > 0 Then
-                For iG = 1 To qtdEsperadaG
-                    propFailureG = "FailureState" & Right("0" & iG, 2)
-                    VerificarPropriedadeVazia Obj, TypeName(Obj), propFailureG, 1, Area, 0
-                Next
-            End If
-
-            '-----------------------------------------------------------------------------
-        Case "archChannelPanelP"
-            VerificarPropriedadeHabilitada Obj, "archChannelPanelP", "Visible", 1, False, "Telas", 1
-            Dim tipoPortasP, iP, qtdEsperadaP, propFailureP
-            tipoPortasP = GetPropriedade(Obj, "Type", 1)
-            Select Case CStr(tipoPortasP)
-                Case "3": qtdEsperadaP = 4
-                Case "2": qtdEsperadaP = 8
-                Case "1": qtdEsperadaP = 20
-                Case "0": qtdEsperadaP = 24
-                Case Else
-                    qtdEsperadaP = 0 ' não definido ou inválido
-            End Select
-            If qtdEsperadaP > 0 Then
-                For iP = 1 To qtdEsperadaP
-                    propFailureP = "FailureState" & Right("0" & iP, 2)
-                    VerificarPropriedadeVazia Obj, TypeName(Obj), propFailureP, 1, Area, 0
-                Next
-            End If
-
-            '-----------------------------------------------------------------------------
-        Case "archChannelPanelPP"
-            VerificarPropriedadeHabilitada Obj, "archChannelPanelPP", "Visible", 1, False, "Telas", 1
-            Dim tipoPortasPP, iPP, qtdEsperadaPP, propFailurePP
-            tipoPortasPP = GetPropriedade(Obj, "Type", 1)
-            Select Case CStr(tipoPtipoPortasPPortas)
-                Case "3": qtdEsperadaPP = 4
-                Case "2": qtdEsperadaPP = 8
-                Case "1": qtdEsperadaPP = 20
-                Case "0": qtdEsperadaPP = 24
-                Case Else
-                    qtdEsperadaPP = 0 ' não definido ou inválido
-            End Select
-            If qtdEsperadaPP > 0 Then
-                For iPP = 1 To qtdEsperadaPP
-                    propFailurePP = "FailureState" & Right("0" & iPP, 2)
-                    VerificarPropriedadeVazia Obj, TypeName(Obj), propFailurePP, 1, Area, 0
-                Next
-            End If
-
-            '-----------------------------------------------------------------------------
-        Case "archLed"
-            VerificarPropriedadeHabilitada Obj, "archLed", "Visible", 1, False, "Telas", 1
-            VerificarPropriedadeVazia Obj, "archLed", "FailureState", 0, "Telas", 1
-
-            '-----------------------------------------------------------------------------
-        Case "archModuloIO"
-            VerificarPropriedadeHabilitada Obj, "archModuloIO", "Visible", 1, False, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "archModuloIO", "Failure", 0, "Enable", 1, "NOTEMPTY", "Telas", 0
-            VerificarPropriedadeVazia Obj, "archModuloIO", "Text", 1, "Telas", 1
-
-            '-----------------------------------------------------------------------------
-        Case "archRTU"
-            VerificarPropriedadeHabilitada Obj, "archRTU", "Visible", 1, False, "Telas", 1
-            VerificarPropriedadeVazia Obj, "archRTU", "CommunicationFailure", 0, "Telas", 0
-            VerificarPropriedadeCondicional Obj, "archRTU", "SourceObject", 0, "Enable", 1, False, "Telas", 1
-            VerificarPropriedadeValor Obj, "archRTU", "Description_Text", 1, "RTU NAME", 1, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "archRTU", "IP_Text", 0, "IP_Show", 1, False, "Telas", 1
-
-            '-----------------------------------------------------------------------------
-        Case "archIED"
-            VerificarPropriedadeHabilitada Obj, "archIED", "Visible", 1, False, "Telas", 1
-            VerificarPropriedadeVazia Obj, "archIED", "CommunicationFailure", 0, "Telas", 0
-            VerificarPropriedadeCondicional Obj, "archIED", "SourceObject", 0, "Enable", 1, False, "Telas", 1
-            VerificarPropriedadeValor Obj, "archIED", "Description_Text", 1, "IED NAME", 1, "Telas", 1
-            VerificarPropriedadeCondicional Obj, "archIED", "IP_Text", 0, "IP_Show", 1, False, "Telas", 1
-
-            '-----------------------------------------------------------------------------
-        Case "archInfo"
-            VerificarPropriedadeHabilitada Obj, "archInfo", "Visible", 1, False, "Telas", 1
-            VerificarPropriedadeVazia Obj, "archInfo", "FailureState", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "archInfo", "Description_Text", 1, "Painel - Eqp - Port", 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "archInfo", "ObjectColor", 1, 0, 1, "Telas", 0
-
-            '-----------------------------------------------------------------------------
-        Case "archInfoLine"
-            VerificarPropriedadeHabilitada Obj, "archInfoLine", "Visible", 1, False, "Telas", 1
-            VerificarPropriedadeVazia Obj, "archInfoLine", "FailureState", 0, "Telas", 1
-            VerificarPropriedadeValor Obj, "archInfoLine", "Description_Text", 1, "Painel - Eqp - Port", 1, "Telas", 0
-            VerificarPropriedadeValor Obj, "archInfoLine", "ObjectColor", 1, 0, 1, "Telas", 0
-
-            '-----------------------------------------------------------------
+    '=================================================================
+    ' Objetos contêineres  →  verificação recursiva
+    '=================================================================
+Case "DataServer", "DataFolder", "Screen", "DrawGroup"
+
+    For Each child In Obj
+        VerificarPropriedadesObjetoTela child
+    Next
+
+    '=================================================================
+    ' A partir daqui: blocos por tipo de objeto de tela/biblioteca
+    '=================================================================
+Case "pwa_Disjuntor"
+	VerificarPropriedadeCondicional Obj, "pwa_Disjuntor", "NaoSupervisionado", "SourceObject", False, "Telas", 1
+	VerificarPropriedadeCondicional Obj, "pwa_Disjuntor", "NaoSupervisionado", "PositionMeas", False, "Telas", 1
+	VerificarPropriedadeCondicional Obj, "pwa_Disjuntor", "NaoSupervisionado", "DeviceNote", False, "Telas", 1
+	VerificarPropriedadeValor Obj, "pwa_Disjuntor", "CorOff", 0, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "pwa_Disjuntor", "CorOn", 0, 1, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "pwa_DisjuntorP"
+	VerificarPropriedadeCondicional Obj, "pwa_DisjuntorP", "NaoSupervisionado", "SourceObject", False, "Telas", 1
+	VerificarPropriedadeCondicional Obj, "pwa_DisjuntorP", "NaoSupervisionado", "PositionMeas", False, "Telas", 1
+	VerificarPropriedadeCondicional Obj, "pwa_DisjuntorP", "NaoSupervisionado", "DeviceNote", False, "Telas", 1
+	VerificarPropriedadeValor Obj, "pwa_DisjuntorP", "CorOff", 0, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "pwa_DisjuntorP", "CorOn", 0, 1, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "pwa_DisjuntorPP"
+	VerificarPropriedadeCondicional Obj, "pwa_DisjuntorPP", "NaoSupervisionado", "SourceObject", False, "Telas", 1
+	VerificarPropriedadeCondicional Obj, "pwa_DisjuntorPP", "NaoSupervisionado", "PositionMeas", False, "Telas", 1
+	VerificarPropriedadeCondicional Obj, "pwa_DisjuntorPP", "NaoSupervisionado", "DeviceNote", False, "Telas", 1
+	VerificarPropriedadeValor Obj, "pwa_DisjuntorPP", "CorOff", 0, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "pwa_DisjuntorPP", "CorOn", 0, 1, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "pwa_Seccionadora"
+	VerificarPropriedadeCondicional Obj, "pwa_Seccionadora", "NaoSupervisionado", "SourceObject", False, "Telas", 1
+	VerificarPropriedadeCondicional Obj, "pwa_Seccionadora", "NaoSupervisionado", "PositionMeas", False, "Telas", 1
+	VerificarPropriedadeCondicional Obj, "pwa_Seccionadora", "NaoSupervisionado", "DeviceNote", False, "Telas", 1
+	VerificarPropriedadeValor Obj, "pwa_Seccionadora", "CorOff", 0, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "pwa_Seccionadora", "CorOn", 0, 1, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "pwa_BarraAlarme"
+	VerificarPropriedadeCondicional Obj, "pwa_BarraAlarme", "NaoSupervisionado", "AnalogMeas", False, "Telas", 0
+	VerificarPropriedadeCondicional Obj, "pwa_BarraAlarme", "NaoSupervisionado", "AlarmSource", False, "Telas", 1
+	VerificarPropriedadeCondicional Obj, "pwa_BarraAlarme", "AnalogMeas", "AlarmSource", "NOTEMPTY", "Telas", 1
+	VerificarPropriedadeValor Obj, "pwa_BarraAlarme", "ValorMaximo", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "pwa_BarraAlarme", "ValorMinimo", 0, 1, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "pwa_Barra"
+	VerificarPropriedadeCondicional Obj, "pwa_Barra", "Enabled", "SourceObject", False, "Telas", 1
+	VerificarPropriedadeValor Obj, "pwa_Barra", "CorOff", 0, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "pwa_Barra", "CorOn", 0, 1, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "pwa_Barra2"
+	VerificarPropriedadeCondicional Obj, "pwa_Barra2", "Enabled", "SourceObject", False, "Telas", 1
+	VerificarPropriedadeValor Obj, "pwa_Barra2", "CorOff", 0, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "pwa_Barra2", "CorOn", 0, 1, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "pwa_Barra2Vert"
+	VerificarPropriedadeCondicional Obj, "pwa_Barra2Vert", "Enabled", "SourceObject", False, "Telas", 1
+	VerificarPropriedadeValor Obj, "pwa_Barra2Vert", "CorOff", 0, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "pwa_Barra2Vert", "CorOn", 0, 1, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "pwa_Bateria"
+	VerificarPropriedadeValor Obj, "pwa_Bateria", "Energizado", True, 1, "Telas", 1
+	VerificarPropriedadeValor Obj, "pwa_Bateria", "CorOff", 15790320, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "pwa_Bateria", "CorOn", 5263440, 1, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "pwa_BotaoAbreTela"
+	VerificarPropriedadeVazia Obj, "pwa_BotaoAbreTela", "Config_Zoom", "Telas", 1
+	VerificarPropriedadeVazia Obj, "pwa_BotaoAbreTela", "Config_TelaQuadroPatName", "Telas", 1
+	VerificarPropriedadeValor Obj, "pwa_BotaoAbreTela", "Config_Descricao", "Desccrição", 1, "Telas", 1
+	VerificarObjetoDesatualizado Obj, "pwa_BotaoAbreTela", "generic_automalogica", "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "pwa_Gerador"
+	VerificarPropriedadeCondicional Obj, "pwa_Gerador", "Enabled", "SourceObject", False, "Telas", 1
+	VerificarPropriedadeCondicional Obj, "pwa_Gerador", "GenEstado", "SourceObject", "NOTEMPTY", "Telas", 1
+	'-----------------------------------------------------------------------------
+Case "pwa_GeradorG"
+	VerificarPropriedadeCondicional Obj, "pwa_GeradorG", "PotenciaMedia", "AlarmSource", "NOTEMPTY", "Telas", 1
+	VerificarPropriedadeVazia Obj, "pwa_GeradorG", "PotenciaMedia", "Telas", 1
+	VerificarPropriedadeValor Obj, "pwa_GeradorG", "PotenciaMaximaNominal", 0, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "pwa_GeradorG", "Gerador", True, 1, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "pwa_HomeButton"
+	VerificarPropriedadeVazia Obj, "pwa_HomeButton", "ScreenOrFramePathName", "Telas", 1
+	VerificarPropriedadeVazia Obj, "pwa_HomeButton", "ScreenDescription", "Telas", 0
+	VerificarPropriedadeValor Obj, "pwa_HomeButton", "Description", "Alarmes", 1, "Telas", 1
+	'-----------------------------------------------------------------------------
+Case "pwa_GrupoVSL"
+	VerificarPropriedadeVazia Obj, "pwa_GrupoVSL", "PositionMeasObject", "Telas", 1
+	VerificarPropriedadeVazia Obj, "pwa_GrupoVSL", "AnalogMeas", "Telas", 1
+	'-----------------------------------------------------------------------------
+Case "pwa_InfoAlarme01"
+	VerificarPropriedadeVazia Obj, "pwa_InfoAlarme01", "SourceObject01", "Telas", 1
+	VerificarPropriedadeValor Obj, "pwa_InfoAlarme01", "Descricao", "XXX", 1, "Telas", 1
+	VerificarObjetoDesatualizado Obj, "pwa_InfoAlarme01", "generic_automalogica", "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "pwa_InfoAlarme05"
+	VerificarPropriedadeVazia Obj, "pwa_InfoAlarme05", "SourceObject01", "Telas", 1
+	VerificarPropriedadeValor Obj, "pwa_InfoAlarme05", "Descricao", "XXX", 1, "Telas", 1
+	VerificarObjetoDesatualizado Obj, "pwa_InfoAlarme05", "generic_automalogica", "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "pwa_InfoAlarme10"
+	VerificarPropriedadeVazia Obj, "pwa_InfoAlarme10", "SourceObject01", "Telas", 1
+	VerificarPropriedadeValor Obj, "pwa_InfoAlarme10", "Descricao", "XXX", 1, "Telas", 1
+	VerificarObjetoDesatualizado Obj, "pwa_InfoAlarme10", "generic_automalogica", "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "pwa_InfoAnalogica"
+	VerificarPropriedadeVazia Obj, "pwa_InfoAnalogica", "SourceObject", "Telas", 1
+	VerificarPropriedadeCondicional Obj, "pwa_InfoAnalogica", "SourceObject", "AlarmSource", "NOTEMPTY", "Telas", 1
+	VerificarPropriedadeCondicional Obj, "pwa_InfoAnalogica", "SPShow", "SPTag", False, "Telas", 1
+	VerificarPropriedadeTextoProibido Obj, "pwa_InfoAnalogica", "SourceObject", ".Value", "Telas", 1
+	VerificarPropriedadeHabilitada Obj, "pwa_InfoAnalogica", "ShowUE", True, "Telas", 1
+	VerificarObjetoDesatualizado Obj, "pwa_InfoAnalogica", "generic_automalogica", "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "pwa_InfoAnalogicaG"
+	VerificarPropriedadeVazia Obj, "pwa_InfoAnalogicaG", "SourceObject", "Telas", 1
+	VerificarPropriedadeCondicional Obj, "pwa_InfoAnalogicaG", "SourceObject", "AlarmSource", "NOTEMPTY", "Telas", 1
+	VerificarPropriedadeCondicional Obj, "pwa_InfoAnalogicaG", "SPShow", "SPTag", False, "Telas", 1
+	VerificarPropriedadeTextoProibido Obj, "pwa_InfoAnalogicaG", "SourceObject", ".Value", "Telas", 1
+	VerificarPropriedadeHabilitada Obj, "pwa_InfoAnalogicaG", "ShowUE", True, "Telas", 1
+	VerificarObjetoDesatualizado Obj, "pwa_InfoAnalogicaG", "generic_automalogica", "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "pwa_InfoPot"
+	VerificarPropriedadeVazia Obj, "pwa_InfoPot", "PotenciaMedida", "Telas", 1
+	VerificarPropriedadeCondicional Obj, "pwa_InfoPot", "PotenciaMedia", "AlarmSource", "NOTEMPTY", "Telas", 1
+	VerificarPropriedadeCondicional Obj, "pwa_InfoPot", "HabilitaSetpoint", "SetPointPotencia", False, "Telas", 1
+	VerificarPropriedadeValor Obj, "pwa_InfoPot", "PotenciaMaximaNominal", 0, 1, "Telas", 0
+	VerificarObjetoDesatualizado Obj, "pwa_InfoPot", "generic_automalogica", "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "pwa_InfoPotP"
+	VerificarPropriedadeVazia Obj, "pwa_InfoPotP", "PotenciaMedida", "Telas", 1
+	VerificarPropriedadeCondicional Obj, "pwa_InfoPotP", "PotenciaMedia", "AlarmSource", "NOTEMPTY", "Telas", 1
+	VerificarPropriedadeCondicional Obj, "pwa_InfoPotP", "HabilitaSetpoint", "SetPointPotencia", False, "Telas", 1
+	VerificarPropriedadeValor Obj, "pwa_InfoPotP", "PotenciaMaximaNominal", 100, 1, "Telas", 0
+	VerificarObjetoDesatualizado Obj, "pwa_InfoPotP", "generic_automalogica", "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "pwa_InfoPotG"
+	VerificarPropriedadeVazia Obj, "pwa_InfoPotG", "PotenciaMedida", "Telas", 1
+	VerificarPropriedadeCondicional Obj, "pwa_InfoPotG", "PotenciaMedia", "AlarmSource", "NOTEMPTY", "Telas", 1
+	VerificarPropriedadeCondicional Obj, "pwa_InfoPotG", "HabilitaSetpoint", "SetPointPotencia", False, "Telas", 1
+	VerificarPropriedadeValor Obj, "pwa_InfoPotG", "PotenciaMaximaNominal", 100, 1, "Telas", 0
+	VerificarObjetoDesatualizado Obj, "pwa_InfoPotG", "generic_automalogica", "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "pwa_Inversor"
+	VerificarPropriedadeValor Obj, "pwa_Inversor", "Energizado", True, 1, "Telas", 1
+	'-----------------------------------------------------------------------------
+Case "pwa_LineHoriz"
+	VerificarPropriedadeValor Obj, "pwa_LineHoriz", "Energizado", True, 1, "Telas", 1
+	VerificarPropriedadeValor Obj, "pwa_LineHoriz", "CorOff", 15790320, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "pwa_LineHoriz", "CorOn", 5263440, 1, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "pwa_LineVert"
+	VerificarPropriedadeValor Obj, "pwa_LineVert", "Energizado", True, 1, "Telas", 1
+	VerificarPropriedadeValor Obj, "pwa_LineVert", "CorOff", 15790320, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "pwa_LineVert", "CorOn", 5263440, 1, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "pwa_AutoTrafo"
+	VerificarPropriedadeCondicional Obj, "pwa_AutoTrafo", "Enabled", "SourceObject", False, "Telas", 1
+	VerificarPropriedadeCondicional Obj, "pwa_AutoTrafo", "SourceObject", "DeviceNote", "NOTEMPTY", "Telas", 1
+	VerificarPropriedadeValor Obj, "pwa_AutoTrafo", "CorOff", 16777215, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "pwa_AutoTrafo", "CorOnTerminal1", 0, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "pwa_AutoTrafo", "CorOnTerminal2", 0, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "pwa_AutoTrafo", "CorOnTerminal3", 0, 1, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "pwa_Capacitor"
+	VerificarPropriedadeCondicional Obj, "pwa_Capacitor", "Enabled", "SourceObject", False, "Telas", 1
+	VerificarPropriedadeValor Obj, "pwa_Capacitor", "CorOff", 0, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "pwa_Capacitor", "CorOn", 0, 1, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "pwa_Carga"
+	VerificarPropriedadeCondicional Obj, "pwa_Carga", "Enabled", "SourceObject", False, "Telas", 1
+	VerificarPropriedadeCondicional Obj, "pwa_Carga", "SourceObject", "DeviceNote", "NOTEMPTY", "Telas", 1
+	VerificarPropriedadeValor Obj, "pwa_Carga", "CorOff", 0, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "pwa_Carga", "CorOn", 0, 1, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "pwa_Conexao"
+	VerificarPropriedadeValor Obj, "pwa_Conexao", "CorObjeto", 4605520, 1, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "pwa_Jumper"
+	VerificarPropriedadeValor Obj, "pwa_Jumper", "CorObjeto", 0, 1, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "pwa_Retificador"
+	VerificarPropriedadeValor Obj, "pwa_Retificador", "Energizado", True, 1, "Telas", 1
+	'-----------------------------------------------------------------------------
+Case "pwa_Terra"
+	VerificarPropriedadeValor Obj, "pwa_Terra", "CorTerrra", 16777215, 1, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "pwa_Terra2"
+	VerificarPropriedadeValor Obj, "pwa_Terra2", "CorTerrra", 16777215, 1, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "pwa_Reactor"
+	VerificarPropriedadeCondicional Obj, "pwa_Reactor", "Enabled", "SourceObject", False, "Telas", 1
+	VerificarPropriedadeValor Obj, "pwa_Reactor", "CorOff", 0, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "pwa_Reactor", "CorOn", 0, 1, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "pwa_Relig"
+	VerificarPropriedadeCondicional Obj, "pwa_Relig", "NaoSupervisionado", "SourceObject", False, "Telas", 1
+	VerificarPropriedadeCondicional Obj, "pwa_Relig", "NaoSupervisionado", "PositionMeas", False, "Telas", 1
+	VerificarPropriedadeCondicional Obj, "pwa_Relig", "UseNotes", "DeviceNote", True, "Telas", 1
+	VerificarPropriedadeValor Obj, "pwa_Relig", "CorOff", 0, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "pwa_Relig", "CorOn", 0, 1, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "pwa_Sensor"
+	VerificarPropriedadeCondicional Obj, "pwa_Sensor", "Enabled", "SourceObject", False, "Telas", 1
+	VerificarPropriedadeValor Obj, "pwa_Sensor", "BorderColor", 255, 1, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "pwa_VentForc"
+	VerificarPropriedadeCondicional Obj, "pwa_VentForc", "Unsupervised", "Measure", False, "Telas", 1
+	'-----------------------------------------------------------------------------
+Case "pwa_TapV"
+	VerificarPropriedadeVazia Obj, "pwa_TapV", "Measure", "Telas", 1
+	VerificarPropriedadeVazia Obj, "pwa_TapV", "CmdDown", "Telas", 1
+	VerificarPropriedadeVazia Obj, "pwa_TapV", "CmdUp", "Telas", 1
+	VerificarPropriedadeValor Obj, "pwa_TapV", "MaxLimit", 8, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "pwa_TapV", "MinLimit", 2, 1, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "pwa_InfoPotRea"
+	VerificarPropriedadeVazia Obj, "pwa_InfoPotRea", "PotRea", "Telas", 1
+	VerificarPropriedadeCondicional Obj, "pwa_InfoPotRea", "PotRea", "AlarmSource", "NOTEMPTY", "Telas", 1
+	VerificarPropriedadeCondicional Obj, "pwa_InfoPotRea", "SpShow", "SetPointPotencia", False, "Telas", 1
+	VerificarPropriedadeValor Obj, "pwa_InfoPotRea", "MaxPotReaPos", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "pwa_InfoPotRea", "MinPotReaPos", -100, 1, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "pwa_ReguladorTensao"
+	VerificarPropriedadeCondicional Obj, "pwa_ReguladorTensao", "Enabled", "SourceObject", False, "Telas", 1
+	VerificarPropriedadeCondicional Obj, "pwa_ReguladorTensao", "SourceObject", "DeviceNote", "NOTEMPTY", "Telas", 1
+	VerificarPropriedadeCondicional Obj, "pwa_ReguladorTensao", "UseNotes", "TAPMeas", True, "Telas", 1
+	VerificarPropriedadeValor Obj, "pwa_ReguladorTensao", "CorOff", 16777215, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "pwa_ReguladorTensao", "CorOnTerminal1", 0, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "pwa_ReguladorTensao", "CorOnTerminal2", 0, 1, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "pwa_Menu"
+	VerificarPropriedadeVazia Obj, "pwa_Menu", "SourceObject", "Telas", 1
+	VerificarPropriedadeVazia Obj, "pwa_Menu", "SpecialScreens", "Telas", 1
+	VerificarPropriedadeVazia Obj, "pwa_Menu", "ScreenArg", "Telas", 1
+	'-----------------------------------------------------------------------------
+Case "pwa_TrafoSA"
+	VerificarPropriedadeCondicional Obj, "pwa_TrafoSA", "Enabled", "SourceObject", False, "Telas", 1
+	VerificarPropriedadeCondicional Obj, "pwa_TrafoSA", "UseNotes", "DeviceNote", True, "Telas", 1
+	VerificarPropriedadeValor Obj, "pwa_TrafoSA", "CorOff", 16777215, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "pwa_TrafoSA", "CorOnTerminal1", 0, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "pwa_TrafoSA", "CorOnTerminal2", 0, 1, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "pwa_Trafo3Type01"
+	VerificarPropriedadeCondicional Obj, "pwa_Trafo3Type01", "Enabled", "SourceObject", False, "Telas", 1
+	VerificarPropriedadeCondicional Obj, "pwa_Trafo3Type01", "UseNotes", "DeviceNote", True, "Telas", 1
+	VerificarPropriedadeCondicional Obj, "pwa_Trafo3Type01", "TAPSPShow", "TAPSPTag", False, "Telas", 1
+	VerificarPropriedadeValor Obj, "pwa_Trafo3Type01", "CorOff", 16777215, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "pwa_Trafo3Type01", "CorOnTerminal1", 0, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "pwa_Trafo3Type01", "CorOnTerminal2", 0, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "pwa_Trafo3Type01", "CorOnTerminal3", 0, 1, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "pwa_Trafo3_P"
+	VerificarPropriedadeCondicional Obj, "pwa_Trafo3_P", "Enabled", "SourceObject", False, "Telas", 1
+	VerificarPropriedadeCondicional Obj, "pwa_Trafo3_P", "UseNotes", "DeviceNote", True, "Telas", 1
+	VerificarPropriedadeCondicional Obj, "pwa_Trafo3_P", "TAPSPShow", "TAPSPTag", False, "Telas", 1
+	VerificarPropriedadeValor Obj, "pwa_Trafo3_P", "CorOff", 16777215, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "pwa_Trafo3_P", "CorOnTerminal1", 0, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "pwa_Trafo3_P", "CorOnTerminal2", 0, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "pwa_Trafo3_P", "CorOnTerminal3", 0, 1, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "pwa_Trafo3"
+	VerificarPropriedadeCondicional Obj, "pwa_Trafo3", "Enabled", "SourceObject", False, "Telas", 1
+	VerificarPropriedadeCondicional Obj, "pwa_Trafo3", "UseNotes", "DeviceNote", True, "Telas", 1
+	VerificarPropriedadeCondicional Obj, "pwa_Trafo3", "TAPSPShow", "TAPSPTag", False, "Telas", 1
+	VerificarPropriedadeValor Obj, "pwa_Trafo3", "CorOff", 16777215, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "pwa_Trafo3", "CorOnTerminal1", 0, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "pwa_Trafo3", "CorOnTerminal2", 0, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "pwa_Trafo3", "CorOnTerminal3", 0, 1, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "pwa_Trafo2Term"
+	VerificarPropriedadeCondicional Obj, "pwa_Trafo2Term", "Enabled", "SourceObject", False, "Telas", 1
+	VerificarPropriedadeCondicional Obj, "pwa_Trafo2Term", "UseNotes", "DeviceNote", True, "Telas", 1
+	VerificarPropriedadeCondicional Obj, "pwa_Trafo2Term", "TAPSPShow", "TAPSPTag", False, "Telas", 1
+	VerificarPropriedadeValor Obj, "pwa_Trafo2Term", "CorOff", 16777215, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "pwa_Trafo2Term", "CorOnTerminal1", 0, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "pwa_Trafo2Term", "CorOnTerminal2", 0, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "pwa_Trafo2Term", "CorOnTerminal3", 0, 1, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "pwa_Trafo2"
+	VerificarPropriedadeCondicional Obj, "pwa_Trafo2", "Enabled", "SourceObject", False, "Telas", 1
+	VerificarPropriedadeCondicional Obj, "pwa_Trafo2", "UseNotes", "DeviceNote", True, "Telas", 1
+	VerificarPropriedadeCondicional Obj, "pwa_Trafo2", "TAPSPShow", "TAPSPTag", False, "Telas", 1
+	VerificarPropriedadeValor Obj, "pwa_Trafo2", "CorOff", 16777215, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "pwa_Trafo2", "CorOnTerminal1", 0, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "pwa_Trafo2", "CorOnTerminal2", 0, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "pwa_Trafo2", "CorOnTerminal3", 0, 1, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "gx_AbnormalityIndicator"
+	VerificarPropriedadeValor Obj, "gx_AbnormalityIndicator", "Measurement01Active", False, 1, "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_AbnormalityIndicator", "Measurement01Desc", "XXX", 1, "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_AbnormalityIndicator", "SideToGrowing", 1, 1, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "gx_Analogic"
+	VerificarPropriedadeVazia Obj, "gx_Analogic", "Measure", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_Analogic", "Show", False, 1, "Telas", 1
+	'-----------------------------------------------------------------------------
+Case "gx_ButtonOpenCommandScreen"
+	VerificarPropriedadeVazia Obj, "gx_ButtonOpenCommandScreen", "SourceObject", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_ButtonOpenCommandScreen", "Description", "descrição", 1, "Telas", 1
+	'-----------------------------------------------------------------------------
+Case "gx_Counter"
+	VerificarPropriedadeValor Obj, "gx_Counter", "Value", 0, 1, "Telas", 1
+	'-----------------------------------------------------------------------------
+Case "gx_CtrlDigital"
+	VerificarPropriedadeCondicional Obj, "gx_CtrlDigital", "Enabled", "CommandPathName", "NOTEMPTY", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_CtrlDigital", "Active", False, 1, "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_CtrlDigital", "Descr", "Desc", 1, "Telas", 1
+	'-----------------------------------------------------------------------------
+Case "gx_CtrlDigital1Op"
+	VerificarPropriedadeCondicional Obj, "gx_CtrlDigital1Op", "Enabled", "CommandPathName", "NOTEMPTY", "Telas", 1
+	VerificarPropriedadeVazia Obj, "gx_CtrlDigital1Op", "Tag", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_CtrlDigital1Op", "Descr", "Desc", 1, "Telas", 1
+	'-----------------------------------------------------------------------------
+Case "gx_CtrlDigital2Op"
+	VerificarPropriedadeCondicional Obj, "gx_CtrlDigital2Op", "Enabled", "CommandPathName1", "NOTEMPTY", "Telas", 1
+	VerificarPropriedadeVazia Obj, "gx_CtrlDigital2Op", "Tag1", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_CtrlDigital2Op", "Descr1", "Desc1", 1, "Telas", 1
+	VerificarPropriedadeCondicional Obj, "gx_CtrlDigital2Op", "Enabled", "CommandPathName2", "NOTEMPTY", "Telas", 1
+	VerificarPropriedadeVazia Obj, "gx_CtrlDigital2Op", "Tag2", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_CtrlDigital2Op", "Descr2", "Desc2", 1, "Telas", 1
+	'-----------------------------------------------------------------------------
+Case "gx_CtrlDigital3Op"
+	VerificarPropriedadeCondicional Obj, "gx_CtrlDigital3Op", "Enabled", "CommandPathName1", "NOTEMPTY", "Telas", 1
+	VerificarPropriedadeVazia Obj, "gx_CtrlDigital3Op", "Tag1", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_CtrlDigital3Op", "Descr1", "Desc1", 1, "Telas", 1
+	VerificarPropriedadeCondicional Obj, "gx_CtrlDigital3Op", "Enabled", "CommandPathName2", "NOTEMPTY", "Telas", 1
+	VerificarPropriedadeVazia Obj, "gx_CtrlDigital3Op", "Tag2", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_CtrlDigital3Op", "Descr2", "Desc2", 1, "Telas", 1
+	VerificarPropriedadeCondicional Obj, "gx_CtrlDigital3Op", "Enabled", "CommandPathName3", "NOTEMPTY", "Telas", 1
+	VerificarPropriedadeVazia Obj, "gx_CtrlDigital3Op", "Tag3", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_CtrlDigital3Op", "Descr3", "Desc3", 1, "Telas", 1
+	'-----------------------------------------------------------------------------
+Case "gx_CtrlDigital4Op"
+	VerificarPropriedadeCondicional Obj, "gx_CtrlDigital4Op", "Enabled", "CommandPathName1", "NOTEMPTY", "Telas", 1
+	VerificarPropriedadeVazia Obj, "gx_CtrlDigital4Op", "Tag1", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_CtrlDigital4Op", "Descr1", "Desc1", 1, "Telas", 1
+	VerificarPropriedadeCondicional Obj, "gx_CtrlDigital4Op", "Enabled", "CommandPathName2", "NOTEMPTY", "Telas", 1
+	VerificarPropriedadeVazia Obj, "gx_CtrlDigital4Op", "Tag2", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_CtrlDigital4Op", "Descr2", "Desc2", 1, "Telas", 1
+	VerificarPropriedadeCondicional Obj, "gx_CtrlDigital4Op", "Enabled", "CommandPathName3", "NOTEMPTY", "Telas", 1
+	VerificarPropriedadeVazia Obj, "gx_CtrlDigital4Op", "Tag3", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_CtrlDigital4Op", "Descr3", "Desc3", 1, "Telas", 1
+	VerificarPropriedadeCondicional Obj, "gx_CtrlDigital4Op", "Enabled", "CommandPathName4", "NOTEMPTY", "Telas", 1
+	VerificarPropriedadeVazia Obj, "gx_CtrlDigital4Op", "Tag4", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_CtrlDigital4Op", "Descr4", "Desc4", 1, "Telas", 1
+	'-----------------------------------------------------------------------------
+Case "gx_InfoAnalogic"
+	VerificarPropriedadeVazia Obj, "gx_InfoAnalogic", "Measure", "Telas", 1
+	VerificarPropriedadeCondicional Obj, "gx_InfoAnalogic", "Measure", "AlarmSource", "NOTEMPTY", "Telas", 1
+	VerificarPropriedadeCondicional Obj, "gx_InfoAnalogic", "SPShow", "SPTag", False, "Telas", 1
+	VerificarPropriedadeTextoProibido Obj, "gx_InfoAnalogic", "Measure", ".Value", "Telas", 1
+	VerificarPropriedadeHabilitada Obj, "gx_InfoAnalogic", "ShowUE", True, "Telas", 1
+	'-----------------------------------------------------------------------------
+Case "gx_InfoAnalogic2"
+	VerificarPropriedadeVazia Obj, "gx_InfoAnalogic2", "Measure", "Telas", 1
+	VerificarPropriedadeCondicional Obj, "gx_InfoAnalogic2", "Measure", "AlarmSource", "NOTEMPTY", "Telas", 1
+	VerificarPropriedadeCondicional Obj, "gx_InfoAnalogic2", "SPShow", "SPTag", False, "Telas", 1
+	VerificarPropriedadeTextoProibido Obj, "gx_InfoAnalogic2", "Measure", ".Value", "Telas", 1
+	VerificarPropriedadeHabilitada Obj, "gx_InfoAnalogic2", "ShowUE", True, "Telas", 1
+	'-----------------------------------------------------------------------------
+Case "gx_InfoDoughnutChart"
+	VerificarPropriedadeVazia Obj, "gx_InfoDoughnutChart", "Measure", "Telas", 1
+	VerificarPropriedadeCondicional Obj, "gx_InfoDoughnutChart", "Measure", "AlarmSource", "NOTEMPTY", "Telas", 1
+	VerificarPropriedadeCondicional Obj, "gx_InfoDoughnutChart", "SPShow", "SPTag", False, "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_InfoDoughnutChart", "NominalValue", 100, 1, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "gx_InfoSetpoint"
+	VerificarPropriedadeVazia Obj, "gx_InfoSetpoint", "SPTag", "Telas", 1
+	VerificarPropriedadeHabilitada Obj, "gx_InfoSetpoint", "ShowUE", True, "Telas", 1
+	'-----------------------------------------------------------------------------
+Case "gx_Menu"
+	'Objeto não possui verificações
+	'-----------------------------------------------------------------------------
+Case "gx_Notes"
+	VerificarPropriedadeVazia Obj, "gx_Notes", "DeviceNote", "Telas", 1
+	'-----------------------------------------------------------------------------
+Case "gx_OpenTabularArea1"
+	VerificarPropriedadeValor Obj, "gx_OpenTabularArea1", "Descricao", "XXX", 1, "Telas", 1
+	VerificarPropriedadeVazia Obj, "gx_OpenTabularArea1", "Areas", "Telas", 1
+	VerificarPropriedadeCondicional Obj, "gx_OpenTabularArea1", "ScreenZoom", "ScreenPathNames ", "NOTEMPTY", "Telas", 1
+	'Objeto não possui verificações
+	'-----------------------------------------------------------------------------
+Case "gx_QualityIcon"
+	VerificarPropriedadeVazia Obj, "gx_QualityIcon", "Measurement", "Telas", 1
+	'-----------------------------------------------------------------------------
+Case "gx_RadarChart03"
+	VerificarPropriedadeVazia Obj, "gx_RadarChart03", "Meas01", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart03", "Meas01MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart03", "Meas01MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart03", "Meas02", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart03", "Meas02MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart03", "Meas02MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart03", "Meas03", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart03", "Meas03MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart03", "Meas03MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart03", "ZoneMaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart03", "ZoneMinLim", 0, 1, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "gx_RadarChart04"
+	VerificarPropriedadeVazia Obj, "gx_RadarChart04", "Meas01", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart04", "Meas01MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart04", "Meas01MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart04", "Meas02", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart04", "Meas02MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart04", "Meas02MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart04", "Meas03", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart04", "Meas03MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart04", "Meas03MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart04", "Meas04", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart04", "Meas04MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart04", "Meas04MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart04", "ZoneMaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart04", "ZoneMinLim", 0, 1, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "gx_RadarChart05"
+	VerificarPropriedadeVazia Obj, "gx_RadarChart05", "Meas01", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart05", "Meas01MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart05", "Meas01MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart05", "Meas02", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart05", "Meas02MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart05", "Meas02MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart05", "Meas03", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart05", "Meas03MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart05", "Meas03MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart05", "Meas04", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart05", "Meas04MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart05", "Meas04MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart05", "Meas05", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart05", "Meas05MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart05", "Meas05MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart05", "ZoneMaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart05", "ZoneMinLim", 0, 1, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "gx_RadarChart06"
+	VerificarPropriedadeVazia Obj, "gx_RadarChart06", "Meas01", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart06", "Meas01MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart06", "Meas01MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart06", "Meas02", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart06", "Meas02MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart06", "Meas02MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart06", "Meas03", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart06", "Meas03MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart06", "Meas03MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart06", "Meas04", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart06", "Meas04MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart06", "Meas04MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart06", "Meas05", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart06", "Meas05MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart06", "Meas05MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart06", "Meas06", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart06", "Meas06MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart06", "Meas06MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart06", "ZoneMaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart06", "ZoneMinLim", 0, 1, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "gx_RadarChart07"
+	VerificarPropriedadeVazia Obj, "gx_RadarChart07", "Meas01", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart07", "Meas01MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart07", "Meas01MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart07", "Meas02", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart07", "Meas02MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart07", "Meas02MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart07", "Meas03", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart07", "Meas03MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart07", "Meas03MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart07", "Meas04", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart07", "Meas04MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart07", "Meas04MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart07", "Meas05", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart07", "Meas05MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart07", "Meas05MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart07", "Meas06", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart07", "Meas06MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart07", "Meas06MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart07", "Meas07", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart07", "Meas07MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart07", "Meas07MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart07", "ZoneMaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart07", "ZoneMinLim", 0, 1, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "gx_RadarChart08"
+	VerificarPropriedadeVazia Obj, "gx_RadarChart08", "Meas01", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart08", "Meas01MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart08", "Meas01MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart08", "Meas02", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart08", "Meas02MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart08", "Meas02MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart08", "Meas03", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart08", "Meas03MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart08", "Meas03MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart08", "Meas04", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart08", "Meas04MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart08", "Meas04MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart08", "Meas05", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart08", "Meas05MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart08", "Meas05MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart08", "Meas06", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart08", "Meas06MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart08", "Meas06MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart08", "Meas07", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart08", "Meas07MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart08", "Meas07MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart08", "Meas08", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart08", "Meas08MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart08", "Meas08MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart08", "ZoneMaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart08", "ZoneMinLim", 0, 1, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "gx_RadarChart08_2Z"
+	VerificarPropriedadeVazia Obj, "gx_RadarChart08_2Z", "Meas01_z1", "Telas", 1
+	VerificarPropriedadeVazia Obj, "gx_RadarChart08_2Z", "Meas01_z2", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart08_2Z", "Meas01MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart08_2Z", "Meas01MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart08_2Z", "Meas02_z1", "Telas", 1
+	VerificarPropriedadeVazia Obj, "gx_RadarChart08_2Z", "Meas02_z2", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart08_2Z", "Meas02MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart08_2Z", "Meas02MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart08_2Z", "Meas03_z1", "Telas", 1
+	VerificarPropriedadeVazia Obj, "gx_RadarChart08_2Z", "Meas03_z2", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart08_2Z", "Meas03MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart08_2Z", "Meas03MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart08_2Z", "Meas04_z1", "Telas", 1
+	VerificarPropriedadeVazia Obj, "gx_RadarChart08_2Z", "Meas04_z2", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart08_2Z", "Meas04MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart08_2Z", "Meas04MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart08_2Z", "Meas05_z1", "Telas", 1
+	VerificarPropriedadeVazia Obj, "gx_RadarChart08_2Z", "Meas05_z2", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart08_2Z", "Meas05MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart08_2Z", "Meas05MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart08_2Z", "Meas06_z1", "Telas", 1
+	VerificarPropriedadeVazia Obj, "gx_RadarChart08_2Z", "Meas06_z2", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart08_2Z", "Meas06MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart08_2Z", "Meas06MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart08_2Z", "Meas07_z1", "Telas", 1
+	VerificarPropriedadeVazia Obj, "gx_RadarChart08_2Z", "Meas07_z2", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart08_2Z", "Meas07MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart08_2Z", "Meas07MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart08_2Z", "Meas08_z1", "Telas", 1
+	VerificarPropriedadeVazia Obj, "gx_RadarChart08_2Z", "Meas08_z2", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart08_2Z", "Meas08MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart08_2Z", "Meas08MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart08_2Z", "ZoneMaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart08_2Z", "ZoneMinLim", 0, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart08_2Z", "Title01", "Quente", 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart08_2Z", "Title02", "Frio", 1, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "gx_RadarChart09"
+	VerificarPropriedadeVazia Obj, "gx_RadarChart09", "Meas01", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart09", "Meas01MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart09", "Meas01MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart09", "Meas02", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart09", "Meas02MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart09", "Meas02MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart09", "Meas03", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart09", "Meas03MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart09", "Meas03MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart09", "Meas04", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart09", "Meas04MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart09", "Meas04MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart09", "Meas05", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart09", "Meas05MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart09", "Meas05MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart09", "Meas06", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart09", "Meas06MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart09", "Meas06MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart09", "Meas07", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart09", "Meas07MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart09", "Meas07MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart09", "Meas08", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart09", "Meas08MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart09", "Meas08MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart09", "Meas09", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart09", "Meas09MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart09", "Meas09MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart09", "ZoneMaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart09", "ZoneMinLim", 0, 1, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "gx_RadarChart10"
+	VerificarPropriedadeVazia Obj, "gx_RadarChart10", "Meas01", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart10", "Meas01MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart10", "Meas01MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart10", "Meas02", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart10", "Meas02MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart10", "Meas02MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart10", "Meas03", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart10", "Meas03MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart10", "Meas03MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart10", "Meas04", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart10", "Meas04MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart10", "Meas04MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart10", "Meas05", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart10", "Meas05MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart10", "Meas05MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart10", "Meas06", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart10", "Meas06MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart10", "Meas06MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart10", "Meas07", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart10", "Meas07MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart10", "Meas07MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart10", "Meas08", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart10", "Meas08MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart10", "Meas08MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart10", "Meas09", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart10", "Meas09MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart10", "Meas09MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart10", "Meas10", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart10", "Meas10MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart10", "Meas10MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart10", "ZoneMaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart10", "ZoneMinLim", 0, 1, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "gx_RadarChart10_2Z"
+	VerificarPropriedadeVazia Obj, "gx_RadarChart10_2Z", "Meas01_z1", "Telas", 1
+	VerificarPropriedadeVazia Obj, "gx_RadarChart10_2Z", "Meas01_z2", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart10_2Z", "Meas01MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart10_2Z", "Meas01MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart10_2Z", "Meas02_z1", "Telas", 1
+	VerificarPropriedadeVazia Obj, "gx_RadarChart10_2Z", "Meas02_z2", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart10_2Z", "Meas02MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart10_2Z", "Meas02MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart10_2Z", "Meas03_z1", "Telas", 1
+	VerificarPropriedadeVazia Obj, "gx_RadarChart10_2Z", "Meas03_z2", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart10_2Z", "Meas03MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart10_2Z", "Meas03MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart10_2Z", "Meas04_z1", "Telas", 1
+	VerificarPropriedadeVazia Obj, "gx_RadarChart10_2Z", "Meas04_z2", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart10_2Z", "Meas04MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart10_2Z", "Meas04MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart10_2Z", "Meas05_z1", "Telas", 1
+	VerificarPropriedadeVazia Obj, "gx_RadarChart10_2Z", "Meas05_z2", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart10_2Z", "Meas05MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart10_2Z", "Meas05MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart10_2Z", "Meas06_z1", "Telas", 1
+	VerificarPropriedadeVazia Obj, "gx_RadarChart10_2Z", "Meas06_z2", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart10_2Z", "Meas06MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart10_2Z", "Meas06MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart10_2Z", "Meas07_z1", "Telas", 1
+	VerificarPropriedadeVazia Obj, "gx_RadarChart10_2Z", "Meas07_z2", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart10_2Z", "Meas07MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart10_2Z", "Meas07MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart10_2Z", "Meas08_z1", "Telas", 1
+	VerificarPropriedadeVazia Obj, "gx_RadarChart10_2Z", "Meas08_z2", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart10_2Z", "Meas08MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart10_2Z", "Meas08MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart10_2Z", "Meas09_z1", "Telas", 1
+	VerificarPropriedadeVazia Obj, "gx_RadarChart10_2Z", "Meas09_z2", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart10_2Z", "Meas09MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart10_2Z", "Meas09MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart10_2Z", "Meas10_z1", "Telas", 1
+	VerificarPropriedadeVazia Obj, "gx_RadarChart10_2Z", "Meas10_z2", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart10_2Z", "Meas10MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart10_2Z", "Meas10MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart10_2Z", "ZoneMaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart10_2Z", "ZoneMinLim", 0, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart10_2Z", "Title01", "Quente", 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart10_2Z", "Title02", "Frio", 1, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "gx_RadarChart12"
+	VerificarPropriedadeVazia Obj, "gx_RadarChart12", "Meas01", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart12", "Meas01MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart12", "Meas01MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart12", "Meas02", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart12", "Meas02MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart12", "Meas02MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart12", "Meas03", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart12", "Meas03MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart12", "Meas03MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart12", "Meas04", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart12", "Meas04MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart12", "Meas04MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart12", "Meas05", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart12", "Meas05MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart12", "Meas05MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart12", "Meas06", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart12", "Meas06MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart12", "Meas06MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart12", "Meas07", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart12", "Meas07MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart12", "Meas07MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart12", "Meas08", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart12", "Meas08MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart12", "Meas08MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart12", "Meas09", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart12", "Meas09MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart12", "Meas09MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart12", "Meas10", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart12", "Meas10MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart12", "Meas10MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart12", "Meas11", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart12", "Meas11MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart12", "Meas11MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart12", "Meas12", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart12", "Meas12MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart12", "Meas12MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart12", "ZoneMaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart12", "ZoneMinLim", 0, 1, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "gx_RadarChart16"
+	VerificarPropriedadeVazia Obj, "gx_RadarChart16", "Meas01", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart16", "Meas01MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart16", "Meas01MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart16", "Meas02", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart16", "Meas02MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart16", "Meas02MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart16", "Meas03", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart16", "Meas03MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart16", "Meas03MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart16", "Meas04", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart16", "Meas04MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart16", "Meas04MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart16", "Meas05", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart16", "Meas05MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart16", "Meas05MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart16", "Meas06", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart16", "Meas06MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart16", "Meas06MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart16", "Meas07", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart16", "Meas07MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart16", "Meas07MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart16", "Meas08", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart16", "Meas08MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart16", "Meas08MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart16", "Meas09", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart16", "Meas09MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart16", "Meas09MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart16", "Meas10", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart16", "Meas10MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart16", "Meas10MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart16", "Meas11", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart16", "Meas11MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart16", "Meas11MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart16", "Meas12", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart16", "Meas12MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart16", "Meas12MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart16", "Meas13", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart16", "Meas13MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart16", "Meas13MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart16", "Meas14", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart16", "Meas14MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart16", "Meas14MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart16", "Meas15", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart16", "Meas15MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart16", "Meas15MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart16", "Meas16", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart16", "Meas16MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart16", "Meas16MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart16", "ZoneMaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart16", "ZoneMinLim", 0, 1, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "gx_RadarChart20"
+	VerificarPropriedadeVazia Obj, "gx_RadarChart20", "Meas01", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas01MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas01MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart20", "Meas02", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas02MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas02MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart20", "Meas03", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas03MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas03MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart20", "Meas04", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas04MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas04MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart20", "Meas05", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas05MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas05MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart20", "Meas06", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas06MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas06MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart20", "Meas07", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas07MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas07MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart20", "Meas08", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas08MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas08MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart20", "Meas09", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas09MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas09MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart20", "Meas10", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas10MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas10MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart20", "Meas11", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas11MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas11MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart20", "Meas12", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas12MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas12MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart20", "Meas13", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas13MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas13MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart20", "Meas14", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas14MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas14MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart20", "Meas15", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas15MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas15MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart20", "Meas16", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas16MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas16MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart20", "Meas17", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas17MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas17MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart20", "Meas18", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas18MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas18MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart20", "Meas19", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas19MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas19MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "gx_RadarChart20", "Meas20", "Telas", 1
+	VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas20MaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart20", "Meas20MinLim", 15, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart20", "ZoneMaxLim", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "gx_RadarChart20", "ZoneMinLim", 0, 1, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "uhe_AbnormalityIndicator"
+	VerificarPropriedadeVazia Obj, "uhe_AbnormalityIndicator", "Measurement01Active", "Telas", 1
+	VerificarPropriedadeValor Obj, "uhe_AbnormalityIndicator", "Measurement01Desc", "XXX", 1, "Telas", 1
+	VerificarPropriedadeValor Obj, "uhe_AbnormalityIndicator", "SideToGrowing", 1, 1, "Telas", 0
+	VerificarObjetoDesatualizado Obj, "uhe_AbnormalityIndicator", "generic_automalogica", "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "uhe_AirCompressor"
+	VerificarPropriedadeCondicional Obj, "uhe_AirCompressor", "Unsupervised", "SourceObject", False, "Telas", 1
+	VerificarPropriedadeCondicional Obj, "uhe_AirCompressor", "Unsupervised", "CompressorOff", False, "Telas", 1
+	VerificarPropriedadeCondicional Obj, "uhe_AirCompressor", "Unsupervised", "CompressorOn", False, "Telas", 1
+	'-----------------------------------------------------------------------------
+Case "uhe_AirOilTank"
+	VerificarPropriedadeVazia Obj, "uhe_AirOilTank", "Measure", "Telas", 1
+	VerificarPropriedadeValor Obj, "uhe_AirOilTank", "MaxLimit", 3, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "uhe_AirOilTank", "MinLimit", 0, 1, "Telas", 0
+	VerificarPropriedadeTextoProibido Obj, "uhe_AirOilTank", "Measure", ".Value", "Telas", 1
+	'-----------------------------------------------------------------------------
+Case "uhe_AlarmBar"
+	VerificarPropriedadeVazia Obj, "uhe_AlarmBar", "Measure", "Telas", 1
+	VerificarPropriedadeCondicional Obj, "uhe_AlarmBar", "Measure", "AlarmSource", "NOTEMPTY", "Telas", 1
+	VerificarPropriedadeValor Obj, "uhe_AlarmBar", "ValorMaximo", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "uhe_AlarmBar", "ValorMinimo", 0, 1, "Telas", 0
+	VerificarPropriedadeTextoProibido Obj, "uhe_AlarmBar", "Measure", ".Value", "Telas", 1
+	'-----------------------------------------------------------------------------
+Case "uhe_AnalogBar"
+	VerificarPropriedadeVazia Obj, "uhe_AnalogBar", "Measure", "Telas", 1
+	VerificarPropriedadeCondicional Obj, "uhe_AnalogBar", "Measure", "AlarmSource", "NOTEMPTY", "Telas", 1
+	VerificarPropriedadeValor Obj, "uhe_AnalogBar", "MaxValue", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "uhe_AnalogBar", "MinValue", 0, 1, "Telas", 0
+	VerificarPropriedadeTextoProibido Obj, "uhe_AnalogBar", "Measure", ".Value", "Telas", 1
+	'-----------------------------------------------------------------------------
+Case "uhe_AnalogBar5Limits"
+	VerificarPropriedadeVazia Obj, "uhe_AnalogBar5Limits", "Measure", "Telas", 1
+	VerificarPropriedadeCondicional Obj, "uhe_AnalogBar5Limits", "Measure", "AlarmSource", "NOTEMPTY", "Telas", 1
+	VerificarPropriedadeValor Obj, "uhe_AnalogBar5Limits", "MaxValue", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "uhe_AnalogBar5Limits", "MinValue", 0, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "uhe_AnalogBar5Limits", "Limit01", 50, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "uhe_AnalogBar5Limits", "Limit02", 60, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "uhe_AnalogBar5Limits", "Limit03", 70, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "uhe_AnalogBar5Limits", "Limit04", 80, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "uhe_AnalogBar5Limits", "Limit05", 90, 1, "Telas", 0
+	VerificarPropriedadeTextoProibido Obj, "uhe_AnalogBar5Limits", "Measure", ".Value", "Telas", 1
+	'-----------------------------------------------------------------------------
+Case "uhe_AnalogBar5LimitsH"
+	VerificarPropriedadeVazia Obj, "uhe_AnalogBar5LimitsH", "Measure", "Telas", 1
+	VerificarPropriedadeCondicional Obj, "uhe_AnalogBar5LimitsH", "Measure", "AlarmSource", "NOTEMPTY", "Telas", 1
+	VerificarPropriedadeValor Obj, "uhe_AnalogBar5LimitsH", "MaxValue", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "uhe_AnalogBar5LimitsH", "MinValue", 0, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "uhe_AnalogBar5LimitsH", "Limit01", 50, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "uhe_AnalogBar5LimitsH", "Limit02", 60, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "uhe_AnalogBar5LimitsH", "Limit03", 70, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "uhe_AnalogBar5LimitsH", "Limit04", 80, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "uhe_AnalogBar5LimitsH", "Limit05", 90, 1, "Telas", 0
+	VerificarPropriedadeTextoProibido Obj, "uhe_AnalogBar5LimitsH", "Measure", ".Value", "Telas", 1
+	'-----------------------------------------------------------------------------
+Case "uhe_AnalogBarHor"
+	VerificarPropriedadeVazia Obj, "uhe_AnalogBarHor", "Measure", "Telas", 1
+	VerificarPropriedadeCondicional Obj, "uhe_AnalogBarHor", "Measure", "AlarmSource", "NOTEMPTY", "Telas", 1
+	VerificarPropriedadeValor Obj, "uhe_AnalogBarHor", "MaxValue", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "uhe_AnalogBarHor", "MinValue", 0, 1, "Telas", 0
+	VerificarPropriedadeTextoProibido Obj, "uhe_AnalogBarHor", "Measure", ".Value", "Telas", 1
+	'-----------------------------------------------------------------------------
+Case "uhe_AnalogBarP"
+	VerificarPropriedadeVazia Obj, "uhe_AnalogBarP", "Measure", "Telas", 1
+	VerificarPropriedadeCondicional Obj, "uhe_AnalogBarP", "Measure", "AlarmSource", "NOTEMPTY", "Telas", 1
+	VerificarPropriedadeValor Obj, "uhe_AnalogBarP", "MaxValue", 100, 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "uhe_AnalogBarP", "MinValue", 0, 1, "Telas", 0
+	VerificarPropriedadeTextoProibido Obj, "uhe_AnalogBarP", "Measure", ".Value", "Telas", 1
+	'-----------------------------------------------------------------------------
+Case "uhe_BielaHidraulica"
+	VerificarPropriedadeVazia Obj, "uhe_BielaHidraulica", "Flambada", "Telas", 1
+	'-----------------------------------------------------------------------------
+Case "uhe_BielaMecanica"
+	VerificarPropriedadeVazia Obj, "uhe_BielaMecanica", "Flambada", "Telas", 1
+	'-----------------------------------------------------------------------------
+Case "uhe_Block"
+	VerificarPropriedadeVazia Obj, "uhe_Block", "Block_Tag", "Telas", 1
+	VerificarPropriedadeVazia Obj, "uhe_Block", "BlockArea", "Telas", 1
+	VerificarPropriedadeCondicional Obj, "uhe_Block", "OpenCommandSelectMenu", "CommandPathNames", True, "Telas", 1
+	'-----------------------------------------------------------------------------
+Case "uhe_Bomb"
+	VerificarPropriedadeCondicional Obj, "uhe_Bomb", "Unsupervised", "SourceObject", False, "Telas", 1
+	VerificarPropriedadeCondicional Obj, "uhe_Bomb", "OpenCommandSelectMenu", "CommandPathNames", True, "Telas", 1
+	VerificarPropriedadeCondicional Obj, "uhe_Bomb", "Unsupervised", "DeviceNote", False, "Telas", 1
+	VerificarPropriedadeVazia Obj, "uhe_Bomb", "BombOff", "Telas", 1
+	VerificarPropriedadeVazia Obj, "uhe_Bomb", "BombOn", "Telas", 1
+	'-----------------------------------------------------------------------------
+Case "uhe_Bomb2"
+	VerificarPropriedadeCondicional Obj, "uhe_Bomb2", "Unsupervised", "SourceObject", False, "Telas", 1
+	VerificarPropriedadeCondicional Obj, "uhe_Bomb2", "OpenCommandSelectMenu", "CommandPathNames", True, "Telas", 1
+	VerificarPropriedadeCondicional Obj, "uhe_Bomb2", "Unsupervised", "DeviceNote", False, "Telas", 1
+	VerificarPropriedadeVazia Obj, "uhe_Bomb2", "BombOff", "Telas", 1
+	VerificarPropriedadeVazia Obj, "uhe_Bomb2", "BombOn", "Telas", 1
+	'-----------------------------------------------------------------------------
+Case "uhe_BrakeAlert"
+	VerificarPropriedadeCondicional Obj, "uhe_BrakeAlert", "Enabled", "SourceObject", False, "Telas", 1
+	VerificarPropriedadeCondicional Obj, "uhe_BrakeAlert", "SourceObject", "DeviceNote", "NOTEMPTY", "Telas", 1
+	VerificarPropriedadeVazia Obj, "uhe_BrakeAlert", "BrakeTag", "Telas", 1
+	'-----------------------------------------------------------------------------
+Case "uhe_BulbTurbine"
+	VerificarPropriedadeVazia Obj, "uhe_BulbTurbine", "Distributor_Tag", "Telas", 1
+	'-----------------------------------------------------------------------------
+Case "uhe_BusBar"
+	VerificarPropriedadeVazia Obj, "uhe_BusBar", "SourceObject", "Telas", 1
+	VerificarPropriedadeValor Obj, "uhe_BusBar", "ObjectColor", 0, 1, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "uhe_Buzzer"
+	VerificarPropriedadeCondicional Obj, "uhe_Buzzer", "Enabled", "SourceObject", False, "Telas", 1
+	VerificarPropriedadeVazia Obj, "uhe_Buzzer", "Playing", "Telas", 1
+	'-----------------------------------------------------------------------------
+Case "uhe_Caixa"
+	VerificarPropriedadeVazia Obj, "uhe_Caixa", "Energized", "Telas", 1
+	'-----------------------------------------------------------------------------
+Case "uhe_Chart"
+	VerificarPropriedadeVazia Obj, "uhe_Chart", "PenData1", "Telas", 1
+	VerificarPropriedadeValor Obj, "uhe_Chart", "ObjectColor", 0, 1, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "uhe_ChartP"
+	VerificarPropriedadeVazia Obj, "uhe_ChartP", "PenData1", "Telas", 1
+	VerificarPropriedadeValor Obj, "uhe_ChartP", "ObjectColor", 0, 1, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "uhe_Command"
+	VerificarPropriedadeVazia Obj, "uhe_Command", "CommandPathNames", "Telas", 1
+	VerificarPropriedadeValor Obj, "uhe_Command", "Descr", "Desccrição", 1, "Telas", 1
+	'-----------------------------------------------------------------------------
+Case "uhe_CommandButton"
+	VerificarPropriedadeVazia Obj, "uhe_CommandButton", "CommandPathNames", "Telas", 1
+	VerificarPropriedadeVazia Obj, "uhe_CommandButton", "Description", "Telas", 1
+	VerificarPropriedadeVazia Obj, "uhe_CommandButton", "Measure", "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "uhe_Conduto"
+	VerificarPropriedadeVazia Obj, "uhe_Conduto", "ComAgua", "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "uhe_ControlGate"
+	VerificarPropriedadeCondicional Obj, "uhe_ControlGate", "Unsupervised", "SourceObject", False, "Telas", 1
+	VerificarPropriedadeVazia Obj, "uhe_ControlGate", "StateOff_Tag", "Telas", 0
+	VerificarPropriedadeVazia Obj, "uhe_ControlGate", "StateOn_Tag", "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "uhe_CtrlDigital"
+	VerificarPropriedadeCondicional Obj, "uhe_CtrlDigital", "Enabled", "CommandPathName", "NOTEMPTY", "Telas", 1
+	VerificarPropriedadeVazia Obj, "uhe_CtrlDigital", "Active", "Telas", 1
+	VerificarPropriedadeValor Obj, "uhe_CtrlDigital", "Descr", "Desc", 1, "Telas", 1
+	VerificarObjetoDesatualizado Obj, "uhe_CtrlDigital", "generic_automalogica", "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "uhe_CtrlDigital1Op"
+	VerificarPropriedadeCondicional Obj, "uhe_CtrlDigital1Op", "Enabled", "CommandPathName", "NOTEMPTY", "Telas", 1
+	VerificarPropriedadeVazia Obj, "uhe_CtrlDigital1Op", "Tag", "Telas", 1
+	VerificarPropriedadeValor Obj, "uhe_CtrlDigital1Op", "Descr", "Desc", 1, "Telas", 1
+	VerificarObjetoDesatualizado Obj, "uhe_CtrlDigital1Op", "generic_automalogica", "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "uhe_CtrlDigital2Op"
+	VerificarPropriedadeCondicional Obj, "uhe_CtrlDigital2Op", "Enabled", "CommandPathName1", "NOTEMPTY", "Telas", 1
+	VerificarPropriedadeVazia Obj, "uhe_CtrlDigital2Op", "Tag1", "Telas", 1
+	VerificarPropriedadeValor Obj, "uhe_CtrlDigital2Op", "Descr1", "Desc1", 1, "Telas", 1
+	VerificarPropriedadeCondicional Obj, "uhe_CtrlDigital2Op", "Enabled", "CommandPathName2", "NOTEMPTY", "Telas", 1
+	VerificarPropriedadeVazia Obj, "uhe_CtrlDigital2Op", "Tag2", "Telas", 1
+	VerificarPropriedadeValor Obj, "uhe_CtrlDigital2Op", "Descr2", "Desc2", 1, "Telas", 1
+	VerificarObjetoDesatualizado Obj, "uhe_CtrlDigital2Op", "generic_automalogica", "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "uhe_CtrlDigital3Op"
+	VerificarPropriedadeCondicional Obj, "uhe_CtrlDigital3Op", "Enabled", "CommandPathName1", "NOTEMPTY", "Telas", 1
+	VerificarPropriedadeVazia Obj, "uhe_CtrlDigital3Op", "Tag1", "Telas", 1
+	VerificarPropriedadeValor Obj, "uhe_CtrlDigital3Op", "Descr1", "Desc1", 1, "Telas", 1
+	VerificarPropriedadeCondicional Obj, "uhe_CtrlDigital3Op", "Enabled", "CommandPathName2", "NOTEMPTY", "Telas", 1
+	VerificarPropriedadeVazia Obj, "uhe_CtrlDigital3Op", "Tag2", "Telas", 1
+	VerificarPropriedadeValor Obj, "uhe_CtrlDigital3Op", "Descr2", "Desc2", 1, "Telas", 1
+	VerificarPropriedadeCondicional Obj, "uhe_CtrlDigital3Op", "Enabled", "CommandPathName3", "NOTEMPTY", "Telas", 1
+	VerificarPropriedadeVazia Obj, "uhe_CtrlDigital3Op", "Tag3", "Telas", 1
+	VerificarPropriedadeValor Obj, "uhe_CtrlDigital3Op", "Descr3", "Desc3", 1, "Telas", 1
+	VerificarObjetoDesatualizado Obj, "uhe_CtrlDigital3Op", "generic_automalogica", "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "uhe_CtrlDigital4Op"
+	VerificarPropriedadeCondicional Obj, "uhe_CtrlDigital4Op", "Enabled", "CommandPathName1", "NOTEMPTY", "Telas", 1
+	VerificarPropriedadeVazia Obj, "uhe_CtrlDigital4Op", "Tag1", "Telas", 1
+	VerificarPropriedadeValor Obj, "uhe_CtrlDigital4Op", "Descr1", "Desc1", 1, "Telas", 1
+	VerificarPropriedadeCondicional Obj, "uhe_CtrlDigital4Op", "Enabled", "CommandPathName2", "NOTEMPTY", "Telas", 1
+	VerificarPropriedadeVazia Obj, "uhe_CtrlDigital4Op", "Tag2", "Telas", 1
+	VerificarPropriedadeValor Obj, "uhe_CtrlDigital4Op", "Descr2", "Desc2", 1, "Telas", 1
+	VerificarPropriedadeCondicional Obj, "uhe_CtrlDigital4Op", "Enabled", "CommandPathName3", "NOTEMPTY", "Telas", 1
+	VerificarPropriedadeVazia Obj, "uhe_CtrlDigital4Op", "Tag3", "Telas", 1
+	VerificarPropriedadeValor Obj, "uhe_CtrlDigital4Op", "Descr3", "Desc3", 1, "Telas", 1
+	VerificarPropriedadeCondicional Obj, "uhe_CtrlDigital4Op", "Enabled", "CommandPathName4", "NOTEMPTY", "Telas", 1
+	VerificarPropriedadeVazia Obj, "uhe_CtrlDigital4Op", "Tag4", "Telas", 1
+	VerificarPropriedadeValor Obj, "uhe_CtrlDigital4Op", "Descr4", "Desc4", 1, "Telas", 1
+	VerificarObjetoDesatualizado Obj, "uhe_CtrlDigital4Op", "generic_automalogica", "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "uhe_CtrlDigitalOp"
+	VerificarPropriedadeCondicional Obj, "uhe_CtrlDigitalOp", "Enabled", "CommandPathName", "NOTEMPTY", "Telas", 1
+	VerificarPropriedadeVazia Obj, "uhe_CtrlDigitalOp", "Active", "Telas", 1
+	VerificarPropriedadeValor Obj, "uhe_CtrlDigitalOp", "Descr", "Desc", 1, "Telas", 1
+	VerificarObjetoDesatualizado Obj, "uhe_CtrlDigitalOp", "generic_automalogica", "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "uhe_CtrlPulse"
+	VerificarPropriedadeVazia Obj, "uhe_CtrlPulse", "CmdDecrement", "Telas", 1
+	VerificarPropriedadeVazia Obj, "uhe_CtrlPulse", "CmdIncrement", "Telas", 1
+	'-----------------------------------------------------------------------------
+Case "uhe_Device"
+	VerificarPropriedadeVazia Obj, "uhe_Device", "SourceObject", "Telas", 1
+	'-----------------------------------------------------------------------------
+Case "uhe_DieselGenerator"
+	VerificarPropriedadeCondicional Obj, "uhe_DieselGenerator", "Enabled", "SourceObject", False, "Telas", 1
+	VerificarPropriedadeCondicional Obj, "uhe_DieselGenerator", "UseNotes", "DeviceNote", True, "Telas", 1
+	VerificarPropriedadeCondicional Obj, "uhe_DieselGenerator", "SourceObject", "DeviceNote", "NOTEMPTY", "Telas", 1
+	VerificarPropriedadeVazia Obj, "uhe_DieselGenerator", "Estado_Tag", "Telas", 1
+	VerificarPropriedadeValor Obj, "uhe_DieselGenerator", "Descricao", "GDE", 1, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "uhe_Direction"
+	VerificarPropriedadeCondicional Obj, "uhe_Direction", "Enabled", "AnalogMeasure", False, "Telas", 0
+	VerificarPropriedadeVazia Obj, "uhe_Direction", "ObjectColor", "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "uhe_EarthSwitch"
+	VerificarPropriedadeValor Obj, "uhe_EarthSwitch", "CorTerrra", 16777215, 1, "Telas", 0
+	VerificarPropriedadeVazia Obj, "uhe_EarthSwitch", "ObjectColor", "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "uhe_ExcitationTransformer"
+	VerificarPropriedadeCondicional Obj, "uhe_ExcitationTransformer", "Enabled", "SourceObject", False, "Telas", 1
+	VerificarPropriedadeVazia Obj, "uhe_ExcitationTransformer", "Off", "Telas", 0
+	VerificarPropriedadeVazia Obj, "uhe_ExcitationTransformer", "On", "Telas", 0
+	VerificarPropriedadeCondicional Obj, "uhe_ExcitationTransformer", "OpenCommandSelectMenu", "CommandPathNames", True, "Telas", 1
+	'-----------------------------------------------------------------------------
+Case "uhe_Filter"
+	VerificarPropriedadeHabilitada Obj, "uhe_Filter", "Enabledd", False, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "uhe_Fan"
+	VerificarPropriedadeCondicional Obj, "uhe_Fan", "Unsupervised", "SourceObject", False, "Telas", 1
+	VerificarPropriedadeCondicional Obj, "uhe_Fan", "UseNotes", "DeviceNote", True, "Telas", 1
+	VerificarPropriedadeCondicional Obj, "uhe_Fan", "SourceObject", "DeviceNote", "NOTEMPTY", "Telas", 1
+	VerificarPropriedadeVazia Obj, "uhe_Fan", "FanOff", "Telas", 1
+	VerificarPropriedadeVazia Obj, "uhe_Fan", "FanOn", "Telas", 1
+	VerificarPropriedadeCondicional Obj, "uhe_Fan", "OpenCommandSelectMenu", "CommandPathNames", True, "Telas", 1
+	'-----------------------------------------------------------------------------
+Case "XCPump"
+	VerificarPropriedadeVazia Obj, "XCPump", "SourceObject", "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "iconElectricity"
+	VerificarPropriedadeVazia Obj, "iconElectricity", "SourceObject", "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "iconComFail"
+	VerificarPropriedadeVazia Obj, "iconComFail", "SourceObject", "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "xcLabel"
+	VerificarPropriedadeVazia Obj, "xcLabel", "Caption", "Telas", 1
+	'-----------------------------------------------------------------------------
+Case "xcEtiqueta_Manut"
+	VerificarPropriedadeVazia Obj, "xcEtiqueta_Manut", "CorObjeto", "Telas", 0
+	VerificarPropriedadeVazia Obj, "xcEtiqueta_Manut", "EtiquetaVisivel", "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "xcEtiqueta"
+	VerificarPropriedadeVazia Obj, "xcEtiqueta", "AvisoVisivel", "Telas", 0
+	VerificarPropriedadeVazia Obj, "xcEtiqueta", "EventoVisivel", "Telas", 0
+	VerificarPropriedadeVazia Obj, "xcEtiqueta", "FonteObjeto", "Telas", 0
+	VerificarPropriedadeVazia Obj, "xcEtiqueta", "ForaVisivel", "Telas", 0
+	VerificarPropriedadeVazia Obj, "xcEtiqueta", "PathNote", "Telas", 0
+	VerificarPropriedadeHabilitada Obj, "xcEtiqueta", "Visible", True, "Telas", 1
+	'-----------------------------------------------------------------------------
+Case "xcWaterTank"
+	VerificarPropriedadeVazia Obj, "xcWaterTank", "objSource", "Telas", 0
+	VerificarPropriedadeVazia Obj, "xcWaterTank", "objWaterDistribution", "Telas", 0
+	VerificarPropriedadeHabilitada Obj, "xcWaterTank", "Visible", True, "Telas", 1
+	'-----------------------------------------------------------------------------
+Case "XCDistribution"
+	VerificarPropriedadeVazia Obj, "XCDistribution", "SourceObject", "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "XCArrow"
+	VerificarPropriedadeHabilitada Obj, "XCArrow", "Visible", True, "Telas", 1
+	'-----------------------------------------------------------------------------
+Case "archAeroGenerator"
+	VerificarPropriedadeVazia Obj, "archAeroGenerator", "CommunicationFailure", "Telas", 0
+	VerificarPropriedadeHabilitada Obj, "archAeroGenerator", "Enabledd", False, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "archCloud"
+	VerificarPropriedadeVazia Obj, "archCloud", "CommunicationFailure", "Telas", 0
+	VerificarPropriedadeHabilitada Obj, "archCloud", "Enabledd", False, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "archNuclearPlant"
+	VerificarPropriedadeVazia Obj, "archNuclearPlant", "CommunicationFailure", "Telas", 0
+	VerificarPropriedadeHabilitada Obj, "archNuclearPlant", "Enabledd", False, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "archServerRackmountMultiple"
+	VerificarPropriedadeVazia Obj, "archServerRackmountMultiple", "CommunicationFailure", "Telas", 0
+	VerificarPropriedadeHabilitada Obj, "archServerRackmountMultiple", "Enabledd", False, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "archSolarPanel"
+	VerificarPropriedadeVazia Obj, "archSolarPanel", "CommunicationFailure", "Telas", 0
+	VerificarPropriedadeHabilitada Obj, "archSolarPanel", "Enabledd", False, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "archSurveillanceCamera"
+	VerificarPropriedadeVazia Obj, "archSurveillanceCamera", "CommunicationFailure", "Telas", 0
+	VerificarPropriedadeHabilitada Obj, "archSurveillanceCamera", "Enabledd", False, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "archWifi"
+	VerificarPropriedadeVazia Obj, "archWifi", "CommunicationFailure", "Telas", 0
+	VerificarPropriedadeHabilitada Obj, "archWifi", "Enabledd", False, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "archDatabase"
+	VerificarPropriedadeHabilitada Obj, "archDatabase", "Enabledd", False, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "archFirewall"
+	VerificarPropriedadeHabilitada Obj, "archFirewall", "Enabledd", False, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "archPCH"
+	VerificarPropriedadeHabilitada Obj, "archPCH", "Enabledd", False, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "archUHE"
+	VerificarPropriedadeHabilitada Obj, "archUHE", "Enabledd", False, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "archVideoWall"
+	VerificarPropriedadeHabilitada Obj, "archVideoWall", "Enabledd", False, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "archSwitch"
+	VerificarPropriedadeVazia Obj, "archSwitch", "CommunicationFailure", "Telas", 0
+	VerificarPropriedadeCondicional Obj, "archSwitch", "Enabled", "SourceObject", False, "Telas", 1
+	'-----------------------------------------------------------------------------
+Case "archServerDesktop"
+	VerificarPropriedadeVazia Obj, "archServerDesktop", "CommunicationFailure", "Telas", 0
+	VerificarPropriedadeCondicional Obj, "archServerDesktop", "Enabled", "SourceObject", False, "Telas", 1
+	'-----------------------------------------------------------------------------
+Case "archRouter"
+	VerificarPropriedadeVazia Obj, "archRouter", "CommunicationFailure", "Telas", 0
+	VerificarPropriedadeCondicional Obj, "archRouter", "Enabled", "SourceObject", False, "Telas", 1
+	'-----------------------------------------------------------------------------
+Case "archServerRackmountSingle"
+	VerificarPropriedadeVazia Obj, "archServerRackmountSingle", "CommunicationFailure", "Telas", 0
+	VerificarPropriedadeValor Obj, "archServerRackmountSingle", "Description_Text", "Server name", 1, "Telas", 1
+	'-----------------------------------------------------------------------------
+Case "archViewer"
+	VerificarPropriedadeVazia Obj, "archViewer", "CommunicationFailure", "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "archElectricalMeter"
+	VerificarPropriedadeVazia Obj, "archElectricalMeter", "CommunicationFailure", "Telas", 0
+	VerificarPropriedadeValor Obj, "archElectricalMeter", "Description_Text", "IED NAME", 1, "Telas", 1
+	'-----------------------------------------------------------------------------
+Case "archGPSAntenna"
+	VerificarPropriedadeVazia Obj, "archGPSAntenna", "CommunicationFailure", "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "archLineHorizontal"
+	VerificarPropriedadeHabilitada Obj, "archLineHorizontal", "Visible", True, "Telas", 1
+	VerificarPropriedadeCondicional Obj, "archLineHorizontal", "Enabled", "FlhCom", "NOTEMPTY", "Telas", 0
+	VerificarPropriedadeValor Obj, "archLineHorizontal", "BorderColor", 0, 1, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "archLineVertical"
+	VerificarPropriedadeHabilitada Obj, "archLineVertical", "Visible", True, "Telas", 1
+	VerificarPropriedadeCondicional Obj, "archLineVertical", "Enabled", "FlhCom", "NOTEMPTY", "Telas", 0
+	VerificarPropriedadeValor Obj, "archLineVertical", "BorderColor", 0, 1, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "archChannelPanel"
+	VerificarPropriedadeHabilitada Obj, "archChannelPanel", "Visible", True, "Telas", 1
+	    Dim tipoPortas, i, qtdEsperada, propFailure
+    tipoPortas = GetPropriedade(Obj, "Type")
+    Select Case CStr(tipoPortas)
+        Case "3": qtdEsperada = 4
+        Case "2": qtdEsperada = 8
+        Case "1": qtdEsperada = 20
+        Case "0": qtdEsperada = 24
         Case Else
-            RegistrarTipoSemPropriedade TipoObjeto
-
+            qtdEsperada = 0 ' não definido ou inválido
     End Select
+    If qtdEsperada > 0 Then
+        For i = 1 To qtdEsperada
+            propFailure = "FailureState" & Right("0" & i, 2)
+            Call VerificarPropriedadeVazia(Obj, "archChannelPanel", propFailure, Area, 0)
+        Next
+    End If
+	'-----------------------------------------------------------------------------
+Case "archChannelPanelG"
+	VerificarPropriedadeHabilitada Obj, "archChannelPanelG", "Visible", True, "Telas", 1
+		    Dim tipoPortasG, iG, qtdEsperadaG, propFailureG
+    tipoPortasG = GetPropriedade(Obj, "Type")
+    Select Case CStr(tipoPortasG)
+        Case "3": qtdEsperadaG = 4
+        Case "2": qtdEsperadaG = 8
+        Case "1": qtdEsperadaG = 20
+        Case "0": qtdEsperadaG = 24
+        Case Else
+            qtdEsperadaG = 0 ' não definido ou inválido
+    End Select
+    If qtdEsperadaG > 0 Then
+        For iG = 1 To qtdEsperadaG
+            propFailureG = "FailureState" & Right("0" & iG, 2)
+            Call VerificarPropriedadeVazia(Obj, "archChannelPanelG", propFailureG, Area, 0)
+        Next
+    End If
+	'-----------------------------------------------------------------------------
+Case "archChannelPanelP"
+	VerificarPropriedadeHabilitada Obj, "archChannelPanelP", "Visible", True, "Telas", 1
+		    Dim tipoPortasP, iP, qtdEsperadaP, propFailureP
+    tipoPortasP = GetPropriedade(Obj, "Type")
+    Select Case CStr(tipoPortasP)
+        Case "3": qtdEsperadaP = 4
+        Case "2": qtdEsperadaP = 8
+        Case "1": qtdEsperadaP = 20
+        Case "0": qtdEsperadaP = 24
+        Case Else
+            qtdEsperadaP = 0 ' não definido ou inválido
+    End Select
+    If qtdEsperadaP > 0 Then
+        For iP = 1 To qtdEsperadaP
+            propFailureP = "FailureState" & Right("0" & iP, 2)
+            Call VerificarPropriedadeVazia(Obj, "archChannelPanelP", propFailureP, Area, 0)
+        Next
+    End If
+	'-----------------------------------------------------------------------------
+Case "archChannelPanelPP"
+	VerificarPropriedadeHabilitada Obj, "archChannelPanelPP", "Visible", True, "Telas", 1
+		    Dim tipoPortasPP, iPP, qtdEsperadaPP, propFailurePP
+    tipoPortasPP = GetPropriedade(Obj, "Type")
+    Select Case CStr(tipoPortasPP)
+        Case "3": qtdEsperadaPP = 4
+        Case "2": qtdEsperadaPP = 8
+        Case "1": qtdEsperadaPP = 20
+        Case "0": qtdEsperadaPP = 24
+        Case Else
+            qtdEsperadaPP = 0 ' não definido ou inválido
+    End Select
+    If qtdEsperadaPP > 0 Then
+        For iPP = 1 To qtdEsperadaPP
+            propFailurePP = "FailureState" & Right("0" & iPP, 2)
+            Call VerificarPropriedadeVazia(Obj, "archChannelPanelPP", propFailurePP, Area, 0)
+        Next
+    End If
+	'-----------------------------------------------------------------------------
+Case "archLed"
+	VerificarPropriedadeHabilitada Obj, "archLed", "Visible", True, "Telas", 1
+	VerificarPropriedadeVazia Obj, "archLed", "FailedState", "Telas", 1
+	'-----------------------------------------------------------------------------
+Case "archModuloIO"
+	VerificarPropriedadeHabilitada Obj, "archModuloIO", "Visible", True, "Telas", 1
+	VerificarPropriedadeCondicional Obj, "archModuloIO", "Enabled", "Failure", "NOTEMPTY", "Telas", 0
+	VerificarPropriedadeVazia Obj, "archModuloIO", "Text", "Telas", 1
+	'-----------------------------------------------------------------------------
+Case "archRTU"
+	VerificarPropriedadeHabilitada Obj, "archRTU", "Visible", True, "Telas", 1
+	VerificarPropriedadeVazia Obj, "archRTU", "CommunicationFailure", "Telas", 0
+	VerificarPropriedadeCondicional Obj, "archRTU", "Enabled", "SourceObject", False, "Telas", 1
+	VerificarPropriedadeValor Obj, "archRTU", "Description_Text", "RTU NAME", 1, "Telas", 1
+	VerificarPropriedadeCondicional Obj, "archRTU", "IP_Show", "IP_Text", False, "Telas", 1
+	'-----------------------------------------------------------------------------
+Case "archIED"
+	VerificarPropriedadeHabilitada Obj, "archIED", "Visible", True, "Telas", 1
+	VerificarPropriedadeVazia Obj, "archIED", "CommunicationFailure", "Telas", 0
+	VerificarPropriedadeCondicional Obj, "archIED", "Enabled", "SourceObject", False, "Telas", 1
+	VerificarPropriedadeValor Obj, "archIED", "Description_Text", "IED NAME", 1, "Telas", 1
+	VerificarPropriedadeCondicional Obj, "archIED", "IP_Show", "IP_Text", False, "Telas", 1
+	'-----------------------------------------------------------------------------
+Case "archInfo"
+	VerificarPropriedadeHabilitada Obj, "archInfo", "Visible", True, "Telas", 1
+	VerificarPropriedadeVazia Obj, "archInfo", "FailedState", "Telas", 1
+	VerificarPropriedadeValor Obj, "archInfo", "Description_Text", "Painel - Eqp - Port", 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "archInfo", "ObjectColor", 0, 1, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case "archInfoLine"
+	VerificarPropriedadeHabilitada Obj, "archInfoLine", "Visible", True, "Telas", 1
+	VerificarPropriedadeVazia Obj, "archInfoLine", "FailedState", "Telas", 1
+	VerificarPropriedadeValor Obj, "archInfoLine", "Description_Text", "Painel - Eqp - Port", 1, "Telas", 0
+	VerificarPropriedadeValor Obj, "archInfoLine", "ObjectColor", 0, 1, "Telas", 0
+	'-----------------------------------------------------------------------------
+Case Else
+    RegistrarTipoSemPropriedade TipoObjeto
+End Select
 
 End Function
 
 '***********************************************************************
 '*  Grupo : Funções de Acesso a Propriedades
 '*----------------------------------------------------------------------
-'*  Convenção do argumento 𝑀𝑒𝑡𝑜𝑑𝑜
-'*     • 0 → Leitura do "link"  (coleção Links → .Source)
-'*     • 1 → Leitura do "valor" (propriedade direta do objeto)
-'***********************************************************************
 
 '-----------------------------------------------------------------------
 '*  Função : GetPropriedade
-'*----------------------------------------------------------------------
-'*  Parâmetros :
-'*     ‑ Obj       : Objeto cujo atributo será lido
-'*     ‑ PropName  : Nome da propriedade (String)
-'*     ‑ Metodo    : 0 = link | 1 = valor
-'*  Retorno    : String com o link ou valor obtido; string vazia se erro
+'*---------------------------------------------------------------------- 
+'*  Finalidade :
+'*     Retorna a propriedade do objeto com prioridade para Link.
+'*     Se não houver link, retorna o valor direto.
+'*     Se houver aspas no retorno do link, remove.
 '-----------------------------------------------------------------------
-Function GetPropriedade(Obj, PropName, Metodo)
+Function GetPropriedade(Obj, PropName)
 
-    If Metodo = 0 Then
-        '--- Leitura via link ------------------------------------------
-        GetPropriedade = GetPropertyLink(Obj, PropName)
+    Dim resultadoLink, resultadoValor
+    resultadoLink  = GetPropertyLink(Obj, PropName)
+
+    If Trim(resultadoLink) <> "" Then
+        ' Se vier entre aspas, remove (ex: "100" → 100)
+        If Left(resultadoLink, 1) = """" And Right(resultadoLink, 1) = """" Then
+            resultadoLink = Mid(resultadoLink, 2, Len(resultadoLink) - 2)
+        End If
+        GetPropriedade = resultadoLink
     Else
-        '--- Leitura via valor -----------------------------------------
-        GetPropriedade = GetPropertyValue(Obj, PropName)
+        resultadoValor = GetPropertyValue(Obj, PropName)
+        GetPropriedade = resultadoValor
     End If
 
 End Function
 
 '-----------------------------------------------------------------------
 '*  Função : GetPropertyLink
-'*----------------------------------------------------------------------
+'*---------------------------------------------------------------------- 
 '*  Finalidade :
-'*     Retornar o .Source de um link da coleção Links. Caso o link não
-'*     exista ou ocorra erro, devolve string vazia.
+'*     Tenta retornar a associação (link) de uma propriedade.
+'*     Se não existir ou ocorrer erro, retorna vazio.
 '-----------------------------------------------------------------------
 Function GetPropertyLink(Obj, PropName)
-
     On Error Resume Next
-    Dim tmpValue
-
-    tmpValue = Obj.Links.Item(PropName).Source
-
-    If Err.Number <> 0 Then
-        tmpValue = "" ' Link inexistente ou erro
-        Err.Clear
-    End If
+    Dim tmp
+    tmp = Obj.Links.Item(Trim(PropName)).Source
+    If Err.Number <> 0 Then tmp = "" : Err.Clear
     On Error GoTo 0
-
-    GetPropertyLink = tmpValue
-
+    GetPropertyLink = tmp
 End Function
-
 
 '-----------------------------------------------------------------------
 '*  Função : GetPropertyValue
-'*----------------------------------------------------------------------
+'*---------------------------------------------------------------------- 
 '*  Finalidade :
-'*     Ler diretamente o valor da propriedade via Eval. Se falhar,
-'*     devolve string vazia.
+'*     Retorna o valor direto de uma propriedade (via Eval).
+'*     Se houver erro ou propriedade inexistente, retorna vazio.
 '-----------------------------------------------------------------------
 Function GetPropertyValue(Obj, PropName)
-
     On Error Resume Next
-    Dim tmpValue
-
-    tmpValue = Eval("Obj." & PropName)
-
-    If Err.Number <> 0 Then
-        tmpValue = "" ' Propriedade não encontrada ou erro
-        Err.Clear
-    End If
+    Dim tmp
+    tmp = Eval("Obj." & Trim(PropName))
+    If Err.Number <> 0 Then tmp = "" : Err.Clear
     On Error GoTo 0
-
-    GetPropertyValue = CStr(tmpValue)
-
+    GetPropertyValue = CStr(tmp)
 End Function
 
 '***********************************************************************
@@ -2156,25 +1798,24 @@ End Function
 '*
 '*  Parâmetros :
 '*     ‑ Obj            : Objeto a ser analisado.
-'*     ‑ TypeName       : TypeName do objeto.
+'*     ‑ TipoObjeto       : TipoObjeto do objeto.
 '*     ‑ Propriedade    : Nome da propriedade a ser verificada.
-'*     ‑ MetodoBusca    : Tipo de busca da propriedade (0 = link | 1 = valor).
 '*     ‑ AreaErro       : Área onde o erro foi encontrado.
 '*     ‑ TipoErro       : Tipo de erro (0 = Aviso, 1 = Erro, 2 = Revisar).
 '***********************************************************************
-Function VerificarPropriedadeVazia(Obj, TypeName, Propriedade, MetodoBusca, AreaErro, TipoErro)
+Function VerificarPropriedadeVazia(Obj, TipoObjeto, Propriedade, AreaErro, TipoErro)
     On Error Resume Next
 
     Dim ValorLeitura, Mensagem
-    ValorLeitura = GetPropriedade(Obj, Propriedade, MetodoBusca)
+    ValorLeitura = GetPropriedade(Obj, Propriedade)
 
     If Trim(ValorLeitura) = "" Then
-        Mensagem = TypeName & " com a propriedade " & Propriedade & " vazia."
+        Mensagem = TipoObjeto & " com a propriedade " & Propriedade & " vazia."
 
         If GerarCSV Then
-            AdicionarErroExcel DadosExcel, Obj.PathName, CStr(TipoErro), Mensagem, AreaErro, TypeName
+            AdicionarErroExcel DadosExcel, Obj.PathName, CStr(TipoErro), Mensagem, AreaErro, TipoObjeto
         Else
-            AdicionarErroBanco DadosExcel, Obj.PathName, CStr(TipoErro), Mensagem, TypeName, AreaErro
+            AdicionarErroBanco DadosExcel, Obj.PathName, CStr(TipoErro), Mensagem, TipoObjeto, AreaErro
         End If
     End If
 
@@ -2220,6 +1861,60 @@ Function ContarObjetosDoTipo(Obj, TipoDesejado)
 
     On Error GoTo 0
 
+End Function
+
+'***********************************************************************
+'*  Função : VerificarAssociacaoBase
+'*---------------------------------------------------------------------- 
+'*  Finalidade :
+'*     Verifica se a propriedade está associada a um objeto existente
+'*     no domínio, validando o caminho retornado por GetPropertyLink.
+'*
+'*  Parâmetros :
+'*     ‑ Obj          : Objeto a ser verificado.
+'*     ‑ TipoObjeto   : TypeName ou rótulo do objeto.
+'*     ‑ Propriedade  : Nome da propriedade a ser verificada.
+'*     ‑ AreaErro     : Área onde a verificação está ocorrendo.
+'*     ‑ TipoErro     : Severidade (0=Aviso, 1=Erro, 2=Revisar).
+'***********************************************************************
+Function VerificarAssociacaoBase(Obj, TipoObjeto, Propriedade, AreaErro, TipoErro)
+    On Error Resume Next
+
+    Dim PathName, Link, Valor, ObjAssoc, Msg
+    PathName = Obj.PathName
+
+    Link  = GetPropertyLink(Obj, Propriedade)
+    Valor = GetPropertyValue(Obj, Propriedade)
+
+    ' Se o link estiver preenchido, tenta validar se o objeto existe
+    If Trim(Link) <> "" Then
+        Set ObjAssoc = Application.GetObject(Link)
+        If ObjAssoc Is Nothing Then
+            Msg = TipoObjeto & " com propriedade '" & Propriedade & _
+                  "' associada ao link '" & Link & "', que não existe no domínio."
+            If GerarCSV Then
+                AdicionarErroExcel DadosExcel, PathName, CStr(TipoErro), Msg, AreaErro, TipoObjeto
+            Else
+                AdicionarErroBanco DadosExcel, PathName, CStr(TipoErro), Msg, TipoObjeto, AreaErro
+            End If
+        End If
+    Else
+        ' Link não encontrado e o valor direto não parece ser um PathName
+        If Not IsNumeric(Valor) And Not IsBoolean(Valor) And Trim(Valor) <> "" Then
+            Set ObjAssoc = Application.GetObject(Valor)
+            If ObjAssoc Is Nothing Then
+                Msg = TipoObjeto & " com valor '" & Valor & _
+                      "' na propriedade '" & Propriedade & "', que não corresponde a nenhum objeto válido."
+                If GerarCSV Then
+                    AdicionarErroExcel DadosExcel, PathName, CStr(TipoErro), Msg, AreaErro, TipoObjeto
+                Else
+                    AdicionarErroBanco DadosExcel, PathName, CStr(TipoErro), Msg, TipoObjeto, AreaErro
+                End If
+            End If
+        End If
+    End If
+
+    On Error GoTo 0
 End Function
 
 '***********************************************************************
@@ -2385,62 +2080,208 @@ End Function
 '*
 '*  Parâmetros :
 '*     ‑ Obj            : Objeto a ser analisado.
-'*     ‑ TypeName       : TypeName do objeto.
+'*     ‑ TipoObjeto       : TypeName do objeto.
 '*     ‑ Propriedade1   : Nome da propriedade-condição.
-'*     ‑ TipoBusca1     : Tipo de busca da propriedade1 (0 = link | 1 = valor).
 '*     ‑ Propriedade2   : Nome da propriedade a ser verificada.
-'*     ‑ TipoBusca2     : Tipo de busca da propriedade2 (0 = link | 1 = valor).
 '*     ‑ TextoAuxiliar  : Valor que satisfaz a condição ou "NOTEMPTY".
 '*     ‑ AreaErro       : Área onde o erro foi encontrado.
 '*     ‑ TipoErro       : Tipo de erro (0 = Aviso, 1 = Erro, 2 = Revisar).
 '***********************************************************************
-Function VerificarPropriedadeCondicional(Obj, TypeName, Propriedade1, TipoBusca1, Propriedade2, TipoBusca2, TextoAuxiliar, AreaErro, TipoErro)
+Function VerificarPropriedadeCondicional(Obj, TipoObjeto, PropriedadeCondicional, PropriedadeAlvo, TextoAuxiliar, AreaErro, TipoErro)
     On Error Resume Next
 
-    Dim ValorCondicional, ValorAVerificar, Mensagem
-    ValorCondicional = GetPropriedade(Obj, Propriedade1, TipoBusca1)
-    ValorAVerificar = GetPropriedade(Obj, Propriedade2, TipoBusca2)
+    Dim ValorCondicional, ValorAlvo, Mensagem, resposta
+    ValorCondicional = GetPropriedade(Obj, PropriedadeCondicional)
+    ValorAlvo = GetPropriedade(Obj, PropriedadeAlvo)
 
-    '--------------------------------------------------------------
-    ' 1) Condição "NOTEMPTY" → Propriedade1 não pode estar vazia
-    '--------------------------------------------------------------
-    If TextoAuxiliar = "NOTEMPTY" Then
-        If Trim(ValorCondicional) <> "" And Trim(ValorAVerificar) = "" Then
-            Mensagem = TypeName & " com a propriedade " & Propriedade2 & _
-                " vazia enquanto " & Propriedade1 & " está preenchida."
+    ' resposta = MsgBox("Verificando objeto: " & Obj.PathName & vbCrLf & _
+    '                   "Tipo: " & TipoObjeto & vbCrLf & _
+    '                   PropriedadeCondicional & ": '" & ValorCondicional & "'" & vbCrLf & _
+    '                   PropriedadeAlvo & ": '" & ValorAlvo & "'" & vbCrLf & _
+    '                   "Condição: " & TextoAuxiliar, vbOKCancel + vbInformation, "Verificação Condicional")
+    If resposta = vbCancel Then Err.Raise vbObjectError + 513, , "Cancelado pelo usuário"
+
+    ' Condição NOTEMPTY
+    If UCase(CStr(TextoAuxiliar)) = "NOTEMPTY" Then
+        If LenB(Trim(ValorAlvo)) = 0 Then
+            Mensagem = TipoObjeto & " com a propriedade " & PropriedadeAlvo & " vazia (condição NOTEMPTY)."
             If GerarCSV Then
-                AdicionarErroExcel DadosExcel, Obj.PathName, CStr(TipoErro), Mensagem, AreaErro, TypeName
+                AdicionarErroExcel DadosExcel, Obj.PathName, CStr(TipoErro), Mensagem, AreaErro, TipoObjeto
             Else
-                AdicionarErroBanco DadosExcel, Obj.PathName, CStr(TipoErro), Mensagem, TypeName, AreaErro
+                AdicionarErroBanco DadosExcel, Obj.PathName, CStr(TipoErro), Mensagem, TipoObjeto, AreaErro
             End If
+        Else
         End If
 
-        '--------------------------------------------------------------
-        ' 2) Condição de igualdade explícita
-        '--------------------------------------------------------------
-    ElseIf CStr(ValorCondicional) = CStr(TextoAuxiliar) Then
-        If Trim(ValorAVerificar) = "" Then
-            Mensagem = TypeName & " com a propriedade " & Propriedade2 & _
-                " vazia enquanto " & Propriedade1 & " está igual a " & TextoAuxiliar & "."
-            If GerarCSV Then
-                AdicionarErroExcel DadosExcel, Obj.PathName, CStr(TipoErro), Mensagem, AreaErro, TypeName
+    ' Condição de dependência com valor explícito
+    Else
+        If CStr(ValorCondicional) = CStr(TextoAuxiliar) Then
+            If LenB(Trim(ValorAlvo)) = 0 Then
+                Mensagem = TipoObjeto & " com a propriedade " & PropriedadeAlvo & _
+                           " vazia enquanto " & PropriedadeCondicional & " está igual a " & CStr(TextoAuxiliar) & "."
+                If GerarCSV Then
+                    AdicionarErroExcel DadosExcel, Obj.PathName, CStr(TipoErro), Mensagem, AreaErro, TipoObjeto
+                Else
+                    AdicionarErroBanco DadosExcel, Obj.PathName, CStr(TipoErro), Mensagem, TipoObjeto, AreaErro
+                End If
             Else
-                AdicionarErroBanco DadosExcel, Obj.PathName, CStr(TipoErro), Mensagem, TypeName, AreaErro
             End If
+        Else
+        End If
+    End If
+End Function
+
+'*********************************************************************** 
+'*  Sub‑rotina : VerificarServidoresDeAlarme
+'*---------------------------------------------------------------------- 
+'*  Finalidade :
+'*     • Contar quantos objetos "DB.AlarmServer" existem no domínio e
+'*       emitir aviso caso haja mais de um.
+'*     • Para cada servidor de alarme, validar se os campos de usuário
+'*       obrigatórios estão corretamente configurados.
+'***********************************************************************
+Sub VerificarServidoresDeAlarme()
+
+    On Error Resume Next
+
+    Dim listaServidores, objServidor, totalServidores
+    Set listaServidores = Application.ListFiles("DB.AlarmServer")
+    totalServidores = listaServidores.Count
+
+    '------------------------------------------------------------------
+    ' Verificação 1 : mais de um servidor de alarme → aviso
+    '------------------------------------------------------------------
+    If totalServidores > 1 Then
+        Dim mensagem, pathAlvo
+        pathAlvo = "DB.AlarmServer"
+        mensagem = "Foram encontrados " & totalServidores & _
+            " servidores de alarme. O recomendado é apenas um."
+
+        If GerarCSV Then
+            AdicionarErroExcel DadosExcel, pathAlvo, "0", mensagem, "Banco de dados", "DB.AlarmServer"
+        Else
+            AdicionarErroBanco DadosExcel, pathAlvo, "0", mensagem, "DB.AlarmServer", "Banco de dados"
         End If
     End If
 
-    '--------------------------------------------------------------
-    ' 3) Erro de acesso às propriedades
-    '--------------------------------------------------------------
-    If Err.Number <> 0 Then
-        AdicionarErroTxt DadosTxt, "VerificarPropriedadeCondicional", Obj, _
-            "Erro ao acessar " & Propriedade1 & " ou " & Propriedade2
-        Err.Clear
-    End If
+    '------------------------------------------------------------------
+    ' Verificação 2 : campos de usuário obrigatórios em cada servidor
+    '------------------------------------------------------------------
+    For Each objServidor In listaServidores
+        VerificarCamposUsuariosServidorAlarmes objServidor
+    Next
 
     On Error GoTo 0
-End Function
+
+End Sub
+
+'***********************************************************************
+'*  Sub‑rotina : VerificarCamposUsuariosServidorAlarmes
+'*---------------------------------------------------------------------- 
+'*  Finalidade :
+'*     • Validar os campos de usuário (UserFields) configurado no objeto DB.AlarmServer.
+'*     • Registrar inconsistências no relatório Excel ou banco.
+'***********************************************************************
+Sub VerificarCamposUsuariosServidorAlarmes(objServidor)
+
+    On Error Resume Next
+
+    Dim colUserFields, qtdeCampos, i
+    Dim campoAtual, objUserFieldsPath, mensagem
+
+    objUserFieldsPath = objServidor.PathName & ".UserFieldsCount"
+
+    Dim objServidorUserFields
+    Set objServidorUserFields = Application.GetObject(objUserFieldsPath)
+
+    If objServidorUserFields Is Nothing Then
+        mensagem = "Não foi possível obter referência ao Servidor de Alarmes (verifique se está rodando)."
+        If GerarCSV Then
+            AdicionarErroExcel DadosExcel, objUserFieldsPath, "1", mensagem, "Banco de dados", "DB.AlarmServer"
+        Else
+            AdicionarErroBanco DadosExcel, objUserFieldsPath, "1", mensagem, "DB.AlarmServer", "Banco de dados"
+        End If
+        Exit Sub
+    End If
+
+    Set colUserFields = objServidorUserFields.UserFields
+
+    If colUserFields Is Nothing Then
+        mensagem = "Não existe coleção cadastrada de campos de usuário no Servidor de Alarmes."
+        If GerarCSV Then
+            AdicionarErroExcel DadosExcel, objUserFieldsPath, "1", mensagem, "Banco de dados", "DB.AlarmServer"
+        Else
+            AdicionarErroBanco DadosExcel, objUserFieldsPath, "1", mensagem, "DB.AlarmServer", "Banco de dados"
+        End If
+        Exit Sub
+    End If
+
+    qtdeCampos = colUserFields.Count
+
+    Dim camposExistentes
+    Set camposExistentes = CreateObject("Scripting.Dictionary")
+
+    Dim obrigatorios, opcionais, descontinuados
+
+    obrigatorios = Array("SignalName", "SignalCaption", "AOR1", "AOR2", "AOR3", _
+        "Categories", "DeviceType", "Hierarchy1", "Hierarchy2", _
+        "Hierarchy3", "Hierarchies", "Screens", "Note", "FooterAlarmAreaID")
+
+    opcionais = Array("SignalCaption2", "SignalCaption3", "ContainerGroup", _
+        "Company", "Message2", "Message3", "Flags")
+
+    descontinuados = Array("CriticalAlarm")
+
+    For i = 1 To qtdeCampos
+        campoAtual = colUserFields.Item(i).Name
+        camposExistentes.Add campoAtual, True
+    Next
+
+    For Each campoAtual In obrigatorios
+        If Not camposExistentes.Exists(campoAtual) Then
+            mensagem = "Campo de usuário obrigatório faltando no Servidor de Alarmes: " & campoAtual
+            If GerarCSV Then
+                AdicionarErroExcel DadosExcel, objUserFieldsPath, "1", mensagem, "Banco de dados", "DB.AlarmServer"
+            Else
+                AdicionarErroBanco DadosExcel, objUserFieldsPath, "1", mensagem, "DB.AlarmServer", "Banco de dados"
+            End If
+        End If
+    Next
+
+    For Each campoAtual In descontinuados
+        If camposExistentes.Exists(campoAtual) Then
+            mensagem = "Campo de usuário não utilizado encontrado no Servidor de Alarmes (deve ser removido): " & campoAtual
+            If GerarCSV Then
+                AdicionarErroExcel DadosExcel, objUserFieldsPath, "0", mensagem, "Banco de dados", "DB.AlarmServer"
+            Else
+                AdicionarErroBanco DadosExcel, objUserFieldsPath, "0", mensagem, "DB.AlarmServer", "Banco de dados"
+            End If
+        End If
+    Next
+
+    Dim encontrado
+    For Each campoAtual In camposExistentes.Keys
+        encontrado = False
+
+        If UBound(Filter(obrigatorios, campoAtual)) >= 0 Or _
+                UBound(Filter(opcionais, campoAtual)) >= 0 Or _
+                UBound(Filter(descontinuados, campoAtual)) >= 0 Then
+            encontrado = True
+        End If
+
+        If Not encontrado Then
+            mensagem = "Campo de usuário não previsto cadastrado no Servidor de Alarmes: " & campoAtual
+            If GerarCSV Then
+                AdicionarErroExcel DadosExcel, objUserFieldsPath, "0", mensagem, "Banco de dados", "DB.AlarmServer"
+            Else
+                AdicionarErroBanco DadosExcel, objUserFieldsPath, "0", mensagem, "DB.AlarmServer", "Banco de dados"
+            End If
+        End If
+    Next
+
+    On Error GoTo 0
+
+End Sub
 
 '***********************************************************************
 '*  Função : VerificarBancoDeDados
@@ -2454,18 +2295,17 @@ End Function
 '*
 '*  Parâmetros :
 '*     ‑ Obj            : Objeto a ser analisado.
-'*     ‑ TypeName       : TypeName do objeto.
-'*     ‑ Propriedade1   : Nome da propriedade que contém o DBServer.
-'*     ‑ TipoBusca1     : Tipo de busca da propriedade (0 = link | 1 = valor).
+'*     ‑ TipoObjeto       : TypeName do objeto.
+'*     ‑ Propriedade   : Nome da propriedade que contém o DBServer.
 '*     ‑ AreaErro       : Área onde o erro foi encontrado.
 '*     ‑ TipoErro       : Tipo de erro (0 = Aviso, 1 = Erro, 2 = Revisar).
 '***********************************************************************
-Function VerificarBancoDeDados(Obj, TypeName, Propriedade1, TipoBusca1, AreaErro, TipoErro)
+Function VerificarBancoDeDados(Obj, TipoObjeto, Propriedade, AreaErro, TipoErro)
 
     On Error Resume Next
 
     Dim ValorBD, PathName, Mensagem
-    ValorBD = GetPropriedade(Obj, Propriedade1, TipoBusca1)
+    ValorBD = GetPropriedade(Obj, Propriedade)
     PathName = Obj.PathName
 
     '--------------------------------------------------------------
@@ -2475,13 +2315,13 @@ Function VerificarBancoDeDados(Obj, TypeName, Propriedade1, TipoBusca1, AreaErro
         If Not DadosBancoDeDados.Exists(ValorBD) Then
             DadosBancoDeDados.Add ValorBD, PathName ' Primeiro uso
         Else
-            Mensagem = TypeName & " compartilhando o banco de dados'" & ValorBD & _
+            Mensagem = TipoObjeto & " compartilhando o banco de dados'" & ValorBD & _
                 "' com o objeto" & DadosBancoDeDados(ValorBD) & "."
 
             If GerarCSV Then
-                AdicionarErroExcel DadosExcel, PathName, CStr(TipoErro), Mensagem, AreaErro, TypeName
+                AdicionarErroExcel DadosExcel, PathName, CStr(TipoErro), Mensagem, AreaErro, TipoObjeto
             Else
-                AdicionarErroBanco DadosExcel, PathName, CStr(TipoErro), Mensagem, TypeName, AreaErro
+                AdicionarErroBanco DadosExcel, PathName, CStr(TipoErro), Mensagem, TipoObjeto, AreaErro
             End If
         End If
     End If
@@ -2491,7 +2331,7 @@ Function VerificarBancoDeDados(Obj, TypeName, Propriedade1, TipoBusca1, AreaErro
     '--------------------------------------------------------------
     If Err.Number <> 0 Then
         AdicionarErroTxt DadosTxt, "VerificarBancoDeDados", Obj, _
-            "Erro ao acessar " & Propriedade1 & " em " & TypeName
+            "Erro ao acessar " & Propriedade1 & " em " & TipoObjeto
         Err.Clear
     End If
 
@@ -2504,41 +2344,40 @@ End Function
 '*---------------------------------------------------------------------- 
 '*  Finalidade :
 '*     Garantir que a propriedade booleana/flag esteja no valor esperado
-'*     (Enable, Visible, ExposeToOpc, etc.). Se divergir, registrar no
+'*     (Enabled, Visible, ExposeToOpc, etc.). Se divergir, registrar no
 '*     relatório Excel ou banco de dados.
 '*
 '*  Parâmetros :
 '*     ‑ Obj            : Objeto a ser analisado.
-'*     ‑ TypeName       : TypeName do objeto.
+'*     ‑ TipoObjeto       : TypeName do objeto.
 '*     ‑ Propriedade    : Nome da propriedade a ser verificada.
-'*     ‑ MetodoBusca    : Tipo de busca da propriedade (0 = link | 1 = valor).
 '*     ‑ TextoAuxiliar  : Valor esperado para a propriedade (True/False ou número).
 '*     ‑ AreaErro       : Área onde o erro foi encontrado (ex.: "Drivers").
 '*     ‑ TipoErro       : Tipo de erro (0 = Aviso, 1 = Erro, 2 = Revisar).
 '***********************************************************************
-Function VerificarPropriedadeHabilitada(Obj, TypeName, Propriedade, MetodoBusca, TextoAuxiliar, AreaErro, TipoErro)
+Function VerificarPropriedadeHabilitada(Obj, TipoObjeto, Propriedade, TextoAuxiliar, AreaErro, TipoErro)
 
     On Error Resume Next
 
     Dim ValorAtual, PathName, Mensagem
-    ValorAtual = GetPropriedade(Obj, Propriedade, MetodoBusca)
+    ValorAtual = GetPropriedade(Obj, Propriedade)
     PathName = Obj.PathName
 
     If CStr(ValorAtual) <> CStr(TextoAuxiliar) Then
-        Mensagem = TypeName & " com a propriedade " & Propriedade & _
+        Mensagem = TipoObjeto & " com a propriedade " & Propriedade & _
             " diferente do esperado (Esperado: " & TextoAuxiliar & _
             "; Atual: " & ValorAtual & ")."
 
         If GerarCSV Then
-            AdicionarErroExcel DadosExcel, PathName, CStr(TipoErro), Mensagem, AreaErro, TypeName
+            AdicionarErroExcel DadosExcel, PathName, CStr(TipoErro), Mensagem, AreaErro, TipoObjeto
         Else
-            AdicionarErroBanco DadosExcel, PathName, CStr(TipoErro), Mensagem, TypeName, AreaErro
+            AdicionarErroBanco DadosExcel, PathName, CStr(TipoErro), Mensagem, TipoObjeto, AreaErro
         End If
     End If
 
     If Err.Number <> 0 Then
         AdicionarErroTxt DadosTxt, "VerificarPropriedadeHabilitada", Obj, _
-            "Erro ao acessar " & Propriedade & " em " & TypeName
+            "Erro ao acessar " & Propriedade & " em " & TipoObjeto
         Err.Clear
     End If
 
@@ -2555,9 +2394,8 @@ End Function
 '*
 '*  Parâmetros :
 '*     ‑ Obj            : Objeto a ser analisado.
-'*     ‑ TypeName       : TypeName do objeto.
-'*     ‑ Propriedade1   : Nome da propriedade a ser verificada.
-'*     ‑ TipoBusca1     : Tipo de busca da propriedade (0 = link | 1 = valor).
+'*     ‑ TipoObjeto       : TypeName do objeto.
+'*     ‑ Propriedade   : Nome da propriedade a ser verificada.
 '*     ‑ TextoAuxiliar  : Valor esperado para comparação.
 '*     ‑ MetodoAuxiliar : Modo de comparação: 
 '*                        0 = "igual" → log se "diferente" do esperado
@@ -2565,12 +2403,12 @@ End Function
 '*     ‑ AreaErro       : Área onde o erro foi encontrado.
 '*     ‑ TipoErro       : Tipo de erro (0 = Aviso, 1 = Erro, 2 = Revisar).
 '***********************************************************************
-Function VerificarPropriedadeValor(Obj, TypeName, Propriedade1, TipoBusca1, TextoAuxiliar, MetodoAuxiliar, AreaErro, TipoErro)
+Function VerificarPropriedadeValor(Obj, TipoObjeto, Propriedade, TextoAuxiliar, MetodoAuxiliar, AreaErro, TipoErro)
 
     On Error Resume Next
 
     Dim ValorAtual, ValorAtualStr, ValorEsperadoStr, Mensagem, PathName
-    ValorAtual = GetPropriedade(Obj, Propriedade1, TipoBusca1)
+    ValorAtual = GetPropriedade(Obj, Propriedade)
     ValorAtualStr = CStr(ValorAtual)
     ValorEsperadoStr = CStr(TextoAuxiliar)
     PathName = Obj.PathName
@@ -2579,36 +2417,36 @@ Function VerificarPropriedadeValor(Obj, TypeName, Propriedade1, TipoBusca1, Text
 
         Case 0 ' comparação "igual" → gera log se for diferente
             If ValorAtualStr <> ValorEsperadoStr Then
-                Mensagem = TypeName & " com a propriedade " & Propriedade1 & _
+                Mensagem = TipoObjeto & " com a propriedade " & Propriedade & _
                     " diferente do valor esperado. (Esperado: " & ValorEsperadoStr & _
                     "; Atual: " & ValorAtualStr & ")"
                 If GerarCSV Then
-                    AdicionarErroExcel DadosExcel, PathName, CStr(TipoErro), Mensagem, AreaErro, TypeName
+                    AdicionarErroExcel DadosExcel, PathName, CStr(TipoErro), Mensagem, AreaErro, TipoObjeto
                 Else
-                    AdicionarErroBanco DadosExcel, PathName, CStr(TipoErro), Mensagem, TypeName, AreaErro
+                    AdicionarErroBanco DadosExcel, PathName, CStr(TipoErro), Mensagem, TipoObjeto, AreaErro
                 End If
             End If
 
         Case 1 ' comparação "diferente" → gera log se for igual
             If ValorAtualStr = ValorEsperadoStr Then
-                Mensagem = TypeName & " com a propriedade " & Propriedade1 & _
+                Mensagem = TipoObjeto & " com a propriedade " & Propriedade & _
                     " igual ao valor: " & ValorAtualStr & ", sendo o valor nativo do objeto."
                 If GerarCSV Then
-                    AdicionarErroExcel DadosExcel, PathName, CStr(TipoErro), Mensagem, AreaErro, TypeName
+                    AdicionarErroExcel DadosExcel, PathName, CStr(TipoErro), Mensagem, AreaErro, TipoObjeto
                 Else
-                    AdicionarErroBanco DadosExcel, PathName, CStr(TipoErro), Mensagem, TypeName, AreaErro
+                    AdicionarErroBanco DadosExcel, PathName, CStr(TipoErro), Mensagem, TipoObjeto, AreaErro
                 End If
             End If
 
         Case Else
             AdicionarErroTxt DadosTxt, "VerificarPropriedadeValor", Obj, _
-                "MetodoAuxiliar inválido (" & MetodoAuxiliar & ") para propriedade " & Propriedade1
+                "MetodoAuxiliar inválido (" & MetodoAuxiliar & ") para propriedade " & Propriedade
 
     End Select
 
     If Err.Number <> 0 Then
         AdicionarErroTxt DadosTxt, "VerificarPropriedadeValor", Obj, _
-            "Erro ao acessar " & Propriedade1 & " em " & TypeName
+            "Erro ao acessar " & Propriedade & " em " & TipoObjeto
         Err.Clear
     End If
 
@@ -2625,24 +2463,24 @@ End Function
 '*
 '*  Parâmetros :
 '*     ‑ Obj            : Objeto a ser analisado.
-'*     ‑ TypeName       : TypeName do objeto.
+'*     ‑ TipoObjeto       : TypeName do objeto.
 '*     ‑ TextoAuxiliar  : Nome da biblioteca recomendada.
 '*     ‑ AreaErro       : Área onde o erro foi encontrado.
 '*     ‑ TipoErro       : Tipo de erro (0 = Aviso, 1 = Erro, 2 = Revisar).
 '***********************************************************************
-Function VerificarObjetoDesatualizado(Obj, TypeName, TextoAuxiliar, AreaErro, TipoErro)
+Function VerificarObjetoDesatualizado(Obj, TipoObjeto, TextoAuxiliar, AreaErro, TipoErro)
 
     On Error Resume Next
 
     Dim Mensagem, CaminhoObjeto
     CaminhoObjeto = Obj.PathName
-    Mensagem = "O objeto " & TypeName & _
+    Mensagem = "O objeto " & TipoObjeto & _
         " é obsoleto e deve ser substituído pela biblioteca " & TextoAuxiliar & "."
 
     If GerarCSV Then
-        AdicionarErroExcel DadosExcel, CaminhoObjeto, CStr(TipoErro), Mensagem, AreaErro, TypeName
+        AdicionarErroExcel DadosExcel, CaminhoObjeto, CStr(TipoErro), Mensagem, AreaErro, TipoObjeto
     Else
-        AdicionarErroBanco DadosExcel, CaminhoObjeto, CStr(TipoErro), Mensagem, TypeName, AreaErro
+        AdicionarErroBanco DadosExcel, CaminhoObjeto, CStr(TipoErro), Mensagem, TipoObjeto, AreaErro
     End If
 
     On Error GoTo 0
@@ -2655,37 +2493,46 @@ End Function
 '
 ' Parâmetros:
 '   Obj            -> Objeto a verificar (ex.: pwa_Disjuntor, pwa_BarraAlarme)
-'   TypeName     -> Rótulo para o log (ex.: "pwa_Disjuntor")
+'   TipoObjeto     -> Rótulo para o log (ex.: "pwa_Disjuntor")
 '   Propriedade    -> Nome da propriedade (ex.: "SourceObject")
-'   MetodoProp     -> 0 => Link (GetPropertyLink), 1 => Valor (GetPropertyValue)
 '   TextoProibido  -> Texto que não deve aparecer (ex.: ".Value")
 '   Classificacao  -> Código de severidade no Excel (0=Aviso, 1=Erro, etc.)
 '   Area           -> Área onde o erro foi encontrado (ex: "Telas", "Biblioteca")
 '********************************************************************************
-Function VerificarPropriedadeTextoProibido(Obj, TypeName, Propriedade, MetodoProp, TextoProibido, Classificacao, Area)
+Function VerificarPropriedadeTextoProibido(Obj, TipoObjeto, Propriedade, TextoProibido, Classificacao, Area)
     On Error Resume Next
 
-    ' 1) Ler a propriedade via Link ou Valor
-    Dim ValorAtual
-    ValorAtual = GetPropriedade(Obj, Propriedade, MetodoProp)
+    Dim ValorAtual, mensagem, resposta
 
-    ' 2) Se contiver o texto proibido, registrar inconsistência
+    ' DEBUG: Mostrar valor lido da propriedade
+    ValorAtual = GetPropriedade(Obj, Propriedade)
+    ' resposta = MsgBox("DEBUG: Verificando texto proibido" & vbCrLf & _
+    '                   "Objeto: " & Obj.PathName & vbCrLf & _
+    '                   "Tipo: " & TipoObjeto & vbCrLf & _
+    '                   "Propriedade: " & Propriedade & vbCrLf & _
+    '                   "Valor atual: " & ValorAtual & vbCrLf & _
+    '                   "Texto proibido: " & TextoProibido, vbOKCancel + vbInformation, "Verificação Texto Proibido")
+    If resposta = vbCancel Then Err.Raise vbObjectError + 514, , "Cancelado pelo usuário"
+
+    ' Verificação do conteúdo proibido
     If InStr(1, ValorAtual, TextoProibido, vbTextCompare) > 0 Then
-        Dim mensagem
+        'MsgBox "DEBUG: Texto proibido ENCONTRADO no valor: '" & ValorAtual & "'", vbExclamation, "Erro Detectado"
         mensagem = "A propriedade " & Propriedade & " não deve conter o texto '" & TextoProibido & "'. " & _
-            "(Atual: " & ValorAtual & ")"
+                   "(Atual: " & ValorAtual & ")"
 
         If GerarCSV Then
-            AdicionarErroExcel DadosExcel, Obj.PathName, CStr(Classificacao), mensagem, Area, TypeName
+            AdicionarErroExcel DadosExcel, Obj.PathName, CStr(Classificacao), mensagem, Area, TipoObjeto
         Else
-            AdicionarErroBanco DadosExcel, Obj.PathName, CStr(Classificacao), mensagem, TypeName, Area
+            AdicionarErroBanco DadosExcel, Obj.PathName, CStr(Classificacao), mensagem, TipoObjeto, Area
         End If
+    Else
     End If
 
-    ' 3) Tratamento de erro de acesso
+    ' Tratamento de exceção
     If Err.Number <> 0 Then
+        'MsgBox "ERRO ao acessar propriedade: " & Propriedade & vbCrLf & "Número: " & Err.Number, vbCritical, "Erro de Execução"
         AdicionarErroTxt DadosTxt, "VerificarPropriedadeTextoProibido", Obj, _
-            "Erro ao acessar " & Propriedade & " em " & TypeName
+            "Erro ao acessar " & Propriedade & " em " & TipoObjeto
         Err.Clear
     End If
 
@@ -2701,28 +2548,39 @@ End Function
 '*
 '*  Parâmetros :
 '*     ‑ Obj            : Objeto a ser analisado.
-'*     ‑ TypeName       : TypeName do objeto.
+'*     ‑ TipoObjeto       : TypeName do objeto.
 '*     ‑ AreaErro       : Área onde o erro foi detectado (ex: Telas, Biblioteca...).
 '*     ‑ TipoErro       : Severidade (0 = Aviso, 1 = Erro, 2 = Revisar).
 '*
 '***********************************************************************
-Function VerificarObjetoInternoIndevido(Obj, TypeName, AreaErro, TipoErro)
-
+Function VerificarObjetoInternoIndevido(Obj, TipoObjeto, AreaErro, TipoErro)
     On Error Resume Next
 
-    Dim mensagem, caminhoObjeto
+    Dim mensagem, caminhoObjeto, resposta
     caminhoObjeto = Obj.PathName
-    mensagem = "O objeto " & TypeName & _
-        " é de uso interno e não deve estar presente na aplicação final entregue ao cliente."
 
+    ' Debug de entrada na verificação
+    ' resposta = MsgBox("Verificando objeto interno indevido" & vbCrLf & _
+    '                   "Objeto: " & caminhoObjeto & vbCrLf & _
+    '                   "Tipo: " & TipoObjeto & vbCrLf & _
+    '                   "Área: " & AreaErro & vbCrLf & _
+    '                   "TipoErro: " & TipoErro, vbOKCancel + vbInformation, "Verificação Objeto Interno")
+    If resposta = vbCancel Then Err.Raise vbObjectError + 515, , "Cancelado pelo usuário"
+
+    ' Montagem da mensagem
+    mensagem = "O objeto " & TipoObjeto & _
+               " é de uso interno e não deve estar presente na aplicação final entregue ao cliente."
+
+    ' Registro no destino definido
     If GerarCSV Then
-        AdicionarErroExcel DadosExcel, caminhoObjeto, CStr(TipoErro), mensagem, AreaErro, TypeName
+        ' MsgBox "Registrando em Excel", vbInformation, "Destino"
+        AdicionarErroExcel DadosExcel, caminhoObjeto, CStr(TipoErro), mensagem, AreaErro, TipoObjeto
     Else
-        AdicionarErroBanco DadosExcel, caminhoObjeto, CStr(TipoErro), mensagem, TypeName, AreaErro
+        ' MsgBox "Registrando em Banco", vbInformation, "Destino"
+        AdicionarErroBanco DadosExcel, caminhoObjeto, CStr(TipoErro), mensagem, TipoObjeto, AreaErro
     End If
 
     On Error GoTo 0
-
 End Function
 
 '***********************************************************************
@@ -2735,7 +2593,7 @@ End Function
 '*
 '*  Parâmetros :
 '*     ‑ Obj            : Objeto a ser verificado.
-'*     ‑ TypeName       : TypeName do objeto.
+'*     ‑ TipoObjeto       : TypeName do objeto.
 '*     ‑ TipoEsperado   : Tipo que o pai do objeto deveria (ou não) ser.
 '*     ‑ Regra          : Define a regra de verificação:
 '*                        0 = O pai NÃO pode ser do tipo indicado.
@@ -2744,42 +2602,46 @@ End Function
 '*     ‑ TipoErro       : Severidade do erro (0 = Aviso, 1 = Erro, 2 = Revisar).
 '*
 '***********************************************************************
-Function VerificarTipoPai(Obj, TypeName, TipoEsperado, Regra, AreaErro, TipoErro)
+Function VerificarTipoPai(Obj, TipoObjeto, TipoEsperado, Regra, AreaErro, TipoErro)
     On Error Resume Next
-
-    Dim Pai, TipoPai, Msg, PathName
+    Dim Pai, TipoDoPai, Msg, PathName
     Set Pai = Obj.Parent
     PathName = Obj.PathName
 
-    If Pai Is Nothing Then Exit Function
-
-    TipoPai = TypeName(Pai)
+    If Pai Is Nothing Then
+        TipoDoPai = "[pai nulo]"
+    ElseIf IsObject(Pai) Then
+        TipoDoPai = TypeName(Pai)
+        If TipoDoPai = "" Then TipoDoPai = "[tipo indefinido]"
+    Else
+        TipoDoPai = "[tipo inválido]"
+    End If
 
     '----------------------------------------------
     ' Regra 0: Pai não deve ser do tipo informado
     '----------------------------------------------
     If Regra = 0 Then
-        If StrComp(TipoPai, TipoEsperado, vbTextCompare) = 0 Then
-            Msg = TypeName & " está localizado dentro de um objeto do tipo '" & TipoEsperado & _
-                "', o que não é permitido."
+        If StrComp(TipoDoPai, TipoEsperado, vbTextCompare) = 0 Then
+            Msg = TipoObjeto & " está localizado dentro de um objeto do tipo '" & TipoEsperado & _
+                  "', o que não é permitido."
             If GerarCSV Then
-                AdicionarErroExcel DadosExcel, PathName, CStr(TipoErro), Msg, AreaErro, TypeName
+                AdicionarErroExcel DadosExcel, PathName, CStr(TipoErro), Msg, AreaErro, TipoObjeto
             Else
-                AdicionarErroBanco DadosExcel, PathName, CStr(TipoErro), Msg, TypeName, AreaErro
+                AdicionarErroBanco DadosExcel, PathName, CStr(TipoErro), Msg, TipoObjeto, AreaErro
             End If
         End If
 
-        '----------------------------------------------
-        ' Regra 1: Pai deve ser do tipo informado
-        '----------------------------------------------
+    '----------------------------------------------
+    ' Regra 1: Pai deve ser do tipo informado
+    '----------------------------------------------
     ElseIf Regra = 1 Then
-        If StrComp(TipoPai, TipoEsperado, vbTextCompare) <> 0 Then
-            Msg = TypeName & " deveria estar contido em um objeto do tipo '" & TipoEsperado & _
-                "', mas está dentro de '" & TipoPai & "'."
+        If StrComp(TipoDoPai, TipoEsperado, vbTextCompare) <> 0 Then
+            Msg = TipoObjeto & " deveria estar contido em um objeto do tipo '" & TipoEsperado & _
+                  "', mas está dentro de '" & TipoDoPai & "'."
             If GerarCSV Then
-                AdicionarErroExcel DadosExcel, PathName, CStr(TipoErro), Msg, AreaErro, TypeName
+                AdicionarErroExcel DadosExcel, PathName, CStr(TipoErro), Msg, AreaErro, TipoObjeto
             Else
-                AdicionarErroBanco DadosExcel, PathName, CStr(TipoErro), Msg, TypeName, AreaErro
+                AdicionarErroBanco DadosExcel, PathName, CStr(TipoErro), Msg, TipoObjeto, AreaErro
             End If
         End If
     End If
@@ -3113,7 +2975,7 @@ Function TestarConexaoBanco()
 
     ' Parâmetros de conexão
     Dim servidor, banco, usuario, senha
-    servidor = "192.168.20.12"
+    servidor = "192.168.20.15\SQLEXPRESS"
     banco = "Teste_QA"
     usuario = "sa"
     senha = "1234"
@@ -3143,7 +3005,7 @@ Function ConectarBancoQA()
 
     ' Parâmetros de conexão
     Dim servidor, banco, usuario, senha
-    servidor = "192.168.20.12"
+    servidor = "192.168.20.15\SQLEXPRESS"
     banco = "Teste_QA"
     usuario = "sa"
     senha = "1234"
