@@ -3002,7 +3002,7 @@ Function ConectarBancoQA()
     Set conn = CreateObject("ADODB.Connection")
 
     Dim servidor, banco, usuario, senha
-    servidor = "GUILHERMEAMARAL\SQLEXPRESS"
+    servidor = "192.168.20.15"
     banco = "Teste_QA"
     usuario = "sa"
     senha = "1234"
