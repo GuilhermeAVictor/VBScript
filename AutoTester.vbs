@@ -11,29 +11,34 @@ Sub AutoTester_CustomConfig()
     '*     3. Caso contrário, chama a rotina Main que contém as verificações.
     '***********************************************************************
     Dim Resposta
-    Resposta = MsgBox( _
-        "Tem certeza que deseja iniciar o teste automático do domínio?", _
-        vbYesNo + vbQuestion, _
-        "Iniciar teste de domínio?")
-    If Resposta = vbNo Then
-        Exit Sub
-    End If
+	Resposta = MsgBox( _
+    "ATENÇÃO: Este processo pode ser lento." & vbCrLf & vbCrLf & _
+    "O teste automático irá realizar uma varredura completa nas telas do domínio atual, verificando propriedades e objetos conforme as regras do AutoTester." & vbCrLf & vbCrLf & _
+    "Deseja realmente iniciar o teste automático agora?", _
+    vbYesNo + vbQuestion + vbDefaultButton2, _
+    "Iniciar Teste Automático do Domínio")
+
+If Resposta = vbNo Then
+    Exit Sub
+End If
 
     Dim connTest
     Set connTest = ConectarBancoQA()
 
-    If connTest Is Nothing Then
-        MsgBox "Falha ao conectar ao banco de dados do AutoTester." & vbCrLf & _
-            "Verifique se a VPN da Automa está conectada.", _
-            vbCritical, "Erro de Conexão"
-        Exit Sub
-    Else
-        connTest.Close
-        Set connTest = Nothing
-    End If
+If connTest Is Nothing Then
+    MsgBox _
+        "====================================" & vbCrLf & _
+        "Falha ao conectar ao banco de dados do AutoTester." & vbCrLf & vbCrLf & _
+        "Verifique se a VPN da Automa está conectada corretamente." & vbCrLf & _
+        "Caso o problema persista, entre em contato com a equipe de QA." & vbCrLf & _
+        "===================================="
+    Exit Sub
+Else
+    connTest.Close
+    Set connTest = Nothing
+End If
     Main
 End Sub
-
 
 '***********************************************************************
 '*  Seção : Declaração de Variáveis Globais
@@ -61,7 +66,7 @@ End Sub
 '*     ‑ ResponsavelQA          (String) - Caso a propriedade esteja vazia, irá preencher com "AutoTester"
 '***********************************************************************
 
-Dim DadosExcel, DadosTxt, DadosBancoDeDados, ListaObjetosLib, TiposRegistrados, CaminhoPrj
+Dim DadosExcel, DadosTxt, DadosBancoDeDados, ListaObjetosLib, TiposRegistrados, CaminhoPrj, TiposUnicos
 
 '-- Instanciação dos dicionários -----------------------------------------------
 Set DadosExcel = CreateObject("Scripting.Dictionary")
@@ -69,6 +74,7 @@ Set DadosTxt = CreateObject("Scripting.Dictionary")
 Set DadosBancoDeDados = CreateObject("Scripting.Dictionary")
 Set ListaObjetosLib = CreateObject("Scripting.Dictionary")
 Set TiposRegistrados = CreateObject("Scripting.Dictionary")
+Set TiposUnicos = CreateObject("Scripting.Dictionary")
 '--------------------------------------------------------------------------------
 
 '-- Definição do diretório de saída ---------------------------------------------
@@ -84,14 +90,15 @@ End If
 '*----------------------------------------------------------------------
 '*  Finalidade :
 '*     1) Obter e verificar telas indicadas em PathNameTelas.
-'*     2) Verificar demais objetos de domínio (DataServer, DataFolder…).
+'*     2) Verificar demais objetos de domínio (DataServer, Folder…).
 '*     3) Verificar Servidores de Alarme e Campos de Usuário.
 '*     4) (Opcional) Verificar configurações de Hist / Historian.
 '*     5) Gerar relatórios TXT e Excel com os resultados.
 '***********************************************************************
 Sub Main()
 
-    Dim telaArray ' Array de telas a verificar
+    Dim telaArray, tempoInicio, tempoFim, tempoGasto, tempoFormatado
+	tempoInicio = Timer
 
     '------------------------------------------------------------------
     ' 1) Obter lista de telas para verificação
@@ -108,82 +115,91 @@ Sub Main()
     '------------------------------------------------------------------
     ' 3) Verificar demais objetos do domínio (exceto telas)
     '------------------------------------------------------------------
-        For Each Objeto In Application.ListFiles()
-            VerificarPropriedadesObjetoBase Objeto
-        Next
+	For Each Objeto In Application.ListFiles()
+   		If TypeName(Objeto) <> "Screen" Then
+       	VerificarPropriedadesObjetoBase Objeto
+    	End If
+	Next
+
     '------------------------------------------------------------------
     ' 4) Verificar Servidores de Alarme e Campos de Usuário
     '------------------------------------------------------------------
-    	VerificarServidoresDeAlarme
-
-    '------------------------------------------------------------------
-    ' 5) Verificar Hist / Historian, se solicitado
-    '------------------------------------------------------------------
-    
-        Dim Obj
-
-    '--------------------------------------------------------------
-    ' 5.1) Objetos "Hist"
-    '--------------------------------------------------------------
-        For Each Obj In Application.ListFiles("Hist")
-
-	VerificarPropriedadeValor Obj, "Hist", "BackupDiscardInterval", 12, 1, "Domínio", 0
-	VerificarPropriedadeHabilitada Obj, "Hist", "EnabledBackupTable", False, "Domínio", 0
-	VerificarPropriedadeValor Obj, "Hist", "Enablediscard", 1, 1, "Domínio", 0
-	VerificarPropriedadeHabilitada Obj, "Hist", "DiscardInterval", False, "Domínio", 1
-	VerificarPropriedadeValor Obj, "Hist", "VerificationInterval", 1, 1, "Domínio", 0
-	VerificarPropriedadeVazia Obj, "Hist", "DBServer", "Domínio", 1
-	VerificarBancoDeDados Obj, "Hist", "DBServer", "Domínio", 0
-        Next
-
-    '--------------------------------------------------------------
-    ' 5.2) Objetos "Historian"
-    '--------------------------------------------------------------
-        For Each Obj In Application.ListFiles("Historian")
-
-	VerificarPropriedadeValor Obj, "Historian", "BackupDiscardInterval", 12, 1, "Domínio", 0
-	VerificarPropriedadeHabilitada Obj, "Historian", "EnabledBackupTable", False, "Domínio", 0
-	VerificarPropriedadeValor Obj, "Historian", "Enablediscard", 1, 1, "Domínio", 0
-	VerificarPropriedadeHabilitada Obj, "Historian", "DiscardInterval", False, "Domínio", 1
-	VerificarPropriedadeValor Obj, "Historian", "VerificationInterval", 1, 1, "Domínio", 0
-	VerificarPropriedadeVazia Obj, "Historian", "DBServer", "Domínio", 1
-	VerificarBancoDeDados Obj, "Historian", "DBServer", "Domínio", 0
-        Next
-
+	For Each objServidor In Application.ListFiles("DB.AlarmServer")
+    	VerificarUnicidadeObjetoTipo objServidor, "DB.AlarmServer", "Banco de dados", 0
+    	VerificarCamposUsuariosServidorAlarmes objServidor
+	Next
     End If
 
     '------------------------------------------------------------------
-    ' 6) Geração de relatórios
+    ' 5) Geração de relatórios
     '------------------------------------------------------------------
     If Not DebugMode Then
 
         If GerarLogErrosScript Then
             If Not GerarRelatorioTxt(DadosTxt, CaminhoPrj) Then
-                MsgBox "Falha ao gerar o relatório TXT.", vbCritical
+                MsgBox _
+						"====================================" & vbCrLf & _
+						"Falha ao gerar o relatório TXT." & vbCrLf & _
+						"Verifique se o diretório está acessível e se não há arquivos bloqueando a escrita.", _
+						"===================================="
             End If
         End If
 
         If GerarCSV Then
             If Not GerarRelatorioExcel(DadosExcel, CaminhoPrj) Then
-                MsgBox "Falha ao gerar o relatório Excel.", vbCritical
+            	MsgBox _
+						"====================================" & vbCrLf & _
+						"Falha ao gerar o relatório Excel." & vbCrLf & _
+						"Verifique se o Microsoft Excel está instalado corretamente e se o arquivo não está aberto.", _
+						"===================================="
             End If
         Else
             Dim connDB
             Set connDB = ConectarBancoQA()
             
             If connDB Is Nothing Then
-                MsgBox "Falha ao conectar ao banco de dados QA." & vbCrLf & _
-                    "Por favor, contate a equipe de Quality Assurance.", vbCritical
+                MsgBox _
+						"====================================" & vbCrLf & _
+						"Falha ao conectar ao banco de dados QA." & vbCrLf & _
+						"Certifique-se de que a VPN está ativa e que as credenciais estão corretas." & vbCrLf & _
+						"Contate a equipe de Quality Assurance caso o problema persista.", _
+						"===================================="
             Else
                 InserirInconsistenciasBanco DadosExcel, connDB
                 connDB.Close
                 Set connDB = Nothing
 
-                MsgBox "Inconsistências registradas com sucesso no banco de dados QA.", vbInformation
+                tempoFim = Timer
+                tempoGasto = Round(tempoFim - tempoInicio, 2)
+				If tempoGasto >= 60 Then
+    				tempoFormatado = Int(tempoGasto / 60) & " min " & Round(tempoGasto Mod 60) & " s"
+				Else
+    				tempoFormatado = Round(tempoGasto, 2) & " s"
+				End If
+				MsgBox _
+    				"Inconsistências registradas com sucesso no banco de dados do QA." & vbCrLf & vbCrLf & _
+    				"────────────  Informações Gerais  ────────────" & vbCrLf & _
+    				"Número de telas verificadas: " & Item("ContagemTelas").Value & vbCrLf & _
+    				"Número de objetos de tela verificados: " & Item("ContagemObjetosTelas").Value & vbCrLf & _
+    				"Número de objetos de base verificados: " & Item("ContagemObjetosBase").Value & vbCrLf & _
+    				"Tempo gasto: " & tempoFormatado & vbCrLf & vbCrLf & _
+    				"Acesse http://app.qa.devolutivas para visualizar as inconsistências geradas.", _
+        			vbInformation, "AutoTester - Resultado"
             End If
         End If
     End If
 
+	'------------------------------------------------------------------
+	' 6) Limpeza de objetos
+	'------------------------------------------------------------------
+	Set DadosExcel = Nothing
+	Set DadosTxt = Nothing
+	Set DadosBancoDeDados = Nothing
+	Set ListaObjetosLib = Nothing
+	Set TiposRegistrados = Nothing
+	Item("ContagemTelas").Value = 0
+	Item("ContagemObjetosTelas").Value = 0
+	Item("ContagemObjetosBase").Value = 0
 End Sub
 
 '***********************************************************************
@@ -211,6 +227,7 @@ Sub VerificarTelas(telaArray)
         For Each Objeto In Application.ListFiles("Screen")
             If IsTelaNaLista(Objeto.PathName, telaArray) Then
                 VerificarPropriedadesObjetoTela Objeto
+				Item("ContagemTelas").Value = Item("ContagemTelas").Value + 1
             End If
         Next
     Else
@@ -220,6 +237,7 @@ Sub VerificarTelas(telaArray)
         '--------------------------------------------------------------
         For Each Objeto In Application.ListFiles("Screen")
             VerificarPropriedadesObjetoTela Objeto
+			Item("ContagemTelas").Value = Item("ContagemTelas").Value + 1
         Next
 
     End If
@@ -278,7 +296,7 @@ End Function
 '*  Finalidade :
 '*     Verificar o tipo do objeto recebido e acionar as rotinas de
 '*     validação correspondentes.  Para objetos contêineres
-'*     (Screen, DataServer, DataFolder, DrawGroup) a verificação é
+'*     (Screen, DataServer, Folder, DrawGroup) a verificação é
 '*     recursiva, percorrendo todos os seus filhos.
 '***********************************************************************
 Function VerificarPropriedadesObjetoBase(Obj)
@@ -291,14 +309,16 @@ Function VerificarPropriedadesObjetoBase(Obj)
     '=================================================================
     ' Objetos contêineres  →  verificação recursiva
     '=================================================================
-Case "DataServer", "DataFolder", "Screen", "DrawGroup"
+Case "DataServer", "DataFolder", "Folder", "Screen", "DrawGroup"
     For Each child In Obj
         VerificarPropriedadesObjetoBase child
+		Item("ContagemObjetosBase").Value = Item("ContagemObjetosBase").Value + 1
     Next
 
     '=================================================================
     ' Objetos de configuração de banco de dados, drivers e customizações.
     '=================================================================
+
 Case "frCustomAppConfig"
 	VerificarBancoDeDados Obj, "frCustomAppConfig", "AppDBServerPathName", "Domínio", 0
 	VerificarTipoPai Obj, "frCustomAppConfig", "DataServer", 0, "Domínio", 1
@@ -400,7 +420,7 @@ Case "WaterDistributionNetwork"
 	VerificarPropriedadeVazia Obj, "WaterDistributionNetwork", "StateAcronym", "Biblioteca", 0
 	VerificarPropriedadeVazia Obj, "WaterDistributionNetwork", "Note", "Biblioteca", 0
 	Dim containerTypes
-	containerTypes = Array("DataFolder", "DrawGroup", "DataServer", "WaterDistributionNetwork")
+	containerTypes = Array("Folder", "DrawGroup", "DataServer", "DataFolder", "WaterDistributionNetwork")
 	If HasChildOfType(Obj, "WaterStationData", containerTypes) Then
 		Dim arrUserFields
 		arrUserFields = Array("DadosDaPlanta", "Mapa3D")
@@ -426,6 +446,24 @@ Case "xots_StandardStudioSettings"
 Case "xots_ConvertAqDriversIntoVbScri"
 	VerificarObjetoInternoIndevido Obj, "xots_ConvertAqDriversIntoVbScri", "Domínio", 1
 	'-----------------------------------------------------------------------------
+Case "Hist"
+	VerificarPropriedadeValor Obj, "Hist", "BackupDiscardInterval", 12, 1, "Domínio", 0
+	VerificarPropriedadeHabilitada Obj, "Hist", "EnabledBackupTable", False, "Domínio", 0
+	VerificarPropriedadeValor Obj, "Hist", "Enablediscard", 1, 1, "Domínio", 0
+	VerificarPropriedadeHabilitada Obj, "Hist", "DiscardInterval", False, "Domínio", 1
+	VerificarPropriedadeValor Obj, "Hist", "VerificationInterval", 1, 1, "Domínio", 0
+	VerificarPropriedadeVazia Obj, "Hist", "DBServer", "Domínio", 1
+	VerificarBancoDeDados Obj, "Hist", "DBServer", "Domínio", 0
+	'-----------------------------------------------------------------------------
+Case "Historian"
+	VerificarPropriedadeValor Obj, "Historian", "BackupDiscardInterval", 12, 1, "Domínio", 0
+	VerificarPropriedadeHabilitada Obj, "Historian", "EnabledBackupTable", False, "Domínio", 0
+	VerificarPropriedadeValor Obj, "Historian", "Enablediscard", 1, 1, "Domínio", 0
+	VerificarPropriedadeHabilitada Obj, "Historian", "DiscardInterval", False, "Domínio", 1
+	VerificarPropriedadeValor Obj, "Historian", "VerificationInterval", 1, 1, "Domínio", 0
+	VerificarPropriedadeVazia Obj, "Historian", "DBServer", "Domínio", 1
+	VerificarBancoDeDados Obj, "Historian", "DBServer", "Domínio", 0
+	'-----------------------------------------------------------------------------
 Case Else
     RegistrarTipoSemPropriedade TipoObjeto
 End Select
@@ -438,7 +476,7 @@ End Function
 '*  Finalidade :
 '*     Verificar o tipo do objeto recebido e acionar as rotinas de
 '*     validação correspondentes.  Para objetos contêineres
-'*     (Screen, DataServer, DataFolder, DrawGroup) a verificação é
+'*     (Screen, DataServer, Folder, DrawGroup) a verificação é
 '*     recursiva, percorrendo todos os seus filhos.
 '***********************************************************************
 Function VerificarPropriedadesObjetoTela(Obj)
@@ -451,15 +489,17 @@ Function VerificarPropriedadesObjetoTela(Obj)
     '=================================================================
     ' Objetos contêineres  →  verificação recursiva
     '=================================================================
-Case "DataServer", "DataFolder", "Screen", "DrawGroup"
+Case "DataServer", "DataFolder", "Folder", "Screen", "DrawGroup"
 
     For Each child In Obj
         VerificarPropriedadesObjetoTela child
+		Item("ContagemObjetosTelas").Value = Item("ContagemObjetosTelas").Value + 1
     Next
 
     '=================================================================
     ' A partir daqui: blocos por tipo de objeto de tela/biblioteca
     '=================================================================
+
 Case "pwa_Disjuntor"
 	VerificarPropriedadeCondicional Obj, "pwa_Disjuntor", "NaoSupervisionado", "SourceObject", False, "Telas", 1
 	VerificarPropriedadeCondicional Obj, "pwa_Disjuntor", "NaoSupervisionado", "PositionMeas", False, "Telas", 1
@@ -1924,7 +1964,7 @@ End Function
 '*     Percorrer recursivamente a hierarquia de “Obj” e indicar se existe
 '*     pelo menos um objeto cujo TypeName seja “TargetType”.
 '*     A recursão só acontece para objetos cujo TypeName conste no array
-'*     “ContainerTypes” (ex.: DataFolder, Screen, DrawGroup…).
+'*     “ContainerTypes” (ex.: Folder, Screen, DrawGroup…).
 '*
 '*  Parâmetros :
 '*     ‑ Obj            : Objeto raiz a partir do qual será feita a busca.
@@ -2132,48 +2172,46 @@ Function VerificarPropriedadeCondicional(Obj, TipoObjeto, PropriedadeCondicional
 End Function
 
 '*********************************************************************** 
-'*  Sub‑rotina : VerificarServidoresDeAlarme
+'*  Função : VerificarUnicidadeObjetoTipo
 '*---------------------------------------------------------------------- 
 '*  Finalidade :
-'*     • Contar quantos objetos "DB.AlarmServer" existem no domínio e
-'*       emitir aviso caso haja mais de um.
-'*     • Para cada servidor de alarme, validar se os campos de usuário
-'*       obrigatórios estão corretamente configurados.
+'*     • Garante que apenas um objeto por tipo (ex.: DB.AlarmServer) exista.
+'*     • Caso mais de um objeto de mesmo tipo seja detectado, registra erro.
+'*  Parâmetros :
+'*     Obj        → Objeto que está sendo analisado
+'*     TipoObjeto → Nome do tipo do objeto (ex.: "DB.AlarmServer")
+'*     AreaErro   → Rótulo de onde o erro foi detectado (ex.: "Banco de dados")
+'*     TipoErro   → Severidade: 0=Aviso, 1=Erro, etc.
 '***********************************************************************
-Sub VerificarServidoresDeAlarme()
-
+Function VerificarUnicidadeObjetoTipo(Obj, TipoObjeto, AreaErro, TipoErro)
     On Error Resume Next
 
-    Dim listaServidores, objServidor, totalServidores
-    Set listaServidores = Application.ListFiles("DB.AlarmServer")
-    totalServidores = listaServidores.Count
+    ' MsgBox "DEBUG: Verificando unicidade do tipo: " & TipoObjeto & vbCrLf & _
+    '        "Objeto: " & Obj.PathName, vbInformation, "AutoTester - Debug"
 
-    '------------------------------------------------------------------
-    ' Verificação 1 : mais de um servidor de alarme → aviso
-    '------------------------------------------------------------------
-    If totalServidores > 1 Then
-        Dim mensagem, pathAlvo
-        pathAlvo = "DB.AlarmServer"
-        mensagem = "Foram encontrados " & totalServidores & _
-            " servidores de alarme. O recomendado é apenas um."
-
-        If GerarCSV Then
-            AdicionarErroExcel DadosExcel, pathAlvo, "0", mensagem, "Banco de dados", "DB.AlarmServer"
-        Else
-            AdicionarErroBanco DadosExcel, pathAlvo, "0", mensagem, "DB.AlarmServer", "Banco de dados"
-        End If
+    ' Inicializa o dicionário global, se necessário
+    If Not IsObject(Item("TiposUnicos")) Then
+        Set Item("TiposUnicos") = CreateObject("Scripting.Dictionary")
     End If
 
-    '------------------------------------------------------------------
-    ' Verificação 2 : campos de usuário obrigatórios em cada servidor
-    '------------------------------------------------------------------
-    For Each objServidor In listaServidores
-        VerificarCamposUsuariosServidorAlarmes objServidor
-    Next
+    ' Verifica se já existe um objeto desse tipo
+    If Item("TiposUnicos").Exists(TipoObjeto) Then
+        Dim mensagem
+        mensagem = "Já existe outro objeto do tipo '" & TipoObjeto & "' no domínio. Mais de um objeto deste tipo pode gerar conflitos de operação."
 
+        If GerarCSV Then
+            AdicionarErroExcel DadosExcel, Obj.PathName, CStr(TipoErro), mensagem, AreaErro, TipoObjeto
+        Else
+            AdicionarErroBanco DadosExcel, Obj.PathName, CStr(TipoErro), mensagem, TipoObjeto, AreaErro
+        End If
+    Else
+        ' Armazena o primeiro objeto desse tipo
+        Item("TiposUnicos").Add TipoObjeto, Obj.PathName
+    End If
+
+    VerificarUnicidadeObjetoTipo = True
     On Error GoTo 0
-
-End Sub
+End Function
 
 '***********************************************************************
 '*  Sub‑rotina : VerificarCamposUsuariosServidorAlarmes
@@ -2315,9 +2353,7 @@ Function VerificarBancoDeDados(Obj, TipoObjeto, Propriedade, AreaErro, TipoErro)
         If Not DadosBancoDeDados.Exists(ValorBD) Then
             DadosBancoDeDados.Add ValorBD, PathName ' Primeiro uso
         Else
-            Mensagem = TipoObjeto & " compartilhando o banco de dados'" & ValorBD & _
-                "' com o objeto" & DadosBancoDeDados(ValorBD) & "."
-
+            Mensagem = TipoObjeto & " compartilhando o banco de dados'" & ValorBD & "' com o objeto " & DadosBancoDeDados(ValorBD) & "."
             If GerarCSV Then
                 AdicionarErroExcel DadosExcel, PathName, CStr(TipoErro), Mensagem, AreaErro, TipoObjeto
             Else
@@ -2364,9 +2400,7 @@ Function VerificarPropriedadeHabilitada(Obj, TipoObjeto, Propriedade, TextoAuxil
     PathName = Obj.PathName
 
     If CStr(ValorAtual) <> CStr(TextoAuxiliar) Then
-        Mensagem = TipoObjeto & " com a propriedade " & Propriedade & _
-            " diferente do esperado (Esperado: " & TextoAuxiliar & _
-            "; Atual: " & ValorAtual & ")."
+        Mensagem = TipoObjeto & " com a propriedade " & Propriedade & " diferente do esperado (Esperado: " & TextoAuxiliar & "; Atual: " & ValorAtual & ")."
 
         If GerarCSV Then
             AdicionarErroExcel DadosExcel, PathName, CStr(TipoErro), Mensagem, AreaErro, TipoObjeto
@@ -2417,9 +2451,7 @@ Function VerificarPropriedadeValor(Obj, TipoObjeto, Propriedade, TextoAuxiliar, 
 
         Case 0 ' comparação "igual" → gera log se for diferente
             If ValorAtualStr <> ValorEsperadoStr Then
-                Mensagem = TipoObjeto & " com a propriedade " & Propriedade & _
-                    " diferente do valor esperado. (Esperado: " & ValorEsperadoStr & _
-                    "; Atual: " & ValorAtualStr & ")"
+                Mensagem = TipoObjeto & " com a propriedade " & Propriedade & " diferente do valor esperado. (Esperado: " & ValorEsperadoStr & "; Atual: " & ValorAtualStr & ")"
                 If GerarCSV Then
                     AdicionarErroExcel DadosExcel, PathName, CStr(TipoErro), Mensagem, AreaErro, TipoObjeto
                 Else
@@ -2429,8 +2461,7 @@ Function VerificarPropriedadeValor(Obj, TipoObjeto, Propriedade, TextoAuxiliar, 
 
         Case 1 ' comparação "diferente" → gera log se for igual
             If ValorAtualStr = ValorEsperadoStr Then
-                Mensagem = TipoObjeto & " com a propriedade " & Propriedade & _
-                    " igual ao valor: " & ValorAtualStr & ", sendo o valor nativo do objeto."
+                Mensagem = TipoObjeto & " com a propriedade " & Propriedade & " igual ao valor: " & ValorAtualStr & ", sendo o valor nativo do objeto."
                 If GerarCSV Then
                     AdicionarErroExcel DadosExcel, PathName, CStr(TipoErro), Mensagem, AreaErro, TipoObjeto
                 Else
@@ -2474,8 +2505,7 @@ Function VerificarObjetoDesatualizado(Obj, TipoObjeto, TextoAuxiliar, AreaErro, 
 
     Dim Mensagem, CaminhoObjeto
     CaminhoObjeto = Obj.PathName
-    Mensagem = "O objeto " & TipoObjeto & _
-        " é obsoleto e deve ser substituído pela biblioteca " & TextoAuxiliar & "."
+    Mensagem = "O objeto " & TipoObjeto & " é obsoleto e deve ser substituído pela biblioteca " & TextoAuxiliar & "."
 
     If GerarCSV Then
         AdicionarErroExcel DadosExcel, CaminhoObjeto, CStr(TipoErro), Mensagem, AreaErro, TipoObjeto
@@ -2504,7 +2534,6 @@ Function VerificarPropriedadeTextoProibido(Obj, TipoObjeto, Propriedade, TextoPr
 
     Dim ValorAtual, mensagem, resposta
 
-    ' DEBUG: Mostrar valor lido da propriedade
     ValorAtual = GetPropriedade(Obj, Propriedade)
     ' resposta = MsgBox("DEBUG: Verificando texto proibido" & vbCrLf & _
     '                   "Objeto: " & Obj.PathName & vbCrLf & _
@@ -2517,8 +2546,7 @@ Function VerificarPropriedadeTextoProibido(Obj, TipoObjeto, Propriedade, TextoPr
     ' Verificação do conteúdo proibido
     If InStr(1, ValorAtual, TextoProibido, vbTextCompare) > 0 Then
         'MsgBox "DEBUG: Texto proibido ENCONTRADO no valor: '" & ValorAtual & "'", vbExclamation, "Erro Detectado"
-        mensagem = "A propriedade " & Propriedade & " não deve conter o texto '" & TextoProibido & "'. " & _
-                   "(Atual: " & ValorAtual & ")"
+        mensagem = "A propriedade " & Propriedade & " não deve conter o texto '" & TextoProibido & "'. " & "(Atual: " & ValorAtual & ")"
 
         If GerarCSV Then
             AdicionarErroExcel DadosExcel, Obj.PathName, CStr(Classificacao), mensagem, Area, TipoObjeto
@@ -2559,7 +2587,6 @@ Function VerificarObjetoInternoIndevido(Obj, TipoObjeto, AreaErro, TipoErro)
     Dim mensagem, caminhoObjeto, resposta
     caminhoObjeto = Obj.PathName
 
-    ' Debug de entrada na verificação
     ' resposta = MsgBox("Verificando objeto interno indevido" & vbCrLf & _
     '                   "Objeto: " & caminhoObjeto & vbCrLf & _
     '                   "Tipo: " & TipoObjeto & vbCrLf & _
@@ -2568,8 +2595,7 @@ Function VerificarObjetoInternoIndevido(Obj, TipoObjeto, AreaErro, TipoErro)
     If resposta = vbCancel Then Err.Raise vbObjectError + 515, , "Cancelado pelo usuário"
 
     ' Montagem da mensagem
-    mensagem = "O objeto " & TipoObjeto & _
-               " é de uso interno e não deve estar presente na aplicação final entregue ao cliente."
+    mensagem = "O objeto " & TipoObjeto & " é de uso interno e não deve estar presente na aplicação final entregue ao cliente."
 
     ' Registro no destino definido
     If GerarCSV Then
@@ -2967,45 +2993,16 @@ Function GerarRelatorioExcel(DadosExcel, CaminhoPrj)
 
 End Function
 
-Function TestarConexaoBanco()
-    On Error Resume Next
-
-    Dim conn, strConexao
-    Set conn = CreateObject("ADODB.Connection")
-
-    ' Parâmetros de conexão
-    Dim servidor, banco, usuario, senha
-    servidor = "192.168.20.15\SQLEXPRESS"
-    banco = "Teste_QA"
-    usuario = "sa"
-    senha = "1234"
-
-    ' Monta a string de conexão
-    strConexao = "Provider=SQLOLEDB;Data Source=" & servidor & ";Initial Catalog=" & banco & ";User ID=" & usuario & ";Password=" & senha & ";"
-
-    ' Tenta abrir a conexão
-    conn.Open strConexao
-
-    If conn.State = 1 Then
-        TestarConexaoBanco = True
-    Else
-        TestarConexaoBanco = False
-    End If
-
-    conn.Close
-    Set conn = Nothing
-    On Error GoTo 0
-End Function
-
 Function ConectarBancoQA()
     On Error Resume Next
 
+    'MsgBox "DEBUG: Entrou na função ConectarBancoQA", vbInformation
+
     Dim conn, strConexao
     Set conn = CreateObject("ADODB.Connection")
 
-    ' Parâmetros de conexão
     Dim servidor, banco, usuario, senha
-    servidor = "192.168.20.15\SQLEXPRESS"
+    servidor = "GUILHERMEAMARAL\SQLEXPRESS"
     banco = "Teste_QA"
     usuario = "sa"
     senha = "1234"
@@ -3015,8 +3012,10 @@ Function ConectarBancoQA()
     conn.Open strConexao
 
     If conn.State = 1 Then
+        'MsgBox "DEBUG: Conexão bem-sucedida em ConectarBancoQA", vbInformation
         Set ConectarBancoQA = conn
     Else
+        'MsgBox "DEBUG: Falha na conexão em ConectarBancoQA", vbCritical
         Set ConectarBancoQA = Nothing
     End If
 
@@ -3043,8 +3042,14 @@ End Function
 '*     ‑ Area       : Área da inconsistência (ex.: "Drivers", "Telas").
 '***********************************************************************
 Function AdicionarErroBanco(DadosExcel, PathName, TipoErro, Descricao, TypeName, Area)
-
     On Error Resume Next
+
+    ' MsgBox "DEBUG: Entrou em AdicionarErroBanco" & vbCrLf & _
+    '        "PathName: " & PathName & vbCrLf & _
+    '        "TipoErro: " & TipoErro & vbCrLf & _
+    '        "Descricao: " & Descricao & vbCrLf & _
+    '        "TypeName: " & TypeName & vbCrLf & _
+    '        "Area: " & Area, vbInformation
 
     Dim LinhaBanco, keyBanco
     LinhaBanco = DadosExcel.Count + 1
@@ -3056,23 +3061,17 @@ Function AdicionarErroBanco(DadosExcel, PathName, TipoErro, Descricao, TypeName,
     Wend
 
     If Not IsObject(DadosExcel) Then
-        MsgBox "Erro: O dicionário DadosExcel não foi inicializado.", vbCritical
+        'MsgBox "Erro: O dicionário DadosExcel não foi inicializado.", vbCritical
         Exit Function
     End If
 
     If Len(Trim(PathName)) > 0 And Len(Trim(TipoErro)) > 0 And Len(Trim(Descricao)) > 0 Then
         DadosExcel.Add keyBanco, PathName & "/" & TipoErro & "/" & Descricao & "/" & TypeName & "/" & Area
     Else
-        MsgBox "Erro ao adicionar erro ao banco:" & vbCrLf & _
-            "PathName: " & PathName & vbCrLf & _
-            "TipoErro: " & TipoErro & vbCrLf & _
-            "Descricao: " & Descricao & vbCrLf & _
-            "TypeName: " & TypeName & vbCrLf & _
-            "Area: " & Area, vbCritical
+        'MsgBox "Erro ao adicionar erro ao banco (valores ausentes).", vbCritical
     End If
 
     On Error GoTo 0
-
 End Function
 
 '***********************************************************************
@@ -3090,6 +3089,8 @@ End Function
 Function InserirInconsistenciasBanco(DadosExcel, conn)
     On Error Resume Next
 
+    'MsgBox "DEBUG: Entrou em InserirInconsistenciasBanco - Total de registros: " & DadosExcel.Count, vbInformation
+
     Dim linha, campos, loteSQL
     Dim PathName, TipoErro, Descricao, TypeName, Area, Categoria
     Dim LocalidadeFinal, insertCount
@@ -3097,6 +3098,7 @@ Function InserirInconsistenciasBanco(DadosExcel, conn)
     loteSQL = ""
 
     For Each linha In DadosExcel
+	'MsgBox "DEBUG: Processando chave: " & linha, vbInformation
 
         campos = Split(DadosExcel.Item(linha), "/")
         If UBound(campos) >= 4 Then
@@ -3139,16 +3141,17 @@ Function InserirInconsistenciasBanco(DadosExcel, conn)
 
             ' A cada 100 registros, executa o lote
             If insertCount >= 100 Then
+                'MsgBox "DEBUG: Enviando lote de 100 registros ao banco", vbInformation
                 conn.Execute loteSQL
                 loteSQL = ""
                 insertCount = 0
             End If
-
         End If
     Next
 
     ' Executa o restante se sobrou menos de 100
     If insertCount > 0 And loteSQL <> "" Then
+        'MsgBox "DEBUG: Enviando lote final ao banco", vbInformation
         conn.Execute loteSQL
     End If
 
