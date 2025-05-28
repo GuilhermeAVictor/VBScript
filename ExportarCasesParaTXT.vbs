@@ -6,9 +6,12 @@ Sub ExportarCasesParaTXT()
     Dim output As String
     Dim caminhoTXT As String
     Dim fs As Object, arquivo As Object
+    Dim valorScript As Variant
+    Dim linhas() As String
+    Dim i As Integer
 
-    ' Define a planilha com os dados (ajuste conforme necessário)
-    Set ws = ThisWorkbook.Sheets("Objetos") ' Altere para o nome correto da aba
+    ' Define a planilha com os dados
+    Set ws = ThisWorkbook.Sheets("Objetos") ' Altere se necessário
 
     ' Última linha com dados na coluna B (TypeName)
     ultimaLinha = ws.Cells(ws.Rows.Count, "B").End(xlUp).Row
@@ -19,7 +22,7 @@ Sub ExportarCasesParaTXT()
         tipoAtual = ws.Cells(linha, "B").Value ' Coluna B = TypeName
 
         If tipoAtual <> "" Then
-            ' Se mudou o TypeName, começa novo bloco Case
+            ' Novo bloco Case
             If tipoAtual <> tipoAnterior Then
                 If tipoAnterior <> "" Then
                     output = output & vbTab & "'-----------------------------------------------------------------------------" & vbCrLf
@@ -29,26 +32,37 @@ Sub ExportarCasesParaTXT()
                 tipoAnterior = tipoAtual
             End If
 
-            ' Adiciona o script (em coluna AD - ajuste se necessário)
-            output = output & vbTab & ws.Cells(linha, "AD").Value & vbCrLf
+            ' --- Lê célula AE com tratamento ---
+            valorScript = ws.Cells(linha, "AE").Value
+
+            If Not IsError(valorScript) Then
+    linhas = Split(Replace(CStr(valorScript), vbCrLf, vbLf), vbLf)
+
+    For i = 0 To UBound(linhas)
+If Len(linhas(i)) > 0 Then
+    output = output & vbTab & linhas(i) & vbCrLf
+End If
+
+    Next i
+End If
         End If
     Next linha
 
-    ' Fecha último bloco
+    ' Fecha último bloco Case
     If tipoAnterior <> "" Then
         output = output & vbTab & "'-----------------------------------------------------------------------------" & vbCrLf
     End If
 
-    ' Caminho temporário do arquivo .txt
+    ' Caminho do .txt temporário
     caminhoTXT = Environ("TEMP") & "\ScriptsGerados.txt"
 
-    ' Criar arquivo e salvar conteúdo
+    ' Cria e escreve no arquivo
     Set fs = CreateObject("Scripting.FileSystemObject")
     Set arquivo = fs.CreateTextFile(caminhoTXT, True)
     arquivo.Write output
     arquivo.Close
 
-    ' Abrir no Bloco de Notas
+    ' Abre no bloco de notas
     Shell "notepad.exe " & caminhoTXT, vbNormalFocus
 
     MsgBox "Arquivo gerado com sucesso!", vbInformation
