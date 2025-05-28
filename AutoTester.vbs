@@ -314,10 +314,9 @@ Case "DataServer", "DataFolder", "Folder", "Screen", "DrawGroup"
         VerificarPropriedadesObjetoBase child
 		Item("ContagemObjetosBase").Value = Item("ContagemObjetosBase").Value + 1
     Next
-
 	  '=================================================================
 	  ' Fluxo de dados
-	  '=================================================================
+	  '================================================================= 
 Case "frCustomAppConfig"
 	VerificarBancoDeDados Obj, "frCustomAppConfig", "AppDBServerPathName", "Fluxo de dados", 0, False
 	VerificarTipoPai Obj, "frCustomAppConfig", "DataServer", 0, "Fluxo de dados", 1, False
@@ -407,9 +406,9 @@ Case "Hist"
 	VerificarPropriedadeValor Obj, "Hist", "DiscardInterval", 1, 1, "Domínio", 0, False
 	VerificarPropriedadeValor Obj, "Hist", "DiscardTimeUnit", 2, 1, "Domínio", 0, False
 	VerificarPropriedadeValor Obj, "Hist", "VerificationInterval", 1, 1, "Domínio", 0, False
-	VerificarPropriedadeValor Obj, "Hist", "VerificationUnit", 2, 1, "Domínio", 0, False
+	VerificarPropriedadeValor Obj, "Hist", "VerificationTimeUnit", 2, 1, "Domínio", 0, False
 	End If
-	If VerificarPropriedadeHabilitada(Obj, "Hist", "EnableBackupTable", True, "Domínio", 2, True) Then
+	If VerificarPropriedadeHabilitada(Obj, "Hist", "EnableBackupTable", False, "Domínio", 2, True) Then
 	VerificarPropriedadeValor Obj, "Hist", "BackupDiscardInterval", 12, 1, "Domínio", 0, False
 	VerificarPropriedadeValor Obj, "Hist", "BackupDiscardTimeUnit", 2, 1, "Domínio", 0, False
 	End If
@@ -421,9 +420,9 @@ Case "Historian"
 	VerificarPropriedadeValor Obj, "Historian", "DiscardInterval", 1, 1, "Domínio", 0, False
 	VerificarPropriedadeValor Obj, "Historian", "DiscardTimeUnit", 2, 1, "Domínio", 0, False
 	VerificarPropriedadeValor Obj, "Historian", "VerificationInterval", 1, 1, "Domínio", 0, False
-	VerificarPropriedadeValor Obj, "Historian", "VerificationUnit", 2, 1, "Domínio", 0, False
+	VerificarPropriedadeValor Obj, "Historian", "VerificationTimeUnit", 2, 1, "Domínio", 0, False
 	End If
-	If VerificarPropriedadeHabilitada(Obj, "Historian", "EnableBackupTable", True, "Domínio", 2, True) Then
+	If VerificarPropriedadeHabilitada(Obj, "Historian", "EnableBackupTable", False, "Domínio", 2, True) Then
 	VerificarPropriedadeValor Obj, "Historian", "BackupDiscardInterval", 12, 1, "Domínio", 0, False
 	VerificarPropriedadeValor Obj, "Historian", "BackupDiscardTimeUnit", 2, 1, "Domínio", 0, False
 	End If
@@ -822,45 +821,45 @@ Case "gx_Counter"
 	VerificarPropriedadeValor Obj, "gx_Counter", "Value", 0, 1, "Telas", 1, False
 	'-----------------------------------------------------------------------------
 Case "gx_CtrlDigital"
-	VerificarPropriedadeCondicional Obj, "gx_CtrlDigital", "Enabled", "CommandPathName", "NOTEMPTY", "Telas", 1, False
+	VerificarPropriedadeCondicional Obj, "gx_CtrlDigital", "Enabled", "CommandPathNames", "NOTEMPTY", "Telas", 1, False
 	VerificarPropriedadeValor Obj, "gx_CtrlDigital", "Active", False, 1, "Telas", 1, False
 	VerificarPropriedadeValor Obj, "gx_CtrlDigital", "Descr", "Desc", 1, "Telas", 1, False
 	'-----------------------------------------------------------------------------
 Case "gx_CtrlDigital1Op"
-	VerificarPropriedadeCondicional Obj, "gx_CtrlDigital1Op", "Enabled", "CommandPathName", "NOTEMPTY", "Telas", 1, False
+	VerificarPropriedadeCondicional Obj, "gx_CtrlDigital1Op", "Enabled", "CommandPathNames", "NOTEMPTY", "Telas", 1, False
 	VerificarPropriedadeVazia Obj, "gx_CtrlDigital1Op", "Tag", "Telas", 1, False
 	VerificarPropriedadeValor Obj, "gx_CtrlDigital1Op", "Descr", "Desc", 1, "Telas", 1, False
 	'-----------------------------------------------------------------------------
 Case "gx_CtrlDigital2Op"
-	VerificarPropriedadeCondicional Obj, "gx_CtrlDigital2Op", "Enabled", "CommandPathName1", "NOTEMPTY", "Telas", 1, False
+	VerificarPropriedadeCondicional Obj, "gx_CtrlDigital2Op", "Enabled", "CommandPathNames1", "NOTEMPTY", "Telas", 1, False
 	VerificarPropriedadeVazia Obj, "gx_CtrlDigital2Op", "Tag1", "Telas", 1, False
 	VerificarPropriedadeValor Obj, "gx_CtrlDigital2Op", "Descr1", "Desc1", 1, "Telas", 1, False
-	VerificarPropriedadeCondicional Obj, "gx_CtrlDigital2Op", "Enabled", "CommandPathName2", "NOTEMPTY", "Telas", 1, False
+	VerificarPropriedadeCondicional Obj, "gx_CtrlDigital2Op", "Enabled", "CommandPathNames2", "NOTEMPTY", "Telas", 1, False
 	VerificarPropriedadeVazia Obj, "gx_CtrlDigital2Op", "Tag2", "Telas", 1, False
 	VerificarPropriedadeValor Obj, "gx_CtrlDigital2Op", "Descr2", "Desc2", 1, "Telas", 1, False
 	'-----------------------------------------------------------------------------
 Case "gx_CtrlDigital3Op"
-	VerificarPropriedadeCondicional Obj, "gx_CtrlDigital3Op", "Enabled", "CommandPathName1", "NOTEMPTY", "Telas", 1, False
+	VerificarPropriedadeCondicional Obj, "gx_CtrlDigital3Op", "Enabled", "CommandPathNames1", "NOTEMPTY", "Telas", 1, False
 	VerificarPropriedadeVazia Obj, "gx_CtrlDigital3Op", "Tag1", "Telas", 1, False
 	VerificarPropriedadeValor Obj, "gx_CtrlDigital3Op", "Descr1", "Desc1", 1, "Telas", 1, False
-	VerificarPropriedadeCondicional Obj, "gx_CtrlDigital3Op", "Enabled", "CommandPathName2", "NOTEMPTY", "Telas", 1, False
+	VerificarPropriedadeCondicional Obj, "gx_CtrlDigital3Op", "Enabled", "CommandPathNames2", "NOTEMPTY", "Telas", 1, False
 	VerificarPropriedadeVazia Obj, "gx_CtrlDigital3Op", "Tag2", "Telas", 1, False
 	VerificarPropriedadeValor Obj, "gx_CtrlDigital3Op", "Descr2", "Desc2", 1, "Telas", 1, False
-	VerificarPropriedadeCondicional Obj, "gx_CtrlDigital3Op", "Enabled", "CommandPathName3", "NOTEMPTY", "Telas", 1, False
+	VerificarPropriedadeCondicional Obj, "gx_CtrlDigital3Op", "Enabled", "CommandPathNames3", "NOTEMPTY", "Telas", 1, False
 	VerificarPropriedadeVazia Obj, "gx_CtrlDigital3Op", "Tag3", "Telas", 1, False
 	VerificarPropriedadeValor Obj, "gx_CtrlDigital3Op", "Descr3", "Desc3", 1, "Telas", 1, False
 	'-----------------------------------------------------------------------------
 Case "gx_CtrlDigital4Op"
-	VerificarPropriedadeCondicional Obj, "gx_CtrlDigital4Op", "Enabled", "CommandPathName1", "NOTEMPTY", "Telas", 1, False
+	VerificarPropriedadeCondicional Obj, "gx_CtrlDigital4Op", "Enabled", "CommandPathNames1", "NOTEMPTY", "Telas", 1, False
 	VerificarPropriedadeVazia Obj, "gx_CtrlDigital4Op", "Tag1", "Telas", 1, False
 	VerificarPropriedadeValor Obj, "gx_CtrlDigital4Op", "Descr1", "Desc1", 1, "Telas", 1, False
-	VerificarPropriedadeCondicional Obj, "gx_CtrlDigital4Op", "Enabled", "CommandPathName2", "NOTEMPTY", "Telas", 1, False
+	VerificarPropriedadeCondicional Obj, "gx_CtrlDigital4Op", "Enabled", "CommandPathNames2", "NOTEMPTY", "Telas", 1, False
 	VerificarPropriedadeVazia Obj, "gx_CtrlDigital4Op", "Tag2", "Telas", 1, False
 	VerificarPropriedadeValor Obj, "gx_CtrlDigital4Op", "Descr2", "Desc2", 1, "Telas", 1, False
-	VerificarPropriedadeCondicional Obj, "gx_CtrlDigital4Op", "Enabled", "CommandPathName3", "NOTEMPTY", "Telas", 1, False
+	VerificarPropriedadeCondicional Obj, "gx_CtrlDigital4Op", "Enabled", "CommandPathNames3", "NOTEMPTY", "Telas", 1, False
 	VerificarPropriedadeVazia Obj, "gx_CtrlDigital4Op", "Tag3", "Telas", 1, False
 	VerificarPropriedadeValor Obj, "gx_CtrlDigital4Op", "Descr3", "Desc3", 1, "Telas", 1, False
-	VerificarPropriedadeCondicional Obj, "gx_CtrlDigital4Op", "Enabled", "CommandPathName4", "NOTEMPTY", "Telas", 1, False
+	VerificarPropriedadeCondicional Obj, "gx_CtrlDigital4Op", "Enabled", "CommandPathNames4", "NOTEMPTY", "Telas", 1, False
 	VerificarPropriedadeVazia Obj, "gx_CtrlDigital4Op", "Tag4", "Telas", 1, False
 	VerificarPropriedadeValor Obj, "gx_CtrlDigital4Op", "Descr4", "Desc4", 1, "Telas", 1, False
 	'-----------------------------------------------------------------------------
@@ -889,7 +888,7 @@ Case "gx_InfoSetpoint"
 	VerificarPropriedadeHabilitada Obj, "gx_InfoSetpoint", "ShowUE", True, "Telas", 1, False
 	'-----------------------------------------------------------------------------
 Case "gx_Menu"
-	'Existe evento OnClick
+	Existe evento OnClick
 	'-----------------------------------------------------------------------------
 Case "gx_Notes"
 	VerificarPropriedadeVazia Obj, "gx_Notes", "DeviceNote", "Telas", 1, False
@@ -898,7 +897,7 @@ Case "gx_OpenTabularArea1"
 	VerificarPropriedadeValor Obj, "gx_OpenTabularArea1", "Descricao", "XXX", 1, "Telas", 1, False
 	VerificarPropriedadeVazia Obj, "gx_OpenTabularArea1", "Areas", "Telas", 1, False
 	VerificarPropriedadeCondicional Obj, "gx_OpenTabularArea1", "ScreenZoom", "ScreenPathNames ", "NOTEMPTY", "Telas", 1, False
-	'Talvez nova função se propriedade auxiliar estiver preenchidad verficar se a propriedade principal está dfierente de 0
+	Talvez nova função se propriedade auxiliar estiver preenchidad verficar se a propriedade principal está dfierente de 0
 	'-----------------------------------------------------------------------------
 Case "gx_QualityIcon"
 	VerificarPropriedadeVazia Obj, "gx_QualityIcon", "Measurement", "Telas", 1, False
@@ -1470,55 +1469,55 @@ Case "uhe_ControlGate"
 	VerificarPropriedadeVazia Obj, "uhe_ControlGate", "StateOn_Tag", "Telas", 0, False
 	'-----------------------------------------------------------------------------
 Case "uhe_CtrlDigital"
-	VerificarPropriedadeCondicional Obj, "uhe_CtrlDigital", "Enabled", "CommandPathName", "NOTEMPTY", "Telas", 1, False
+	VerificarPropriedadeCondicional Obj, "uhe_CtrlDigital", "Enabled", "CommandPathNames", "NOTEMPTY", "Telas", 1, False
 	VerificarPropriedadeVazia Obj, "uhe_CtrlDigital", "Active", "Telas", 1, False
 	VerificarPropriedadeValor Obj, "uhe_CtrlDigital", "Descr", "Desc", 1, "Telas", 1, False
 	VerificarObjetoDesatualizado Obj, "uhe_CtrlDigital", "generic_automalogica", "Telas", 0, False
 	'-----------------------------------------------------------------------------
 Case "uhe_CtrlDigital1Op"
-	VerificarPropriedadeCondicional Obj, "uhe_CtrlDigital1Op", "Enabled", "CommandPathName", "NOTEMPTY", "Telas", 1, False
+	VerificarPropriedadeCondicional Obj, "uhe_CtrlDigital1Op", "Enabled", "CommandPathNames", "NOTEMPTY", "Telas", 1, False
 	VerificarPropriedadeVazia Obj, "uhe_CtrlDigital1Op", "Tag", "Telas", 1, False
 	VerificarPropriedadeValor Obj, "uhe_CtrlDigital1Op", "Descr", "Desc", 1, "Telas", 1, False
 	VerificarObjetoDesatualizado Obj, "uhe_CtrlDigital1Op", "generic_automalogica", "Telas", 0, False
 	'-----------------------------------------------------------------------------
 Case "uhe_CtrlDigital2Op"
-	VerificarPropriedadeCondicional Obj, "uhe_CtrlDigital2Op", "Enabled", "CommandPathName1", "NOTEMPTY", "Telas", 1, False
+	VerificarPropriedadeCondicional Obj, "uhe_CtrlDigital2Op", "Enabled", "CommandPathNames1", "NOTEMPTY", "Telas", 1, False
 	VerificarPropriedadeVazia Obj, "uhe_CtrlDigital2Op", "Tag1", "Telas", 1, False
 	VerificarPropriedadeValor Obj, "uhe_CtrlDigital2Op", "Descr1", "Desc1", 1, "Telas", 1, False
-	VerificarPropriedadeCondicional Obj, "uhe_CtrlDigital2Op", "Enabled", "CommandPathName2", "NOTEMPTY", "Telas", 1, False
+	VerificarPropriedadeCondicional Obj, "uhe_CtrlDigital2Op", "Enabled", "CommandPathNames2", "NOTEMPTY", "Telas", 1, False
 	VerificarPropriedadeVazia Obj, "uhe_CtrlDigital2Op", "Tag2", "Telas", 1, False
 	VerificarPropriedadeValor Obj, "uhe_CtrlDigital2Op", "Descr2", "Desc2", 1, "Telas", 1, False
 	VerificarObjetoDesatualizado Obj, "uhe_CtrlDigital2Op", "generic_automalogica", "Telas", 0, False
 	'-----------------------------------------------------------------------------
 Case "uhe_CtrlDigital3Op"
-	VerificarPropriedadeCondicional Obj, "uhe_CtrlDigital3Op", "Enabled", "CommandPathName1", "NOTEMPTY", "Telas", 1, False
+	VerificarPropriedadeCondicional Obj, "uhe_CtrlDigital3Op", "Enabled", "CommandPathNames1", "NOTEMPTY", "Telas", 1, False
 	VerificarPropriedadeVazia Obj, "uhe_CtrlDigital3Op", "Tag1", "Telas", 1, False
 	VerificarPropriedadeValor Obj, "uhe_CtrlDigital3Op", "Descr1", "Desc1", 1, "Telas", 1, False
-	VerificarPropriedadeCondicional Obj, "uhe_CtrlDigital3Op", "Enabled", "CommandPathName2", "NOTEMPTY", "Telas", 1, False
+	VerificarPropriedadeCondicional Obj, "uhe_CtrlDigital3Op", "Enabled", "CommandPathNames2", "NOTEMPTY", "Telas", 1, False
 	VerificarPropriedadeVazia Obj, "uhe_CtrlDigital3Op", "Tag2", "Telas", 1, False
 	VerificarPropriedadeValor Obj, "uhe_CtrlDigital3Op", "Descr2", "Desc2", 1, "Telas", 1, False
-	VerificarPropriedadeCondicional Obj, "uhe_CtrlDigital3Op", "Enabled", "CommandPathName3", "NOTEMPTY", "Telas", 1, False
+	VerificarPropriedadeCondicional Obj, "uhe_CtrlDigital3Op", "Enabled", "CommandPathNames3", "NOTEMPTY", "Telas", 1, False
 	VerificarPropriedadeVazia Obj, "uhe_CtrlDigital3Op", "Tag3", "Telas", 1, False
 	VerificarPropriedadeValor Obj, "uhe_CtrlDigital3Op", "Descr3", "Desc3", 1, "Telas", 1, False
 	VerificarObjetoDesatualizado Obj, "uhe_CtrlDigital3Op", "generic_automalogica", "Telas", 0, False
 	'-----------------------------------------------------------------------------
 Case "uhe_CtrlDigital4Op"
-	VerificarPropriedadeCondicional Obj, "uhe_CtrlDigital4Op", "Enabled", "CommandPathName1", "NOTEMPTY", "Telas", 1, False
+	VerificarPropriedadeCondicional Obj, "uhe_CtrlDigital4Op", "Enabled", "CommandPathNames1", "NOTEMPTY", "Telas", 1, False
 	VerificarPropriedadeVazia Obj, "uhe_CtrlDigital4Op", "Tag1", "Telas", 1, False
 	VerificarPropriedadeValor Obj, "uhe_CtrlDigital4Op", "Descr1", "Desc1", 1, "Telas", 1, False
-	VerificarPropriedadeCondicional Obj, "uhe_CtrlDigital4Op", "Enabled", "CommandPathName2", "NOTEMPTY", "Telas", 1, False
+	VerificarPropriedadeCondicional Obj, "uhe_CtrlDigital4Op", "Enabled", "CommandPathNames2", "NOTEMPTY", "Telas", 1, False
 	VerificarPropriedadeVazia Obj, "uhe_CtrlDigital4Op", "Tag2", "Telas", 1, False
 	VerificarPropriedadeValor Obj, "uhe_CtrlDigital4Op", "Descr2", "Desc2", 1, "Telas", 1, False
-	VerificarPropriedadeCondicional Obj, "uhe_CtrlDigital4Op", "Enabled", "CommandPathName3", "NOTEMPTY", "Telas", 1, False
+	VerificarPropriedadeCondicional Obj, "uhe_CtrlDigital4Op", "Enabled", "CommandPathNames3", "NOTEMPTY", "Telas", 1, False
 	VerificarPropriedadeVazia Obj, "uhe_CtrlDigital4Op", "Tag3", "Telas", 1, False
 	VerificarPropriedadeValor Obj, "uhe_CtrlDigital4Op", "Descr3", "Desc3", 1, "Telas", 1, False
-	VerificarPropriedadeCondicional Obj, "uhe_CtrlDigital4Op", "Enabled", "CommandPathName4", "NOTEMPTY", "Telas", 1, False
+	VerificarPropriedadeCondicional Obj, "uhe_CtrlDigital4Op", "Enabled", "CommandPathNames4", "NOTEMPTY", "Telas", 1, False
 	VerificarPropriedadeVazia Obj, "uhe_CtrlDigital4Op", "Tag4", "Telas", 1, False
 	VerificarPropriedadeValor Obj, "uhe_CtrlDigital4Op", "Descr4", "Desc4", 1, "Telas", 1, False
 	VerificarObjetoDesatualizado Obj, "uhe_CtrlDigital4Op", "generic_automalogica", "Telas", 0, False
 	'-----------------------------------------------------------------------------
 Case "uhe_CtrlDigitalOp"
-	VerificarPropriedadeCondicional Obj, "uhe_CtrlDigitalOp", "Enabled", "CommandPathName", "NOTEMPTY", "Telas", 1, False
+	VerificarPropriedadeCondicional Obj, "uhe_CtrlDigitalOp", "Enabled", "CommandPathNames", "NOTEMPTY", "Telas", 1, False
 	VerificarPropriedadeVazia Obj, "uhe_CtrlDigitalOp", "Active", "Telas", 1, False
 	VerificarPropriedadeValor Obj, "uhe_CtrlDigitalOp", "Descr", "Desc", 1, "Telas", 1, False
 	VerificarObjetoDesatualizado Obj, "uhe_CtrlDigitalOp", "generic_automalogica", "Telas", 0, False
@@ -1552,7 +1551,7 @@ Case "uhe_ExcitationTransformer"
 	VerificarPropriedadeCondicional Obj, "uhe_ExcitationTransformer", "OpenCommandSelectMenu", "CommandPathNames", True, "Telas", 1, False
 	'-----------------------------------------------------------------------------
 Case "uhe_Filter"
-	VerificarPropriedadeHabilitada Obj, "uhe_Filter", "Enabledd", False, "Telas", 0, False
+	VerificarPropriedadeHabilitada Obj, "uhe_Filter", "Enabled", False, "Telas", 0, False
 	'-----------------------------------------------------------------------------
 Case "uhe_Fan"
 	VerificarPropriedadeCondicional Obj, "uhe_Fan", "Unsupervised", "SourceObject", False, "Telas", 1, False
@@ -1599,46 +1598,46 @@ Case "XCArrow"
 	'-----------------------------------------------------------------------------
 Case "archAeroGenerator"
 	VerificarPropriedadeVazia Obj, "archAeroGenerator", "CommunicationFailure", "Telas", 0, False
-	VerificarPropriedadeHabilitada Obj, "archAeroGenerator", "Enabledd", False, "Telas", 0, False
+	VerificarPropriedadeHabilitada Obj, "archAeroGenerator", "Enabled", False, "Telas", 0, False
 	'-----------------------------------------------------------------------------
 Case "archCloud"
 	VerificarPropriedadeVazia Obj, "archCloud", "CommunicationFailure", "Telas", 0, False
-	VerificarPropriedadeHabilitada Obj, "archCloud", "Enabledd", False, "Telas", 0, False
+	VerificarPropriedadeHabilitada Obj, "archCloud", "Enabled", False, "Telas", 0, False
 	'-----------------------------------------------------------------------------
 Case "archNuclearPlant"
 	VerificarPropriedadeVazia Obj, "archNuclearPlant", "CommunicationFailure", "Telas", 0, False
-	VerificarPropriedadeHabilitada Obj, "archNuclearPlant", "Enabledd", False, "Telas", 0, False
+	VerificarPropriedadeHabilitada Obj, "archNuclearPlant", "Enabled", False, "Telas", 0, False
 	'-----------------------------------------------------------------------------
 Case "archServerRackmountMultiple"
 	VerificarPropriedadeVazia Obj, "archServerRackmountMultiple", "CommunicationFailure", "Telas", 0, False
-	VerificarPropriedadeHabilitada Obj, "archServerRackmountMultiple", "Enabledd", False, "Telas", 0, False
+	VerificarPropriedadeHabilitada Obj, "archServerRackmountMultiple", "Enabled", False, "Telas", 0, False
 	'-----------------------------------------------------------------------------
 Case "archSolarPanel"
 	VerificarPropriedadeVazia Obj, "archSolarPanel", "CommunicationFailure", "Telas", 0, False
-	VerificarPropriedadeHabilitada Obj, "archSolarPanel", "Enabledd", False, "Telas", 0, False
+	VerificarPropriedadeHabilitada Obj, "archSolarPanel", "Enabled", False, "Telas", 0, False
 	'-----------------------------------------------------------------------------
 Case "archSurveillanceCamera"
 	VerificarPropriedadeVazia Obj, "archSurveillanceCamera", "CommunicationFailure", "Telas", 0, False
-	VerificarPropriedadeHabilitada Obj, "archSurveillanceCamera", "Enabledd", False, "Telas", 0, False
+	VerificarPropriedadeHabilitada Obj, "archSurveillanceCamera", "Enabled", False, "Telas", 0, False
 	'-----------------------------------------------------------------------------
 Case "archWifi"
 	VerificarPropriedadeVazia Obj, "archWifi", "CommunicationFailure", "Telas", 0, False
-	VerificarPropriedadeHabilitada Obj, "archWifi", "Enabledd", False, "Telas", 0, False
+	VerificarPropriedadeHabilitada Obj, "archWifi", "Enabled", False, "Telas", 0, False
 	'-----------------------------------------------------------------------------
 Case "archDatabase"
-	VerificarPropriedadeHabilitada Obj, "archDatabase", "Enabledd", False, "Telas", 0, False
+	VerificarPropriedadeHabilitada Obj, "archDatabase", "Enabled", False, "Telas", 0, False
 	'-----------------------------------------------------------------------------
 Case "archFirewall"
-	VerificarPropriedadeHabilitada Obj, "archFirewall", "Enabledd", False, "Telas", 0, False
+	VerificarPropriedadeHabilitada Obj, "archFirewall", "Enabled", False, "Telas", 0, False
 	'-----------------------------------------------------------------------------
 Case "archPCH"
-	VerificarPropriedadeHabilitada Obj, "archPCH", "Enabledd", False, "Telas", 0, False
+	VerificarPropriedadeHabilitada Obj, "archPCH", "Enabled", False, "Telas", 0, False
 	'-----------------------------------------------------------------------------
 Case "archUHE"
-	VerificarPropriedadeHabilitada Obj, "archUHE", "Enabledd", False, "Telas", 0, False
+	VerificarPropriedadeHabilitada Obj, "archUHE", "Enabled", False, "Telas", 0, False
 	'-----------------------------------------------------------------------------
 Case "archVideoWall"
-	VerificarPropriedadeHabilitada Obj, "archVideoWall", "Enabledd", False, "Telas", 0, False
+	VerificarPropriedadeHabilitada Obj, "archVideoWall", "Enabled", False, "Telas", 0, False
 	'-----------------------------------------------------------------------------
 Case "archSwitch"
 	VerificarPropriedadeVazia Obj, "archSwitch", "CommunicationFailure", "Telas", 0, False
@@ -1691,7 +1690,7 @@ Case "archChannelPanel"
 	    If qtdEsperada > 0 Then
 	        For i = 1 To qtdEsperada
 	            propFailure = "FailureState" & Right("0" & i, 2)
-	            Call VerificarPropriedadeVazia(Obj, TipoObjeto, propFailure, 1, Area, 0)
+	            Call VerificarPropriedadeVazia(Obj, TypeName, propFailure, 1, Area, 0)
 	        Next
 	    End If
 	'-----------------------------------------------------------------------------
@@ -1710,7 +1709,7 @@ Case "archChannelPanelG"
 	    If qtdEsperadaG > 0 Then
 	        For iG = 1 To qtdEsperadaG
 	            propFailureG = "FailureState" & Right("0" & iG, 2)
-	            Call VerificarPropriedadeVazia(Obj, TipoObjeto, propFailureG, 1, Area, 0)
+	            Call VerificarPropriedadeVazia(Obj, TypeName, propFailureG, 1, Area, 0)
 	        Next
 	    End If
 	'-----------------------------------------------------------------------------
@@ -1729,7 +1728,7 @@ Case "archChannelPanelP"
 	    If qtdEsperadaP > 0 Then
 	        For iP = 1 To qtdEsperadaP
 	            propFailureP = "FailureState" & Right("0" & iP, 2)
-	            Call VerificarPropriedadeVazia(Obj, TipoObjeto, propFailureP, 1, Area, 0)
+	            Call VerificarPropriedadeVazia(Obj, TypeName, propFailureP, 1, Area, 0)
 	        Next
 	    End If
 	'-----------------------------------------------------------------------------
@@ -1748,7 +1747,7 @@ Case "archChannelPanelPP"
 	    If qtdEsPPeradaPP > 0 Then
 	        For iPP = 1 To qtdEsPPeradaPP
 	            propFailurePP = "FailureState" & Right("0" & iPP, 2)
-	            Call VerificarPropriedadeVazia(Obj, TipoObjeto, propFailurePP, 1, Area, 0)
+	            Call VerificarPropriedadeVazia(Obj, TypeName, propFailurePP, 1, Area, 0)
 	        Next
 	    End If
 	'-----------------------------------------------------------------------------
@@ -1787,7 +1786,6 @@ Case "archInfoLine"
 	VerificarPropriedadeValor Obj, "archInfoLine", "Description_Text", "Painel - Eqp - Port", 1, "Telas", 0, False
 	VerificarPropriedadeValor Obj, "archInfoLine", "ObjectColor", 0, 1, "Telas", 0, False
 	'-----------------------------------------------------------------------------
-
 Case Else
     RegistrarTipoSemPropriedade TipoObjeto
 End Select
