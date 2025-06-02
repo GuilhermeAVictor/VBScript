@@ -1,42 +1,68 @@
 Sub AutoTester_CustomConfig()
-    'Equipe QA - Célula 5
+    'Equipe Quality Assurance - Célula 5
     '***********************************************************************
     '*  Sub‑rotina : AutoTester_CustomConfig
-    '*  Finalidade : Solicitar confirmação ao usuário e, se aprovada,
-    '*               disparar o teste automático do domínio.
-    '*----------------------------------------------------------------------
-    '*  Fluxo:
-    '*     1. Exibe MsgBox perguntando se o usuário deseja iniciar o teste.
-    '*     2. Se a resposta for vbNo, encerra a execução.
-    '*     3. Caso contrário, chama a rotina Main que contém as verificações.
+    '*  Finalidade : Validar conectividade com o banco Quality Assurance e iniciar testes
     '***********************************************************************
+    
     Dim Resposta
-	Resposta = MsgBox( _
-    "ATENÇÃO: Este processo pode ser lento." & vbCrLf & vbCrLf & _
-    "O teste automático irá realizar uma varredura completa nas telas do domínio atual, verificando propriedades e objetos conforme as regras do AutoTester." & vbCrLf & vbCrLf & _
-    "Deseja realmente iniciar o teste automático agora?", _
-    vbYesNo + vbQuestion + vbDefaultButton2, _
-    "Iniciar Teste Automático do Domínio")
+    Resposta = MsgBox( _
+        "ATENÇÃO: Este processo pode ser lento." & vbCrLf & vbCrLf & _
+        "O teste automático irá realizar uma varredura completa nas telas do domínio atual, verificando propriedades e objetos conforme as regras do AutoTester." & vbCrLf & vbCrLf & _
+        "Deseja realmente iniciar o teste automático agora?", _
+        vbYesNo + vbQuestion + vbDefaultButton2, _
+        "Iniciar Teste Automático do Domínio")
 
-If Resposta = vbNo Then
-    Exit Sub
-End If
+    If Resposta = vbNo Then Exit Sub
 
-    Dim connTest
-    Set connTest = ConectarBancoQA()
+    '======================================================================
+    ' 1) Testa conectividade VPN via ping nos dois IPs definidos
+    '======================================================================
+    Dim ConexaoVPN
+    ConexaoVPN = False
 
-If connTest Is Nothing Then
-    MsgBox _
-        "====================================" & vbCrLf & _
-        "Falha ao conectar ao banco de dados do AutoTester." & vbCrLf & vbCrLf & _
-        "Verifique se a VPN da Automa está conectada corretamente." & vbCrLf & _
-        "Caso o problema persista, entre em contato com a equipe de QA." & vbCrLf & _
-        "===================================="
-    Exit Sub
-Else
-    connTest.Close
-    Set connTest = Nothing
-End If
+    If TestarPing("192.168.20.12") Or TestarPing("192.168.20.15") Then
+        ConexaoVPN = True
+		GerarCSV = False
+    End If
+
+    '======================================================================
+    ' 2) Se conexão falhar, permite fallback para CSV
+    '======================================================================
+    If Not ConexaoVPN Then
+        Dim GeraCSV
+        GeraCSV = MsgBox( _
+            "Não foi possível estabelecer conexão com os servidores de Quality Assurance (192.168.20.12 / 192.168.20.15)." & vbCrLf & _
+            "Deseja gerar relatório local em formato csv?", _
+            vbYesNo + vbQuestion + vbDefaultButton2, "Conexão com VPN falhou")
+
+        If GeraCSV = vbYes Then
+		MsgBox "Atenção: O relatório gerado não irá inserir as informações no banco de dados da equipe de Quality Assurance. Quando possível, realize a verificação em conjunto com a equipe.", vbInformation, "Aviso"
+            GerarCSV = True
+        Else
+            MsgBox "Execução cancelada. Sem conexão com o banco e sem autorização para gerar CSV.", vbCritical
+            Exit Sub
+        End If
+    Else
+        '==================================================================
+        ' 3) Se conexão VPN disponível, valida conexão com o banco
+        '==================================================================
+        Dim connTest
+        Set connTest = ConectarBancoQA()
+
+        If connTest Is Nothing Then
+            MsgBox _
+                "====================================" & vbCrLf & _
+                "Falha ao conectar ao banco de dados do AutoTester." & vbCrLf & vbCrLf & _
+                "Caso o problema persista, entre em contato com a equipe de Quality Assurance." & vbCrLf & _
+                "===================================="
+            Exit Sub
+        Else
+            connTest.Close
+            Set connTest = Nothing
+        End If
+    End If
+
     Main
 End Sub
 
@@ -160,7 +186,7 @@ Sub Main()
             If connDB Is Nothing Then
                 MsgBox _
 						"====================================" & vbCrLf & _
-						"Falha ao conectar ao banco de dados QA." & vbCrLf & _
+						"Falha ao conectar ao banco de dados Quality Assurance." & vbCrLf & _
 						"Certifique-se de que a VPN está ativa e que as credenciais estão corretas." & vbCrLf & _
 						"Contate a equipe de Quality Assurance caso o problema persista.", _
 						"===================================="
@@ -177,7 +203,7 @@ Sub Main()
     				tempoFormatado = Round(tempoGasto, 2) & " s"
 				End If
 				MsgBox _
-    				"Inconsistências registradas com sucesso no banco de dados do QA." & vbCrLf & vbCrLf & _
+    				"Inconsistências registradas com sucesso no banco de dados do Quality Assurance." & vbCrLf & vbCrLf & _
     				"────────────  Informações Gerais  ────────────" & vbCrLf & _
     				"Número de telas verificadas: " & Item("ContagemTelas").Value & vbCrLf & _
     				"Número de objetos de tela verificados: " & Item("ContagemObjetosTelas").Value & vbCrLf & _
@@ -1690,7 +1716,7 @@ Case "archChannelPanel"
 	    If qtdEsperada > 0 Then
 	        For i = 1 To qtdEsperada
 	            propFailure = "FailureState" & Right("0" & i, 2)
-	            Call VerificarPropriedadeVazia(Obj, TypeName, propFailure, 1, Area, 0)
+	            Call VerificarPropriedadeVazia(Obj, "archChannelPanel", propFailure, 1, Area, 0)
 	        Next
 	    End If
 	'-----------------------------------------------------------------------------
@@ -1709,7 +1735,7 @@ Case "archChannelPanelG"
 	    If qtdEsperadaG > 0 Then
 	        For iG = 1 To qtdEsperadaG
 	            propFailureG = "FailureState" & Right("0" & iG, 2)
-	            Call VerificarPropriedadeVazia(Obj, TypeName, propFailureG, 1, Area, 0)
+	            Call VerificarPropriedadeVazia(Obj, "archChannelPanelG", propFailureG, 1, Area, 0)
 	        Next
 	    End If
 	'-----------------------------------------------------------------------------
@@ -1728,7 +1754,7 @@ Case "archChannelPanelP"
 	    If qtdEsperadaP > 0 Then
 	        For iP = 1 To qtdEsperadaP
 	            propFailureP = "FailureState" & Right("0" & iP, 2)
-	            Call VerificarPropriedadeVazia(Obj, TypeName, propFailureP, 1, Area, 0)
+	            Call VerificarPropriedadeVazia(Obj, "archChannelPanelP", propFailureP, 1, Area, 0)
 	        Next
 	    End If
 	'-----------------------------------------------------------------------------
@@ -1747,7 +1773,7 @@ Case "archChannelPanelPP"
 	    If qtdEsPPeradaPP > 0 Then
 	        For iPP = 1 To qtdEsPPeradaPP
 	            propFailurePP = "FailureState" & Right("0" & iPP, 2)
-	            Call VerificarPropriedadeVazia(Obj, TypeName, propFailurePP, 1, Area, 0)
+	            Call VerificarPropriedadeVazia(Obj, "archChannelPanelPP", propFailurePP, 1, Area, 0)
 	        Next
 	    End If
 	'-----------------------------------------------------------------------------
@@ -3101,6 +3127,14 @@ Function GerarRelatorioExcel(DadosExcel, CaminhoPrj)
 
 End Function
 
+Function TestarPing(ip)
+    Dim shell, resultado
+    Set shell = CreateObject("WScript.Shell")
+    resultado = shell.Run("ping -n 1 -w 1000 " & ip, 0, True) ' o terceiro argumento True força espera
+    TestarPing = (resultado = 0)
+    Set shell = Nothing
+End Function
+
 Function ConectarBancoQA()
     On Error Resume Next
 
@@ -3110,8 +3144,8 @@ Function ConectarBancoQA()
     Set conn = CreateObject("ADODB.Connection")
 
     Dim servidor, banco, usuario, senha
-    servidor = "GUILHERMEAMARAL\SQLEXPRESS"
-    banco = "Teste_QA"
+    servidor = "192.168.20.12"
+    banco = "QA"
     usuario = "sa"
     senha = "1234"
 
