@@ -108,7 +108,7 @@ End Select
     ' === MONTAGEM DO SCRIPT ===
     Dim flagFinal As String
 
-    If DefinirBlocoLaco = "Inicar laço(If ... Then)" Or DefinirBlocoLaco = "Condicioonar laço(ElseIf ... Then)" Then
+    If DefinirBlocoLaco = "Iniciar laço(If ... Then)" Or DefinirBlocoLaco = "Condicionar laço(ElseIf ... Then)" Then
         flagFinal = "True"
     ElseIf DefinirBlocoLaco = "" Then
         flagFinal = "False"
@@ -144,10 +144,10 @@ End Select
         linhaFinal = linhaFinal & ", " & flagFinal
     End If
 
-If DefinirBlocoLaco = "Inicar laço(If ... Then)" Then
+If DefinirBlocoLaco = "Iniciar laço(If ... Then)" Then
     GerarScript = "If " & funcao & "(" & Mid(linhaFinal, Len(funcao) + 2) & ") Then"
-ElseIf DefinirBlocoLaco = "Condicioonar laço(ElseIf ... Then)" Then
-    GerarScript = "Else If " & funcao & "(" & Mid(linhaFinal, Len(funcao) + 2) & ") Then"
+ElseIf DefinirBlocoLaco = "Condicionar laço(ElseIf ... Then)" Then
+    GerarScript = "ElseIf " & funcao & "(" & Mid(linhaFinal, Len(funcao) + 2) & ") Then"
 
     Else
         GerarScript = linhaFinal
