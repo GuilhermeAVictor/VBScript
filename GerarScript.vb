@@ -118,23 +118,23 @@ End Select
 
     Select Case funcao
         Case "VerificarPropriedadeVazia"
-            linhaFinal = funcao & " Obj, """ & TypeName & """, """ & Propriedade1 & """, """ & area & """, " & nivel
+            linhaFinal = funcao & " Obj, TipoObjeto, """ & Propriedade1 & """, """ & area & """, " & nivel
         Case "VerificarPropriedadeHabilitada"
-            linhaFinal = funcao & " Obj, """ & TypeName & """, """ & Propriedade1 & """, " & TextoAux & ", """ & area & """, " & nivel
+            linhaFinal = funcao & " Obj, TipoObjeto, """ & Propriedade1 & """, " & TextoAux & ", """ & area & """, " & nivel
         Case "VerificarPropriedadeCondicional"
-            linhaFinal = funcao & " Obj, """ & TypeName & """, """ & Propriedade1 & """, """ & Propriedade2 & """, " & TextoAux & ", """ & area & """, " & nivel
+            linhaFinal = funcao & " Obj, TipoObjeto, """ & Propriedade1 & """, """ & Propriedade2 & """, " & TextoAux & ", """ & area & """, " & nivel
         Case "VerificarObjetoDesatualizado"
-            linhaFinal = funcao & " Obj, """ & TypeName & """, " & TextoAux & ", """ & area & """, " & nivel
+            linhaFinal = funcao & " Obj, TipoObjeto, " & TextoAux & ", """ & area & """, " & nivel
         Case "VerificarObjetoInternoIndevido", "ContarObjetosDoTipo", "VerificarUserFields", "VerificarCamposUsuariosServidorAlarmes"
-            linhaFinal = funcao & " Obj, """ & TypeName & """, """ & area & """, " & nivel
+            linhaFinal = funcao & " Obj, TipoObjeto, """ & area & """, " & nivel
         Case "VerificarPropriedadeValor"
-            linhaFinal = funcao & " Obj, """ & TypeName & """, """ & Propriedade1 & """, " & TextoAux & ", " & MetodoAux & ", """ & area & """, " & nivel
+            linhaFinal = funcao & " Obj, TipoObjeto, """ & Propriedade1 & """, " & TextoAux & ", " & MetodoAux & ", """ & area & """, " & nivel
         Case "VerificarPropriedadeTextoProibido"
-            linhaFinal = funcao & " Obj, """ & TypeName & """, """ & Propriedade1 & """, " & TextoAux & ", """ & area & """, " & nivel
+            linhaFinal = funcao & " Obj, TipoObjeto, """ & Propriedade1 & """, " & TextoAux & ", """ & area & """, " & nivel
         Case "VerificarBancoDeDados", "VerificarAssociacaoBase"
-            linhaFinal = funcao & " Obj, """ & TypeName & """, """ & Propriedade1 & """, """ & area & """, " & nivel
+            linhaFinal = funcao & " Obj, TipoObjeto, """ & Propriedade1 & """, """ & area & """, " & nivel
         Case "VerificarTipoPai"
-            linhaFinal = funcao & " Obj, """ & TypeName & """, """ & TextoAux & """, " & MetodoAux & ", """ & area & """, " & nivel
+            linhaFinal = funcao & " Obj, TipoObjeto, """ & TextoAux & """, " & MetodoAux & ", """ & area & """, " & nivel
         Case Else
             linhaFinal = "'Objeto não possui verificações"
     End Select
