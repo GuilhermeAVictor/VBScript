@@ -2,7 +2,7 @@ Function GerarScript(TypeName As String, Propriedade1 As String, Propriedade2 As
     VerificarPropriedadeVazia As String, VerificarPropriedadeHabilitada As String, _
     VerificarPropriedadeCondicional As String, VerificarObjetoDesatualizado As String, VerificarPropriedadeValor As String, _
     VerificarPropriedadeTextoProibido As String, VerificarBancoDeDados As String, ContarObjetosDoTipo As String, _
-    VerificarUserFields As String, VerificarCamposUsuariosServidorAlarmes As String, VerificarObjetoInternoIndevido As String, _
+    VerificarBibliotecasPorTypeName As String, VerificarObjetoInternoIndevido As String, _
     VerificarTipoPai As String, VerificarAssociacaoBase As String, AreaDominio As String, AreaDrivers As String, AreaBancoDados As String, _
     AreaBiblioteca As String, AreaFluxoDados As String, AreaEstruturaPastas As String, _
     AreaTelas As String, RelAviso As String, RelErro As String, RelRevisar As String, Observacao As String) As String
@@ -55,8 +55,8 @@ End Select
         funcao = "VerificarBancoDeDados"
     ElseIf ContarObjetosDoTipo <> "" Then
         funcao = "ContarObjetosDoTipo"
-    ElseIf VerificarUserFields <> "" Then
-        funcao = "VerificarUserFields"
+    ElseIf VerificarBibliotecasPorTypeName <> "" Then
+        funcao = "VerificarBibliotecasPorTypeName"
     ElseIf VerificarCamposUsuariosServidorAlarmes <> "" Then
         funcao = "VerificarCamposUsuariosServidorAlarmes"
     ElseIf VerificarObjetoInternoIndevido <> "" Then
@@ -77,7 +77,7 @@ End Select
 
     ' === DEFINIR ÁREA ===
     If AreaDominio <> "" Then
-        area = "Domínio"
+        area = "Dominio"
     ElseIf AreaDrivers <> "" Then
         area = "Drivers"
     ElseIf AreaBancoDados <> "" Then
@@ -108,7 +108,7 @@ End Select
     ' === MONTAGEM DO SCRIPT ===
     Dim flagFinal As String
 
-    If DefinirBlocoLaco = "Iniciar laço(If ... Then)" Or DefinirBlocoLaco = "Condicionar laço(ElseIf ... Then)" Then
+    If DefinirBlocoLaco = "Inicar laço(If ... Then)" Or DefinirBlocoLaco = "Condicionar laço(ElseIf ... Then)" Then
         flagFinal = "True"
     ElseIf DefinirBlocoLaco = "" Then
         flagFinal = "False"
@@ -125,7 +125,7 @@ End Select
             linhaFinal = funcao & " Obj, TipoObjeto, """ & Propriedade1 & """, """ & Propriedade2 & """, " & TextoAux & ", """ & area & """, " & nivel
         Case "VerificarObjetoDesatualizado"
             linhaFinal = funcao & " Obj, TipoObjeto, " & TextoAux & ", """ & area & """, " & nivel
-        Case "VerificarObjetoInternoIndevido", "ContarObjetosDoTipo", "VerificarUserFields", "VerificarCamposUsuariosServidorAlarmes"
+        Case "VerificarObjetoInternoIndevido", "VerificarCamposUsuariosServidorAlarmes"
             linhaFinal = funcao & " Obj, TipoObjeto, """ & area & """, " & nivel
         Case "VerificarPropriedadeValor"
             linhaFinal = funcao & " Obj, TipoObjeto, """ & Propriedade1 & """, " & TextoAux & ", " & MetodoAux & ", """ & area & """, " & nivel
@@ -133,8 +133,10 @@ End Select
             linhaFinal = funcao & " Obj, TipoObjeto, """ & Propriedade1 & """, " & TextoAux & ", """ & area & """, " & nivel
         Case "VerificarBancoDeDados", "VerificarAssociacaoBase"
             linhaFinal = funcao & " Obj, TipoObjeto, """ & Propriedade1 & """, """ & area & """, " & nivel
-        Case "VerificarTipoPai"
+        Case "VerificarTipoPai", "ContarObjetosDoTipo"
             linhaFinal = funcao & " Obj, TipoObjeto, """ & TextoAux & """, " & MetodoAux & ", """ & area & """, " & nivel
+        Case "VerificarBibliotecasPorTypeName"
+            linhaFinal = funcao & " Obj, TipoObjeto, " & MetodoAux & ", """ & area & """, " & nivel
         Case Else
             linhaFinal = "'Objeto não possui verificações"
     End Select
@@ -144,10 +146,19 @@ End Select
         linhaFinal = linhaFinal & ", " & flagFinal
     End If
 
-If DefinirBlocoLaco = "Iniciar laço(If ... Then)" Then
-    GerarScript = "If " & funcao & "(" & Mid(linhaFinal, Len(funcao) + 2) & ") Then"
+If DefinirBlocoLaco = "Inicar laço(If ... Then)" Then
+    If Observacao <> "" Then
+        GerarScript = "If " & funcao & " (" & Mid(linhaFinal, Len(funcao) + 2) & ") " & Observacao & " Then"
+    Else
+        GerarScript = "If " & funcao & " (" & Mid(linhaFinal, Len(funcao) + 2) & ") Then"
+    End If
+
 ElseIf DefinirBlocoLaco = "Condicionar laço(ElseIf ... Then)" Then
-    GerarScript = "ElseIf " & funcao & "(" & Mid(linhaFinal, Len(funcao) + 2) & ") Then"
+    If Observacao <> "" Then
+        GerarScript = "Else If " & funcao & " (" & Mid(linhaFinal, Len(funcao) + 2) & ") " & Observacao & " Then"
+    Else
+        GerarScript = "Else If " & funcao & " (" & Mid(linhaFinal, Len(funcao) + 2) & ") Then"
+    End If
 
     Else
         GerarScript = linhaFinal
