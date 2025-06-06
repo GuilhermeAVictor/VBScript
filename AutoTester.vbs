@@ -345,15 +345,18 @@ Case "DataServer", "DataFolder", "Folder", "Screen", "DrawGroup"
 	  '================================================================= 
 Case "frCustomAppConfig"
 	VerificarBancoDeDados Obj, TipoObjeto, "AppDBServerPathName", "Fluxo de dados", 0, False
-	VerificarTipoPai Obj, TipoObjeto, "DataServer", 0, "Fluxo de dados", 1, False
+	VerificarTipoPai Obj, TipoObjeto, "DataServer", 1, "Fluxo de dados", 1, False
+	VerificarBibliotecasPorTypeName Obj, TipoObjeto, 0, "Fluxo de dados", 1, False
 	'-----------------------------------------------------------------------------
 Case "ww_Parameters"
 	VerificarBancoDeDados Obj, TipoObjeto, "DBServer", "Fluxo de dados", 0, False
-	VerificarTipoPai Obj, TipoObjeto, "DataServer", 0, "Fluxo de dados", 1, False
+	VerificarTipoPai Obj, TipoObjeto, "DataServer", 1, "Fluxo de dados", 1, False
+	VerificarBibliotecasPorTypeName Obj, TipoObjeto, 0, "Fluxo de dados", 1, False
 	'-----------------------------------------------------------------------------
 Case "DatabaseTags_Parameters"
 	VerificarBancoDeDados Obj, TipoObjeto, "DBServerPathName", "Fluxo de dados", 0, False
-	VerificarTipoPai Obj, TipoObjeto, "DataServer", 0, "Fluxo de dados", 1, False
+	VerificarTipoPai Obj, TipoObjeto, "DataServer", 1, "Fluxo de dados", 1, False
+	VerificarBibliotecasPorTypeName Obj, TipoObjeto, 0, "Fluxo de dados", 1, False
 	'-----------------------------------------------------------------------------
 Case "cmdscr_CustomCommandScreen"
 	VerificarBancoDeDados Obj, TipoObjeto, "DBServerPathName", "Fluxo de dados", 0, False
@@ -365,37 +368,44 @@ Case "patm_DeviceNote"
 	VerificarPropriedadeVazia Obj, TipoObjeto, "AlarmSource", "Fluxo de dados", 1, False
 	VerificarPropriedadeVazia Obj, TipoObjeto, "NoteDatabaseControl", "Fluxo de dados", 1, False
 	VerificarPropriedadeVazia Obj, TipoObjeto, "SourceObject", "Fluxo de dados", 1, False
-	VerificarTipoPai Obj, TipoObjeto, "DataServer", 0, "Fluxo de dados", 1, False
+	VerificarBibliotecasPorTypeName Obj, TipoObjeto, 0, "Fluxo de dados", 1, False
 	'-----------------------------------------------------------------------------
 Case "patm_NoteDatabaseControl"
 	VerificarBancoDeDados Obj, TipoObjeto, "DBServer", "Fluxo de dados", 0, False
 	VerificarPropriedadeValor Obj, TipoObjeto, "GroupCanAddModifyNote", "Opera  o", 1, "Fluxo de dados", 0, False
 	VerificarPropriedadeValor Obj, TipoObjeto, "Level", "2=[EquipeSCADA, Instrutor]/3=[Supervis o]/4=[EquipeDeTestes]/5=[Opera  o]", 1, "Fluxo de dados", 0, False
-	VerificarTipoPai Obj, TipoObjeto, "DataServer", 0, "Fluxo de dados", 1, False
+	VerificarTipoPai Obj, TipoObjeto, "DataServer", 1, "Fluxo de dados", 1, False
+	VerificarBibliotecasPorTypeName Obj, TipoObjeto, 0, "Fluxo de dados", 1, False
 	'-----------------------------------------------------------------------------
 Case "patm_xoAlarmHistConfig"
 	VerificarBancoDeDados Obj, TipoObjeto, "MainDBServerPathName", "Fluxo de dados", 0, False
-	VerificarTipoPai Obj, TipoObjeto, "DataServer", 0, "Fluxo de dados", 1, False
+	VerificarTipoPai Obj, TipoObjeto, "DataServer", 1, "Fluxo de dados", 1, False
+	VerificarBibliotecasPorTypeName Obj, TipoObjeto, 0, "Fluxo de dados", 1, False
 	'-----------------------------------------------------------------------------
 Case "dtRedundancyConfig"
 	VerificarPropriedadeVazia Obj, TipoObjeto, "NameOfServerToBeStopped", "Fluxo de dados", 1, False
-	VerificarTipoPai Obj, TipoObjeto, "DataServer", 0, "Fluxo de dados", 1, False
+	VerificarTipoPai Obj, TipoObjeto, "DataServer", 1, "Fluxo de dados", 1, False
+	VerificarBibliotecasPorTypeName Obj, TipoObjeto, 0, "Fluxo de dados", 1, False
 	'-----------------------------------------------------------------------------
 Case "patm_CommandLogger"
 	VerificarPropriedadeVazia Obj, TipoObjeto, "PowerConfigObj", "Fluxo de dados", 0, False
-	VerificarTipoPai Obj, TipoObjeto, "DataServer", 0, "Fluxo de dados", 1, False
+	VerificarTipoPai Obj, TipoObjeto, "DataServer", 1, "Fluxo de dados", 1, False
+	VerificarBibliotecasPorTypeName Obj, TipoObjeto, 0, "Fluxo de dados", 1, False
 	'-----------------------------------------------------------------------------
 Case "hpXMLGenerateStruct"
 	VerificarPropriedadeVazia Obj, TipoObjeto, "Log_BancoDeDados", "Fluxo de dados", 0, False
-	VerificarTipoPai Obj, TipoObjeto, "DataServer", 0, "Fluxo de dados", 1, False
+	VerificarTipoPai Obj, TipoObjeto, "DataServer", 1, "Fluxo de dados", 1, False
+	VerificarBibliotecasPorTypeName Obj, TipoObjeto, 0, "Fluxo de dados", 1, False
 	'-----------------------------------------------------------------------------
 Case "gtwFrozenMeasurements"
 	VerificarPropriedadeVazia Obj, TipoObjeto, "DateTag", "Fluxo de dados", 0, False
-	VerificarTipoPai Obj, TipoObjeto, "DataServer", 0, "Fluxo de dados", 1, False
+	VerificarTipoPai Obj, TipoObjeto, "DataServer", 1, "Fluxo de dados", 1, False
+	VerificarBibliotecasPorTypeName Obj, TipoObjeto, 0, "Fluxo de dados", 1, False
 	'-----------------------------------------------------------------------------
 Case "aainfo_NoteController"
 	VerificarPropriedadeVazia Obj, TipoObjeto, "DBServerPathName", "Fluxo de dados", 0, False
-	VerificarTipoPai Obj, TipoObjeto, "DataServer", 0, "Fluxo de dados", 1, False
+	VerificarTipoPai Obj, TipoObjeto, "DataServer", 1, "Fluxo de dados", 1, False
+	VerificarBibliotecasPorTypeName Obj, TipoObjeto, 0, "Fluxo de dados", 1, False
 	'-----------------------------------------------------------------------------
 Case "xoExecuteScheduler"
 	VerificarPropriedadeVazia Obj, TipoObjeto, "aActivateCommandsGroup", "Fluxo de dados", 0, False
@@ -428,13 +438,13 @@ Case "DBServer"
 Case "Hist"
 	VerificarPropriedadeVazia Obj, TipoObjeto, "DBServer", "Dominio", 1, False
 	VerificarBancoDeDados Obj, TipoObjeto, "DBServer", "Dominio", 0, False
-	If VerificarPropriedadeHabilitada(Obj, TipoObjeto, "EnableDiscard", False, "Dominio", 2, True) Then
+	If VerificarPropriedadeHabilitada (Obj, TipoObjeto, "EnableDiscard", False, "Dominio", 2, True) Then
 	VerificarPropriedadeValor Obj, TipoObjeto, "DiscardInterval", 1, 1, "Dominio", 0, False
 	VerificarPropriedadeValor Obj, TipoObjeto, "DiscardTimeUnit", 2, 1, "Dominio", 0, False
 	VerificarPropriedadeValor Obj, TipoObjeto, "VerificationInterval", 1, 1, "Dominio", 0, False
 	VerificarPropriedadeValor Obj, TipoObjeto, "VerificationUnit", 2, 1, "Dominio", 0, False
 	End If
-	If VerificarPropriedadeHabilitada(Obj, TipoObjeto, "EnableBackupTable", False, "Dominio", 2, True) Then
+	If VerificarPropriedadeHabilitada (Obj, TipoObjeto, "EnableBackupTable", False, "Dominio", 2, True) Then
 	VerificarPropriedadeValor Obj, TipoObjeto, "BackupDiscardInterval", 12, 1, "Dominio", 0, False
 	VerificarPropriedadeValor Obj, TipoObjeto, "BackupDiscardTimeUnit", 2, 1, "Dominio", 0, False
 	End If
@@ -442,13 +452,13 @@ Case "Hist"
 Case "Historian"
 	VerificarPropriedadeVazia Obj, TipoObjeto, "DBServer", "Dominio", 1, False
 	VerificarBancoDeDados Obj, TipoObjeto, "DBServer", "Dominio", 0, False
-	If VerificarPropriedadeHabilitada(Obj, TipoObjeto, "EnableDiscard", False, "Dominio", 2, True) Then
+	If VerificarPropriedadeHabilitada (Obj, TipoObjeto, "EnableDiscard", False, "Dominio", 2, True) Then
 	VerificarPropriedadeValor Obj, TipoObjeto, "DiscardInterval", 1, 1, "Dominio", 0, False
 	VerificarPropriedadeValor Obj, TipoObjeto, "DiscardTimeUnit", 2, 1, "Dominio", 0, False
 	VerificarPropriedadeValor Obj, TipoObjeto, "VerificationInterval", 1, 1, "Dominio", 0, False
 	VerificarPropriedadeValor Obj, TipoObjeto, "VerificationUnit", 2, 1, "Dominio", 0, False
 	End If
-	If VerificarPropriedadeHabilitada(Obj, TipoObjeto, "EnableBackupTable", False, "Dominio", 2, True) Then
+	If VerificarPropriedadeHabilitada (Obj, TipoObjeto, "EnableBackupTable", False, "Dominio", 2, True) Then
 	VerificarPropriedadeValor Obj, TipoObjeto, "BackupDiscardInterval", 12, 1, "Dominio", 0, False
 	VerificarPropriedadeValor Obj, TipoObjeto, "BackupDiscardTimeUnit", 2, 1, "Dominio", 0, False
 	End If
@@ -460,17 +470,8 @@ Case "IODriver"
 	VerificarPropriedadeVazia Obj, TipoObjeto, "DriverLocation", "Drivers", 0, False
 	VerificarPropriedadeValor Obj, TipoObjeto, "WriteSyncMode", 2, 0, "Drivers", 0, False
 	VerificarPropriedadeValor Obj, TipoObjeto, "ExposeToOpc", 3, 0, "Drivers", 0, False
-	            ' Verifica  o adicional: contagem de IOTags associadas ao driver
-	             Dim qtdeIOTags, mensagem
-	            qtdeIOTags = ContarObjetosDoTipo(Obj, "IOTag")
-	                If qtdeIOTags <= 1 Then
-	                    mensagem = "IODriver com quantidade insuficiente de IOTags. (" & qtdeIOTags & " encontrada(s))"
-	                    If GerarCSV Then
-	                        Call AdicionarErroExcel(DadosExcel, Obj.PathName, "0", mensagem, "Drivers", "IODriver")
-	                    Else
-	                        Call AdicionarErroBanco(DadosExcel, Obj.PathName, "0", mensagem, "IODriver", "Drivers")
-	                    End If
-	                End If
+	VerificarPropriedadeHabilitada Obj, TipoObjeto, "EnableReadGrouping ", True, "Telas", 1, False
+	ContarObjetosDoTipo Obj, TipoObjeto, "IOTag", 0,1,1, "Drivers", 1, False
 	  '=================================================================
 	  ' Biblioteca
 	  '================================================================= 
@@ -540,7 +541,7 @@ Case "DataServer", "DataFolder", "Folder", "Screen", "DrawGroup"
         VerificarPropriedadesObjetoTela child
 		Item("ContagemObjetosTelas").Value = Item("ContagemObjetosTelas").Value + 1
     Next
-	  '=================================================================
+		  '=================================================================
 	  ' Telas
 	  '================================================================= 
 	'-----------------------------------------------------------------------------
@@ -555,7 +556,7 @@ Case "pwa_Disjuntor"
 	VerificarPropriedadeCondicional Obj, TipoObjeto, "NaoSupervisionado", "SourceObject", False, "Telas", 1, False
 	VerificarPropriedadeCondicional Obj, TipoObjeto, "NaoSupervisionado", "PositionMeas", False, "Telas", 1, False
 	VerificarPropriedadeCondicional Obj, TipoObjeto, "NaoSupervisionado", "DeviceNote", False, "Telas", 1, False
-	If VerificarPropriedadeHabilitada(Obj, TipoObjeto, "HideLines", True, "Telas", 2, True) Then
+	If VerificarPropriedadeHabilitada (Obj, TipoObjeto, "HideLines", True, "Telas", 2, True) Then
 	VerificarPropriedadeValor Obj, TipoObjeto, "CorOff", 0, 1, "Telas", 0, False
 	VerificarPropriedadeValor Obj, TipoObjeto, "CorOn", 0, 1, "Telas", 0, False
 	End If
@@ -564,7 +565,7 @@ Case "pwa_DisjuntorP"
 	VerificarPropriedadeCondicional Obj, TipoObjeto, "NaoSupervisionado", "SourceObject", False, "Telas", 1, False
 	VerificarPropriedadeCondicional Obj, TipoObjeto, "NaoSupervisionado", "PositionMeas", False, "Telas", 1, False
 	VerificarPropriedadeCondicional Obj, TipoObjeto, "NaoSupervisionado", "DeviceNote", False, "Telas", 1, False
-	If VerificarPropriedadeHabilitada(Obj, TipoObjeto, "HideLines", True, "Telas", 2, True) Then
+	If VerificarPropriedadeHabilitada (Obj, TipoObjeto, "HideLines", True, "Telas", 2, True) Then
 	VerificarPropriedadeValor Obj, TipoObjeto, "CorOff", 0, 1, "Telas", 0, False
 	VerificarPropriedadeValor Obj, TipoObjeto, "CorOn", 0, 1, "Telas", 0, False
 	End If
@@ -573,7 +574,7 @@ Case "pwa_DisjuntorPP"
 	VerificarPropriedadeCondicional Obj, TipoObjeto, "NaoSupervisionado", "SourceObject", False, "Telas", 1, False
 	VerificarPropriedadeCondicional Obj, TipoObjeto, "NaoSupervisionado", "PositionMeas", False, "Telas", 1, False
 	VerificarPropriedadeCondicional Obj, TipoObjeto, "NaoSupervisionado", "DeviceNote", False, "Telas", 1, False
-	If VerificarPropriedadeHabilitada(Obj, TipoObjeto, "HideLines", True, "Telas", 2, True) Then
+	If VerificarPropriedadeHabilitada (Obj, TipoObjeto, "HideLines", True, "Telas", 2, True) Then
 	VerificarPropriedadeValor Obj, TipoObjeto, "CorOff", 0, 1, "Telas", 0, False
 	VerificarPropriedadeValor Obj, TipoObjeto, "CorOn", 0, 1, "Telas", 0, False
 	End If
@@ -582,7 +583,7 @@ Case "pwa_Seccionadora"
 	VerificarPropriedadeCondicional Obj, TipoObjeto, "NaoSupervisionado", "SourceObject", False, "Telas", 1, False
 	VerificarPropriedadeCondicional Obj, TipoObjeto, "NaoSupervisionado", "PositionMeas", False, "Telas", 1, False
 	VerificarPropriedadeCondicional Obj, TipoObjeto, "NaoSupervisionado", "DeviceNote", False, "Telas", 1, False
-	If VerificarPropriedadeHabilitada(Obj, TipoObjeto, "HideLines", True, "Telas", 2, True) Then
+	If VerificarPropriedadeHabilitada (Obj, TipoObjeto, "HideLines", True, "Telas", 2, True) Then
 	VerificarPropriedadeValor Obj, TipoObjeto, "CorOff", 0, 1, "Telas", 0, False
 	VerificarPropriedadeValor Obj, TipoObjeto, "CorOn", 0, 1, "Telas", 0, False
 	End If
@@ -707,7 +708,7 @@ Case "pwa_LineVert"
 Case "pwa_AutoTrafo"
 	VerificarPropriedadeCondicional Obj, TipoObjeto, "Enabled", "SourceObject", True, "Telas", 1, False
 	VerificarPropriedadeCondicional Obj, TipoObjeto, "SourceObject", "DeviceNote", "NOTEMPTY", "Telas", 1, False
-	If VerificarPropriedadeHabilitada(Obj, TipoObjeto, "HideLine", True, "Telas", 2, True) Then
+	If VerificarPropriedadeHabilitada (Obj, TipoObjeto, "HideLine", True, "Telas", 2, True) Then
 	VerificarPropriedadeValor Obj, TipoObjeto, "CorOff", 16777215, 1, "Telas", 0, False
 	VerificarPropriedadeValor Obj, TipoObjeto, "CorOnTerminal1", 0, 1, "Telas", 0, False
 	VerificarPropriedadeValor Obj, TipoObjeto, "CorOnTerminal2", 0, 1, "Telas", 0, False
@@ -749,7 +750,7 @@ Case "pwa_Relig"
 	VerificarPropriedadeCondicional Obj, TipoObjeto, "NaoSupervisionado", "SourceObject", False, "Telas", 1, False
 	VerificarPropriedadeCondicional Obj, TipoObjeto, "NaoSupervisionado", "PositionMeas", False, "Telas", 1, False
 	VerificarPropriedadeCondicional Obj, TipoObjeto, "UseNotes", "DeviceNote", True, "Telas", 1, False
-	If VerificarPropriedadeHabilitada(Obj, TipoObjeto, "HideLines", True, "Telas", 2, True) Then
+	If VerificarPropriedadeHabilitada (Obj, TipoObjeto, "HideLines", True, "Telas", 2, True) Then
 	VerificarPropriedadeValor Obj, TipoObjeto, "CorOff", 0, 1, "Telas", 0, False
 	VerificarPropriedadeValor Obj, TipoObjeto, "CorOn", 0, 1, "Telas", 0, False
 	End If
@@ -791,7 +792,7 @@ Case "pwa_Menu"
 Case "pwa_TrafoSA"
 	VerificarPropriedadeCondicional Obj, TipoObjeto, "Enabled", "SourceObject", True, "Telas", 1, False
 	VerificarPropriedadeCondicional Obj, TipoObjeto, "UseNotes", "DeviceNote", True, "Telas", 1, False
-	If VerificarPropriedadeHabilitada(Obj, TipoObjeto, "HideLine", True, "Telas", 2, True) Then
+	If VerificarPropriedadeHabilitada (Obj, TipoObjeto, "HideLine", True, "Telas", 2, True) Then
 	VerificarPropriedadeValor Obj, TipoObjeto, "CorOff", 16777215, 1, "Telas", 0, False
 	VerificarPropriedadeValor Obj, TipoObjeto, "CorOnTerminal1", 0, 1, "Telas", 0, False
 	VerificarPropriedadeValor Obj, TipoObjeto, "CorOnTerminal2", 0, 1, "Telas", 0, False
@@ -801,7 +802,7 @@ Case "pwa_Trafo3Type01"
 	VerificarPropriedadeCondicional Obj, TipoObjeto, "Enabled", "SourceObject", True, "Telas", 1, False
 	VerificarPropriedadeCondicional Obj, TipoObjeto, "UseNotes", "DeviceNote", True, "Telas", 1, False
 	VerificarPropriedadeCondicional Obj, TipoObjeto, "TAPSPShow", "TAPSPTag", True, "Telas", 1, False
-	If VerificarPropriedadeHabilitada(Obj, TipoObjeto, "HideLine", True, "Telas", 2, True) Then
+	If VerificarPropriedadeHabilitada (Obj, TipoObjeto, "HideLine", True, "Telas", 2, True) Then
 	VerificarPropriedadeValor Obj, TipoObjeto, "CorOff", 16777215, 1, "Telas", 0, False
 	VerificarPropriedadeValor Obj, TipoObjeto, "CorOnTerminal1", 0, 1, "Telas", 0, False
 	VerificarPropriedadeValor Obj, TipoObjeto, "CorOnTerminal2", 0, 1, "Telas", 0, False
@@ -812,7 +813,7 @@ Case "pwa_Trafo3_P"
 	VerificarPropriedadeCondicional Obj, TipoObjeto, "Enabled", "SourceObject", True, "Telas", 1, False
 	VerificarPropriedadeCondicional Obj, TipoObjeto, "UseNotes", "DeviceNote", True, "Telas", 1, False
 	VerificarPropriedadeCondicional Obj, TipoObjeto, "TAPSPShow", "TAPSPTag", True, "Telas", 1, False
-	If VerificarPropriedadeHabilitada(Obj, TipoObjeto, "HideLine", True, "Telas", 2, True) Then
+	If VerificarPropriedadeHabilitada (Obj, TipoObjeto, "HideLine", True, "Telas", 2, True) Then
 	VerificarPropriedadeValor Obj, TipoObjeto, "CorOff", 16777215, 1, "Telas", 0, False
 	VerificarPropriedadeValor Obj, TipoObjeto, "CorOnTerminal1", 0, 1, "Telas", 0, False
 	VerificarPropriedadeValor Obj, TipoObjeto, "CorOnTerminal2", 0, 1, "Telas", 0, False
@@ -823,7 +824,7 @@ Case "pwa_Trafo3"
 	VerificarPropriedadeCondicional Obj, TipoObjeto, "Enabled", "SourceObject", True, "Telas", 1, False
 	VerificarPropriedadeCondicional Obj, TipoObjeto, "UseNotes", "DeviceNote", True, "Telas", 1, False
 	VerificarPropriedadeCondicional Obj, TipoObjeto, "TAPSPShow", "TAPSPTag", True, "Telas", 1, False
-	If VerificarPropriedadeHabilitada(Obj, TipoObjeto, "HideLine", True, "Telas", 2, True) Then
+	If VerificarPropriedadeHabilitada (Obj, TipoObjeto, "HideLine", True, "Telas", 2, True) Then
 	VerificarPropriedadeValor Obj, TipoObjeto, "CorOff", 16777215, 1, "Telas", 0, False
 	VerificarPropriedadeValor Obj, TipoObjeto, "CorOnTerminal1", 0, 1, "Telas", 0, False
 	VerificarPropriedadeValor Obj, TipoObjeto, "CorOnTerminal2", 0, 1, "Telas", 0, False
@@ -834,7 +835,7 @@ Case "pwa_Trafo2Term"
 	VerificarPropriedadeCondicional Obj, TipoObjeto, "Enabled", "SourceObject", True, "Telas", 1, False
 	VerificarPropriedadeCondicional Obj, TipoObjeto, "UseNotes", "DeviceNote", True, "Telas", 1, False
 	VerificarPropriedadeCondicional Obj, TipoObjeto, "TAPSPShow", "TAPSPTag", True, "Telas", 1, False
-	If VerificarPropriedadeHabilitada(Obj, TipoObjeto, "HideLine", True, "Telas", 2, True) Then
+	If VerificarPropriedadeHabilitada (Obj, TipoObjeto, "HideLine", True, "Telas", 2, True) Then
 	VerificarPropriedadeValor Obj, TipoObjeto, "CorOff", 16777215, 1, "Telas", 0, False
 	VerificarPropriedadeValor Obj, TipoObjeto, "CorOnTerminal1", 0, 1, "Telas", 0, False
 	VerificarPropriedadeValor Obj, TipoObjeto, "CorOnTerminal2", 0, 1, "Telas", 0, False
@@ -845,7 +846,7 @@ Case "pwa_Trafo2"
 	VerificarPropriedadeCondicional Obj, TipoObjeto, "Enabled", "SourceObject", True, "Telas", 1, False
 	VerificarPropriedadeCondicional Obj, TipoObjeto, "UseNotes", "DeviceNote", True, "Telas", 1, False
 	VerificarPropriedadeCondicional Obj, TipoObjeto, "TAPSPShow", "TAPSPTag", True, "Telas", 1, False
-	If VerificarPropriedadeHabilitada(Obj, TipoObjeto, "HideLine", True, "Telas", 2, True) Then
+	If VerificarPropriedadeHabilitada (Obj, TipoObjeto, "HideLine", True, "Telas", 2, True) Then
 	VerificarPropriedadeValor Obj, TipoObjeto, "CorOff", 16777215, 1, "Telas", 0, False
 	VerificarPropriedadeValor Obj, TipoObjeto, "CorOnTerminal1", 0, 1, "Telas", 0, False
 	VerificarPropriedadeValor Obj, TipoObjeto, "CorOnTerminal2", 0, 1, "Telas", 0, False
@@ -1725,22 +1726,22 @@ Case "archLineVertical"
 	'-----------------------------------------------------------------------------
 Case "archChannelPanel", "archChannelPanelP", "archChannelPanelPP", "archChannelPanelG"
 	VerificarPropriedadeHabilitada Obj, TipoObjeto, "Visible", True, "Telas", 1, False
-	    Dim tipoPortas, i, qtdEsperada, propFailure
-	    tipoPortas = GetPropriedade(Obj, "Type")
-	    Select Case CStr(tipoPortas)
-	        Case "3": qtdEsperada = 4
-	        Case "2": qtdEsperada = 8
-	        Case "1": qtdEsperada = 20
-	        Case "0": qtdEsperada = 24
-	        Case Else
-	            qtdEsperada = 0 ' n o definido ou inv lido
-	    End Select
-	    If qtdEsperada > 0 Then
-	        For i = 1 To qtdEsperada
-	            propFailure = "FailureState" & Right("0" & i, 2)
-	            Call VerificarPropriedadeValor(Obj, TipoObjeto, propFailure, False, 1, "Telas", 1, False)
-	        Next
-	    End If
+		    Dim tipoPortas, i, qtdEsperada, propFailure
+		    tipoPortas = GetPropriedade(Obj, "Type")
+		    Select Case CStr(tipoPortas)
+		        Case "3": qtdEsperada = 4
+		        Case "2": qtdEsperada = 8
+		        Case "1": qtdEsperada = 20
+		        Case "0": qtdEsperada = 24
+		        Case Else
+		            qtdEsperada = 0 ' nao definido ou invalido
+		    End Select
+		    If qtdEsperada > 0 Then
+		        For i = 1 To qtdEsperada
+		            propFailure = "FailureState" & Right("0" & i, 2)
+		            Call VerificarPropriedadeValor(Obj, TipoObjeto, propFailure, False, 1, "Telas", 1, False)
+		        Next
+		    End If
 	'-----------------------------------------------------------------------------
 Case "archLed"
 	VerificarPropriedadeHabilitada Obj, TipoObjeto, "Visible", True, "Telas", 1, False
@@ -1873,7 +1874,7 @@ Function VerificarPropriedadeVazia(Obj, TipoObjeto, Propriedade, AreaErro, TipoE
         If CondicaoRetorno = True Then
             VerificarPropriedadeVazia = True
             Exit Function
-        End If
+        End If 
 
         Mensagem = TipoObjeto & " com a propriedade " & Propriedade & " vazia."
         If GerarCSV Then
@@ -1889,45 +1890,94 @@ Function VerificarPropriedadeVazia(Obj, TipoObjeto, Propriedade, AreaErro, TipoE
     On Error GoTo 0
 End Function
 
-'***********************************************************************
+'*******************************************************************************
 '*  Função : ContarObjetosDoTipo
-'*----------------------------------------------------------------------
+'*-------------------------------------------------------------------------------
 '*  Finalidade :
-'*     Percorrer recursivamente a hierarquia de um objeto pai e contar
-'*     quantas instâncias de um tipo específico existem (TypeName).
+'*     Contabiliza objetos irmãos ou filhos de um objeto base, com filtros
+'*     opcionais por tipo (TypeName) e lógica condicional para geração de log.
 '*
 '*  Parâmetros :
-'*     ‑ Obj          : Objeto raiz (ex.: um IODriver).
-'*     ‑ TipoDesejado : String com o TypeName a ser contado (ex.: "IOTag").
+'*     - Obj                : Objeto base para contagem.
+'*     - TipoObjeto         : Nome lógico (exibição) do objeto analisado.
+'*     - TipoDesejado       : String com o TypeName a ser filtrado (ex: "IOTag").
+'*     - DeveConterNao      : 
+'*         0 → Espera que existam objetos do tipo (gera log se não houver).
+'*         1 → Espera que NÃO existam objetos do tipo (gera log se houver).
+'*     - TipoIgual          :
+'*         0 → Conta todos os objetos (sem filtro de tipo).
+'*         1 → Conta apenas objetos do tipo TipoDesejado.
+'*     - ContagemIrmaoFilho :
+'*         0 → Conta os irmãos (Parent).
+'*         1 → Conta os filhos (Children).
+'*     - AreaErro           : Categoria da verificação (ex: "Drivers", "Tags").
+'*     - TipoErro           : Severidade (0=Aviso, 1=Erro, 2=Revisar).
+'*     - CondicaoRetorno    : 
+'*         True → Apenas retorna a contagem sem registrar erros.
+'*         False → Executa registro de erro conforme regras.
 '*
 '*  Retorno :
-'*     Integer → Quantidade total de objetos do tipo solicitado.
-'***********************************************************************
-Function ContarObjetosDoTipo(Obj, TipoDesejado)
-
+'*     Integer → Número de objetos encontrados de acordo com os critérios.
+'*******************************************************************************
+Function ContarObjetosDoTipo(Obj, TipoObjeto, TipoDesejado, DeveConterNao, TipoIgual, ContagemIrmaoFilho, AreaErro, TipoErro, CondicaoRetorno)
     On Error Resume Next
 
-    Dim contador, childObj
+    Dim contador, childObj, ParentObj, PathName, Msg
     contador = 0
+    PathName = Obj.PathName
 
-    '------------------------------------------------------------------
-    ' 1) Conta o próprio objeto, se for do tipo desejado
-    '------------------------------------------------------------------
-    If TypeName(Obj) = TipoDesejado Then
-        contador = contador + 1
+    ' Contagem baseada em irmãos ou filhos
+    If ContagemIrmaoFilho = 0 Then
+        Set ParentObj = Obj.Parent
+        If Not ParentObj Is Nothing Then
+            For Each childObj In ParentObj
+                If TipoIgual = 0 Or (TipoIgual = 1 And TypeName(childObj) = TipoDesejado) Then
+                    contador = contador + 1
+                End If
+            Next
+        End If
+    ElseIf ContagemIrmaoFilho = 1 Then
+        For Each childObj In Obj
+            If TipoIgual = 0 Or (TipoIgual = 1 And TypeName(childObj) = TipoDesejado) Then
+                contador = contador + 1
+            End If
+        Next
     End If
 
-    '------------------------------------------------------------------
-    ' 2) Percorre todos os filhos recursivamente
-    '------------------------------------------------------------------
-    For Each childObj In Obj
-        contador = contador + ContarObjetosDoTipo(childObj, TipoDesejado)
-    Next
+    ' Apenas retorna se modo CondicaoRetorno estiver ativo
+    If CondicaoRetorno Then
+        ContarObjetosDoTipo = contador
+        Exit Function
+    End If
+
+    ' Validação com base em DeveConterNao
+    If (DeveConterNao = 0 And contador = 0) Or (DeveConterNao = 1 And contador > 0) Then
+        If DeveConterNao = 0 Then
+            Msg = "Nenhum objeto do tipo '" & TipoDesejado & "' encontrado "
+            If ContagemIrmaoFilho = 0 Then
+                Msg = Msg & "entre os irmãos de '" & PathName & "'."
+            Else
+                Msg = Msg & "entre os filhos de '" & PathName & "'."
+            End If
+        Else
+            Msg = "Objeto do tipo '" & TipoDesejado & "' encontrado "
+            If ContagemIrmaoFilho = 0 Then
+                Msg = Msg & "entre os irmãos de '" & PathName & "', quando não deveria existir."
+            Else
+                Msg = Msg & "entre os filhos de '" & PathName & "', quando não deveria existir."
+            End If
+        End If
+
+        If GerarCSV Then
+            AdicionarErroExcel DadosExcel, PathName, CStr(TipoErro), Msg, AreaErro, TipoObjeto
+        Else
+            AdicionarErroBanco DadosExcel, PathName, CStr(TipoErro), Msg, TipoObjeto, AreaErro
+        End If
+    End If
 
     ContarObjetosDoTipo = contador
 
     On Error GoTo 0
-
 End Function
 
 '***********************************************************************
@@ -2121,6 +2171,95 @@ Function VerificarUserFields(Obj, arrFields, NomeObjeto, AreaErro, Classificacao
 
     On Error GoTo 0
 
+End Function
+
+'***********************************************************************
+'*  Função : VerificarBibliotecasPorTypeName
+'*----------------------------------------------------------------------
+'*  Finalidade :
+'*     Verificar as bibliotecas associadas a objetos irmãos em um mesmo
+'*     DataServer e registrar inconsistências conforme o tipo de verificação.
+'*
+'*  Parâmetros :
+'*     ‑ Obj              : Objeto base da análise.
+'*     ‑ TipoObjeto       : Nome lógico do tipo de objeto.
+'*     ‑ TipoCondicao     : Define a lógica da verificação:
+'*                            0 = Erro se houver objetos de bibliotecas distintas.
+'*                            1 = Erro se houver múltiplos objetos da mesma biblioteca.
+'*                            2 = Retorna o nome da biblioteca do objeto (sem log).
+'*     ‑ AreaErro         : Nome lógico da área para registro.
+'*     ‑ TipoErro         : Severidade do erro (0=Aviso, 1=Erro, 2=Revisar).
+'*     ‑ CondicaoRetorno  : Se True, retorna o resultado lógico ou texto, sem log.
+'***********************************************************************
+Function VerificarBibliotecasPorTypeName(Obj, TipoObjeto, TipoCondicao, AreaErro, TipoErro, CondicaoRetorno)
+    On Error Resume Next
+
+    Dim ParentObj, ObjFilho, tipo, lib, libAtual
+    Dim libsEncontradas, PathName, Msg, countIgual
+
+    Set ParentObj = Obj.Parent
+    PathName = Obj.PathName
+    libAtual = BibliotecaDoObjeto(TypeName(Obj))
+    Set libsEncontradas = CreateObject("Scripting.Dictionary")
+    countIgual = 0
+
+    '--- Varrer objetos irmãos ---
+    For Each ObjFilho In ParentObj
+        tipo = TypeName(ObjFilho)
+        lib = BibliotecaDoObjeto(tipo)
+
+        If lib <> "Desconhecida" Then
+            If Not libsEncontradas.Exists(lib) Then
+                libsEncontradas.Add lib, True
+            End If
+        End If
+
+        If lib = libAtual Then
+            countIgual = countIgual + 1
+        End If
+    Next
+
+    '--- Retorno lógico sem log ---
+    If CondicaoRetorno Then
+        Select Case TipoCondicao
+            Case 0
+                VerificarBibliotecasPorTypeName = (libsEncontradas.Count > 1)
+            Case 1
+                VerificarBibliotecasPorTypeName = (countIgual > 1)
+            Case 2
+                VerificarBibliotecasPorTypeName = libAtual
+            Case Else
+                VerificarBibliotecasPorTypeName = False
+        End Select
+        Exit Function
+    End If
+
+    '--- Registro: múltiplas bibliotecas ---
+    If TipoCondicao = 0 And libsEncontradas.Count > 1 Then
+        Msg = "A hierarquia '" & ParentObj.Name & "' possui objetos de múltiplas bibliotecas: "
+        For Each lib In libsEncontradas.Keys
+            Msg = Msg & lib & ", "
+        Next
+        Msg = Left(Msg, Len(Msg) - 2)
+
+        If GerarCSV Then
+            AdicionarErroExcel DadosExcel, PathName, CStr(TipoErro), Msg, AreaErro, TipoObjeto
+        Else
+            AdicionarErroBanco DadosExcel, PathName, CStr(TipoErro), Msg, TipoObjeto, AreaErro
+        End If
+
+    '--- Registro: duplicidade de biblioteca ---
+    ElseIf TipoCondicao = 1 And countIgual > 1 Then
+        Msg = "A hierarquia '" & ParentObj.Name & "' possui múltiplos objetos da biblioteca '" & libAtual & "' (além de '" & Obj.Name & "')."
+
+        If GerarCSV Then
+            AdicionarErroExcel DadosExcel, PathName, CStr(TipoErro), Msg, AreaErro, TipoObjeto
+        Else
+            AdicionarErroBanco DadosExcel, PathName, CStr(TipoErro), Msg, TipoObjeto, AreaErro
+        End If
+    End If
+
+    On Error GoTo 0
 End Function
 
 '***********************************************************************
@@ -3263,6 +3402,43 @@ Function InserirInconsistenciasBanco(DadosExcel, conn)
     End If
 
     On Error GoTo 0
+End Function
+
+Function BibliotecaDoObjeto(tipo)
+    Select Case tipo
+        case "gx_StatusIndicator", "gx_QualityIcon", "gx_OpenTabularArea", "gx_Notes", "gx_Note_Tag", "gx_Note_Out", "gx_Note_Fork", "gx_Menu", "gx_LocalTeam", "gx_InfoSetpoint", "gx_InfoDoughnutChart", "gx_InfoAnalogic2", "gx_InfoAnalogic", "gx_InfoAlarm10", "gx_InfoAlarm05", "gx_InfoAlarm03", "gx_InfoAlarm01", "gx_DiscreteIndicator", "gx_CtrlPulse", "gx_CtrlDigital4Op", "gx_CtrlDigital3Op", "gx_CtrlDigital2Op", "gx_CtrlDigital1Op", "gx_CtrlDigital", "gx_Counter", "gx_ButtonOpenCommandScreen", "gx_Analogic", "gx_AbnormalityIndicator", "gx_RadarChartInfo", "gx_RadarChart20", "gx_RadarChart16", "gx_RadarChart12", "gx_RadarChart10_2Z", "gx_RadarChart10", "gx_RadarChart09", "gx_RadarChart08_2Z", "gx_RadarChart08", "gx_RadarChart07", "gx_RadarChart06", "gx_RadarChart05", "gx_RadarChart04", "gx_RadarChart03"
+            BibliotecaDoObjeto = "generic_automalogica"
+        Case "pwa_GrupoVSL", "pwa_HomeButton", "pwa_VentForc", "pwa_Terra2", "pwa_Terra", "pwa_TapV", "pwa_Sensor", "pwa_Retificador", "pwa_Relig", "pwa_ReguladorTensao", "pwa_Reactor", "pwa_Menu", "pwa_Jumper", "pwa_Inversor", "pwa_InfoPotRea", "pwa_InfoAnalogicaG", "pwa_InfoAnalogica", "pwa_InfoAlarme10", "pwa_InfoAlarme05", "pwa_InfoAlarme01", "pwa_GeradorG", "pwa_Gerador", "pwa_Conexao", "pwa_Carga", "pwa_Capacitor", "pwa_BotaoAbreTela", "pwa_Bateria", "pwa_BarraAlarme", "pwa_Barra2Vert", "pwa_Barra2", "pwa_Barra", "pwa_AutoTrafo", "pwa_InfoPotP", "pwa_InfoPotG", "pwa_InfoPot", "pwa_LineVert", "pwa_LineHoriz", "pwa_TrafoSA", "pwa_Trafo3Type01", "pwa_Trafo3_P", "pwa_Trafo3", "pwa_Trafo2Term", "pwa_Trafo2", "pwa_Seccionadora", "pwa_DisjuntorPP", "pwa_DisjuntorP", "pwa_Disjuntor"
+            BibliotecaDoObjeto = "poweratm_xc"
+        Case "archAeroGenerator" ,"archChannelPanelPP" ,"archChannelPanelP" ,"archChannelPanel" ,"archChannelPanelG" ,"archCloud" ,"archDatabase" ,"archElectricalMeter" ,"archFirewall" ,"archGPSAntenna" ,"archIED" ,"archInfo" ,"archInfoLine" ,"archLineHorizontal" ,"archLineVertical" ,"archModuloIO" ,"archNuclearPlant" ,"archPCH" ,"archRouter" ,"archRTU" ,"archServerDesktop" ,"archWifi" ,"archViewer" ,"archVideoWall" ,"archUHE" ,"archSwitch" ,"archSurveillanceCamera" ,"archSubtitle2" ,"archSubtitle1" ,"archSolarPanel" ,"archServerRackmountSingle" ,"archServerRackmountMultiple"
+            BibliotecaDoObjeto = "Architecture_xc"
+        Case "uhe_Filter", "uhe_FanIndicator", "uhe_Fan", "uhe_ExcitationTransformer", "uhe_Etiqueta_Manut", "uhe_Etiqueta", "uhe_EqpMenuCreator", "uhe_EarthSwitch", "uhe_DiscreteIndicator", "uhe_Direction", "uhe_DieselGenerator", "uhe_Device", "uhe_CtrlPulse", "uhe_CtrlDigitalOp", "uhe_CtrlDigital4Op", "uhe_CtrlDigital3Op", "uhe_CtrlDigital2Op", "uhe_CtrlDigital", "uhe_ControlGate", "uhe_Conduto", "uhe_CommandIcon", "uhe_CommandButton", "uhe_Command", "uhe_ChartP", "uhe_Chart", "uhe_Caixa", "uhe_Buzzer", "uhe_BusBar", "uhe_BulbTurbine", "uhe_BrakeAlert", "uhe_Bomb2", "uhe_Bomb", "uhe_Block", "uhe_BielaMecanica", "uhe_BielaHidraulica", "uhe_AnalogIndicator", "uhe_AnalogBarP", "uhe_AnalogBarHor", "uhe_AnalogBar5LimitsH", "uhe_AnalogBar5Limits", "uhe_AnalogBar", "uhe_AlarmBar", "uhe_AirOilTank", "uhe_AirCompressor", "uhe_AbnormalityIndicator", "uhe_StartStopSquenceTab", "uhe_ValveManual", "uhe_ValveDistributing", "uhe_ValveByPass", "uhe_ValveButterfly", "uhe_Valve4Ways", "uhe_Valve3Ways", "uhe_Valve", "uhe_UgHeatResistence", "uhe_TrendArrow", "uhe_StatusIndicator", "uhe_StartStopSequenceTxt", "uhe_StartStopButton", "uhe_StartStop", "uhe_SpillwayP", "uhe_Spillway", "uhe_Sapata", "uhe_Rectifier", "uhe_PressureSwitch", "uhe_PresDiferencial", "uhe_PowerFlowDirection", "uhe_OilTank", "uhe_NivelDrenagem", "uhe_MeasBar", "uhe_Lock", "uhe_LineVert", "uhe_LineHoriz", "uhe_KaplanTurbine", "uhe_Inverter", "uhe_InfoSetpoint", "uhe_InfoPotRea", "uhe_InfoPotP", "uhe_InfoAnalogic2", "uhe_InfoAnalogic", "uhe_InfoAlarm10", "uhe_InfoAlarm05", "uhe_InfoAlarm03", "uhe_InfoAlarm01", "uhe_GeneratorPP", "uhe_GeneratorP", "uhe_Generator", "uhe_FrancisTurbine", "uhe_FilterSelfCleaning", "uhe_ZoomObject", "uhe_ZoomFrame", "uhe_WaterTank", "uhe_ValveSolenoid"
+            BibliotecaDoObjeto = "uhe_automalogica"
+        Case "frCustomAlarmAndEventConfig" ,"fCustomAppConfig" ,"frCustomGmanobConfig" ,"frCustomNotesConfig" ,"frDBMonitor" ,"frFindApplicationFrames" ,"frFooterButton" ,"frFooterMaintenance" ,"frFooterRoot" ,"frFooterSeparator" ,"frFooterTab" ,"frHDMonitor" ,"frInsertFocusScriptOnScreens" ,"frLibVersion" ,"frLibVersionXO" ,"frRetentiveValue" ,"frThemeColorProperty" ,"frThemeConfig" ,"frThemeFileProperty" ,"frThemeFolder" ,"frThemeMaintenance" ,"frThemeRoot" ,"frTimer" ,"frTimerFolder" ,"frTimerRoot" ,"frTrend" ,"frXMLController",  "fr_TimerObject", "fr_TimerLine", "fr_SetpointSuggestionLine", "fr_SetpointSuggestion", "fr_SetpointIncludeSuggestion", "fr_SetpointDevice", "fr_SetpointBarGraph", "fr_Setpoint", "fr_SelectMenuLine", "fr_RadarChartInfo", "fr_RadarChart8_2Z", "fr_RadarChart8", "fr_RadarChart16", "fr_RadarChart10_2Z", "fr_RadarChart10", "fr_RadarChart05", "fr_RadarChart04", "fr_RadarChart03", "fr_OpenScreenButton", "fr_ObjectChecker", "fr_LockG", "fr_InfoAlarm", "fr_Gmanob", "fr_FooterProcessor", "fr_FooterButton", "fr_FocusScreenObjectFrame", "fr_FocusScreenObject", "fr_FindObjInScreen", "fr_E3Browser", "fr_E3Alarm", "fr_AreaOfResponsibilityLine", "fr_Analogic"
+            BibliotecaDoObjeto = "Frameautomalogica"
+        Case "ufv_TrackersTitulo" ,"ufv_TrackersTexto" ,"ufv_TrackersRetCmd" ,"ufv_Solarimetric" ,"ufv_PositionSummary" ,"ufv_OpenPopup" ,"ufv_Map_Frame" ,"ufv_Map_Trackers" ,"ufv_Map_MouseArea" ,"ufv_Map_MenuInterface" ,"ufv_Map_Balloon" ,"ufv_InverterDetails" ,"ufv_Inverter" ,"ufv_InfoSetpoint" ,"ufv_InfoPotP" ,"ufv_InfoPotG" ,"ufv_InfoAnalogicV" ,"ufv_InfoAnalogicH" ,"ufv_InfoAlarm10" ,"ufv_InfoAlarm05" ,"ufv_InfoAlarm01" ,"ufv_Device" ,"ufv_CommunInfosInverter" ,"ufv_BarChart" ,"ufv_WeatherStation"
+            BibliotecaDoObjeto = "ufv_automalogica"
+        Case "xcSetpointBarGraph" ,"xcSetpoint" ,"xcSetaUnifilar" ,"xcRetificador" ,"xcResumoUsinaVW" ,"xcReset" ,"xcPresDiferencial" ,"xcPotenciaGerada" ,"xcNotaOperacional" ,"xcNivelDrenagem" ,"xcMsgCOG" ,"xcMenuNotaOperacional" ,"xcMancalLNAT" ,"xcLockG" ,"xcLinhaVert" ,"xcLinhaHor" ,"xcLinhaEncaixe" ,"xcInibicaoAlarme" ,"xcInfoAnalogica" ,"xcInfoAdicLinha" ,"xcConfigColors" ,"xcFiltroAlarmeRodape" ,"xcIncluirSugestaoSP" ,"xcInc" ,"xcGeradorDiesel" ,"xcGerador" ,"xcFreio" ,"xcDisjuntor" ,"xcCtrlPotRea" ,"xcCtrlPartidaParada" ,"xcCtrlParadaEmerg" ,"xcCtrlDigitalOp" ,"xcCtrlDigital4Op" ,"xcCtrlDigital3Op" ,"xcCtrlDigital2Op" ,"xcControleHorario" ,"xcContator" ,"xcComunicacaoStatusUsina" ,"xcComunicacaoStatusCLP" ,"xcFiltro" ,"xcEstadoEstavel" ,"xcEquipeLocal" ,"xcEmManutencao" ,"xcDropList" ,"xcCtrlAnalogica" ,"xcControleMesaLinhaDeConfig" ,"xcComportaGrande" ,"xcComporta" ,"xcCommSubMenu" ,"xcCommandIcon" ,"xcCommandCustomIconMultipleOps" ,"xcCommandCustomIcon" ,"xcVentilador" ,"xcValvulaDistribuidora" ,"xcValvulaByPass" ,"xcValvulaBorboleta" ,"xcValvula4Vias" ,"xcValvula" ,"xcTurbina" ,"xcTrendArrow" ,"xcTrafoSA" ,"xctrafo3enrol" ,"xctrafo2enrol" ,"xcTextoSequenciaPartida" ,"xcTextBox" ,"xcTerra" ,"xcTelaAlarmes" ,"xcStatusMenuComando" ,"xcSetpointSugestao" ,"xcTelaTimeLine" ,"xcTimeLineAlarmObj_Txt4Char" ,"xcTimeLineAlarmObj" ,"vguBarraAlarme" ,"xcBarraSelecaoSequenciaPartida" ,"vguRepComporta" ,"vguPotenciaGerada" ,"vguLinhaVert" ,"vguBarraHor" ,"vguBarraAlarmePeq" ,"xcCaixaEspiral" ,"vguSetaUnifilar" ,"vguCtrlAnalogica" ,"vguCompensadorSincrono" ,"xcCommand" ,"xcChaveFusivel" ,"xcChave2posicoes" ,"xcChave" ,"xcCaixaPelton" ,"xcBomba" ,"xcBateria" ,"xcBarraHor" ,"xcBarraAlarme" ,"xcAlertaFreio" ,"xcAccessObjs" ,"xcAbreTelaAlarmes" ,"vguLinhaHor" ,"vguInfoAnalogica" ,"vguGeradorDiesel" ,"vguGerador" ,"vguEmManutencao" ,"vguDisjuntor"
+            BibliotecaDoObjeto = "controles"
+        Case "ww_CorrigeLetrasMaiusculasSQL", "ww_CreateMonitorTags", "ww_EngineForLengthyOperations", "ww_LogTrackingEvent", "ww_Monitor", "ww_Parameters", "ww_RetentiveEngine", "ww_SuppressAlarmsOrEvents", "ww_XMLTransfer_QUARENTENA", "ww_CorrigeLetrasMaiusculasSQL", "ww_CreateMonitorTags", "ww_EngineForLengthyOperations", "ww_LogTrackingEvent", "ww_Monitor", "ww_RetentiveEngine", "ww_SuppressAlarmsOrEvents", "ww_XMLTransfer_QUARENTENA", "ww_CommandIcon", "ww_ExplorerLine", "ww_ExplorerLine2", "ww_ExplorerLine2Properties", "ww_Filter", "ww_OpenTabularArea", "ww_ServerInterface", "ww_Sticky", "ww_TabularAreaEngine", "ww_TabularGeralEngine", "ww_TrendMeasNotification", "ww_TypeButton", "ww_ViewerMainFunctions", "ww_CommandIcon", "ww_ExplorerLine", "ww_ExplorerLine2", "ww_ExplorerLine2Properties", "ww_Filter", "ww_OpenTabularArea", "ww_ServerInterface", "ww_Sticky", "ww_TabularAreaEngine", "ww_TabularGeralEngine", "ww_TrendMeasNotification", "ww_TypeButton", "ww_ViewerMainFunctions"
+            BibliotecaDoObjeto = "watchwindow"
+        Case "DatabaseTags_Parameters", "DatabaseTags_TagMonitor", "DatabaseTags_Version"
+            BibliotecaDoObjeto = "databasetags"
+        Case "cmdscr_CustomCommandScreen", "cmdScrLibVersion", "patm_CommandCreateInterlockNote", "patm_CommandLogger", "patm_MaintenanceCleanNoteConfig", "patm_xcList", "patm_xcListLine", "patm_xcNoteControlAdd", "cmdscr_Checkbox", "cmdscr_DiscreteArea", "cmdscr_DiscreteLine", "cmdscr_InfoBalloon", "cmdscr_NoteHistProcessor", "cmdscr_SearchTextbox", "patm_AnalogChangePage", "patm_cCommandButton", "patm_cCommandAnalog", "patm_CommandButtonWStatus", "patm_CommandScreenCreator", "patm_CommandScreenProcessor", "patm_cPopupCommand", "patm_cPopupCommandExt", "patm_DeviceMenu", "patm_NoteAlertLine", "patm_ShowMessage", "patm_SimpleSearchTextbox"
+            BibliotecaDoObjeto = "poweratm_commandscreen"
+        Case "cmdScrXoLibVersion", "cmdScrXoLibVersionXO", "patm_DeviceNote", "patm_NoteControl", "patm_NoteDatabaseControl", "patm_NoteDeviceMonitoring"
+            BibliotecaDoObjeto = "poweratm_commandscreen_xo"
+        Case "ae_ComboBox", "patm_AlarmScreenEngine", "patm_DropListControl", "patm_HistScreenEngine", "patm_InfoBalloon", "patm_openAlarmHist", "patm_SearchList_AE", "patm_SearchTextbox", "aeLibVersion", "aeLibVersionXO", "patm_AlarmsEventsDBCreator", "patm_oracleConnection", "patm_xoAlarmHistConfig", "patm_xoDatabaseStatus", "patm_xoLogTrackingEvent"
+              BibliotecaDoObjeto = "poweratm_commandscreen_xo"
+        Case "gtwAckAlarms", "gtwAntiBouncing", "gtwCommand", "gtwFrozenMeasurements", "gtwSetpoint", "gtwTwoCommands", "gtwVersion", "gtwWriteExWithDelay"
+              BibliotecaDoObjeto = "gateway"
+        Case "aainfo_Note", "aainfo_NoteController", "aainfoXoLibVersion", "aainfo_NoteSource"
+              BibliotecaDoObjeto = "advancedalarminformation_xo"
+        Case "xcListViewHPxml", "xcMonthScheduling", "xcSchedulingGroup", "xcWeeklyScheduling", "xcAddCommandsSG", "xcBreadcrumb", "xcConfigProperties", "xcConfigPropertiesValues", "xcDateTimeDisplay", "xcDayMonth", "xcEvent", "xcLinkBreadcrumb", "xcMiniListCommands", "xcMiniListCommandsSingle", "xcTemplateListCommands", "xcTemplateListCommandsSingle", "xfBreadcrumb", "xoCalendarScheduling", "xoCheckLicenseCode", "xoExecuteScheduling"
+              BibliotecaDoObjeto = "Scheduling"
+        Case Else
+            BibliotecaDoObjeto = "Desconhecida"
+    End Select
 End Function
 
 Sub Fim()
