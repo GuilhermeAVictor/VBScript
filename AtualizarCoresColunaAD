@@ -1,0 +1,30 @@
+Sub AtualizarCoresColunaAD()
+    Dim ws As Worksheet
+    Dim linha As Long
+    Dim ultimaLinha As Long
+    Dim valor As String
+
+    Set ws = ThisWorkbook.Sheets("Objetos")
+    ultimaLinha = ws.Cells(ws.Rows.Count, "G").End(xlUp).Row
+
+    Dim corVerde As Long: corVerde = RGB(146, 208, 80)
+    Dim corAzulClaro As Long: corAzulClaro = RGB(180, 210, 250)
+
+    For linha = 3 To ultimaLinha
+        valor = Trim(ws.Cells(linha, "G").Value)
+
+        Select Case valor
+            Case "Iniciar área"
+                ws.Cells(linha, "AD").Interior.Color = corVerde
+
+            Case "Inicar laço(If ... Then)", _
+                 "Else", _
+                 "Condicioonar laço(ElseIf ... Then)", _
+                 "Finalizar laço(End If)"
+                ws.Cells(linha, "AD").Interior.Color = corAzulClaro
+
+            Case Else
+                ws.Cells(linha, "AD").Interior.ColorIndex = xlNone
+        End Select
+    Next linha
+End Sub
