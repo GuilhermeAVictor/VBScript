@@ -14,12 +14,12 @@ Sub ExportarCasesParaTXT()
     Set ws = ThisWorkbook.Sheets("Objetos")
 
     ' Última linha com dados na coluna AE
-    ultimaLinha = ws.Cells(ws.Rows.Count, "AE").End(xlUp).Row
+    ultimaLinha = ws.Cells(ws.Rows.Count, "AD").End(xlUp).Row
 
     tipoAnterior = ""
 
     For linha = 3 To ultimaLinha
-        valorScript = ws.Cells(linha, "AE").Value
+        valorScript = ws.Cells(linha, "AD").Value
 
         If Not IsError(valorScript) Then
             If Len(CStr(valorScript)) > 0 Then
