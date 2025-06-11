@@ -501,7 +501,6 @@ Case "WaterDistributionNetwork"
 Case Else
     RegistrarTipoSemPropriedade TipoObjeto
 End Select
-
 End Function
 
 '***********************************************************************
@@ -541,7 +540,7 @@ Case "DataServer", "DataFolder", "Folder", "Screen", "DrawGroup"
         VerificarPropriedadesObjetoTela child
 		Item("ContagemObjetosTelas").Value = Item("ContagemObjetosTelas").Value + 1
     Next
-		  '=================================================================
+	  '=================================================================
 	  ' Telas
 	  '================================================================= 
 	'-----------------------------------------------------------------------------
@@ -1610,6 +1609,112 @@ Case "uhe_Fan"
 	VerificarPropriedadeVazia Obj, TipoObjeto, "FanOn", "Telas", 1, False
 	VerificarPropriedadeCondicional Obj, TipoObjeto, "OpenCommandSelectMenu", "CommandPathNames", True, "Telas", 1, False
 	'-----------------------------------------------------------------------------
+Case "uhe_FilterSelfCleaning"
+	VerificarPropriedadeValor Obj, TipoObjeto, "FilterOn", False, 1, "Telas", 1, False
+	'-----------------------------------------------------------------------------
+Case "uhe_FrancisTurbine"
+	VerificarPropriedadeValor Obj, TipoObjeto, "Energized", False, 1, "Telas", 1, False
+	'-----------------------------------------------------------------------------
+Case "uhe_InfoAlarm01", "uhe_InfoAlarm03", "uhe_InfoAlarm05", "uhe_InfoAlarm10"
+	VerificarPropriedadeVazia Obj, TipoObjeto, "SourceObject01", "Telas", 1, False
+	VerificarPropriedadeValor Obj, TipoObjeto, "Descricao", "XXX", 1, "Telas", 1, False
+	If VerificarPropriedadeVazia (Obj, TipoObjeto, "SourceObject01", "Telas", 1, True) Then
+	VerificarPropriedadeVazia Obj, TipoObjeto, "ScreenPathNames", "Telas", 1, False
+	VerificarPropriedadeValor Obj, TipoObjeto, "OpeningMode", 0, 1, "Telas", 0, False
+	VerificarPropriedadeVazia Obj, TipoObjeto, "ScreenZoom", "Telas", 1, False
+	If VerificarPropriedadeValor (Obj, TipoObjeto, "OpeningMode", 4, 1, "Telas", 0, True) Then
+	VerificarPropriedadeVazia Obj, TipoObjeto, "CustomScriptOpeningMode", "Telas", 1, False
+	End If
+	End If
+	VerificarObjetoDesatualizado Obj, TipoObjeto, "generic_automalogica", "Telas", 0, False
+	'-----------------------------------------------------------------------------
+Case "uhe_InfoAnalogic", "uhe_InfoAnalogic2"
+	VerificarPropriedadeVazia Obj, TipoObjeto, "Measure", "Telas", 1, False
+	If VerificarPropriedadeVazia (Obj, TipoObjeto, "Measure", "Telas", 1, True) Then
+	VerificarPropriedadeVazia Obj, TipoObjeto, "AlarmSource", "Telas", 1, False
+	VerificarPropriedadeHabilitada Obj, TipoObjeto, "ShowUE", True, "Telas", 1, False
+	VerificarPropriedadeTextoProibido Obj, TipoObjeto, "Measure", ".Value", "Telas", 1, False
+	End If
+	If VerificarPropriedadeHabilitada (Obj, TipoObjeto, "SPShow", True, "Telas", 1, True) Then
+	VerificarPropriedadeVazia Obj, TipoObjeto, "SPTag", "Telas", 1, False
+	End If
+	If VerificarPropriedadeVazia (Obj, TipoObjeto, "SPTag", "Telas", 1, True) Then
+	VerificarPropriedadeValor Obj, TipoObjeto, "SPShow", False, 1, "Telas", 1, False
+	End If
+	VerificarObjetoDesatualizado Obj, TipoObjeto, "generic_automalogica", "Telas", 0, False
+	'-----------------------------------------------------------------------------
+Case "uhe_InfoPotP"
+	VerificarPropriedadeVazia Obj, TipoObjeto, "Measure", "Telas", 1, False
+	If VerificarPropriedadeVazia (Obj, TipoObjeto, "Measure", "Telas", 1, True) Then
+	VerificarPropriedadeVazia Obj, TipoObjeto, "AlarmSource", "Telas", 1, False
+	VerificarPropriedadeHabilitada Obj, TipoObjeto, "ShowUE", True, "Telas", 1, False
+	VerificarPropriedadeTextoProibido Obj, TipoObjeto, "Measure", ".Value", "Telas", 1, False
+	End If
+	If VerificarPropriedadeHabilitada (Obj, TipoObjeto, "SPShow", True, "Telas", 1, True) Then
+	VerificarPropriedadeVazia Obj, TipoObjeto, "SPTag", "Telas", 1, False
+	VerificarPropriedadeVazia Obj, TipoObjeto, "SetPointPotencia", "Telas", 1, False
+	End If
+	If VerificarPropriedadeVazia (Obj, TipoObjeto, "SPTag", "Telas", 1, True) Then
+	VerificarPropriedadeValor Obj, TipoObjeto, "SPShow", False, 1, "Telas", 1, False
+	VerificarPropriedadeVazia Obj, TipoObjeto, "SetPointPotencia", "Telas", 1, False
+	End If
+	VerificarPropriedadeValor Obj, TipoObjeto, "NominalValue", 100, 1, "Telas", 0, False
+	VerificarObjetoDesatualizado Obj, TipoObjeto, "generic_automalogica", "Telas", 0, False
+	'-----------------------------------------------------------------------------
+Case "uhe_InfoPotRea"
+	VerificarPropriedadeVazia Obj, TipoObjeto, "Measure", "Telas", 1, False
+	If VerificarPropriedadeVazia (Obj, TipoObjeto, "Measure", "Telas", 1, True) Then
+	VerificarPropriedadeVazia Obj, TipoObjeto, "AlarmSource", "Telas", 1, False
+	VerificarPropriedadeHabilitada Obj, TipoObjeto, "ShowUE", True, "Telas", 1, False
+	VerificarPropriedadeTextoProibido Obj, TipoObjeto, "Measure", ".Value", "Telas", 1, False
+	VerificarPropriedadeVazia Obj, TipoObjeto, "SourceObject", "Telas", 1, False
+	End If
+	If VerificarPropriedadeHabilitada (Obj, TipoObjeto, "SPShow", True, "Telas", 1, True) Then
+	VerificarPropriedadeVazia Obj, TipoObjeto, "SPTag", "Telas", 1, False
+	End If
+	If VerificarPropriedadeVazia (Obj, TipoObjeto, "SPTag", "Telas", 1, True) Then
+	VerificarPropriedadeValor Obj, TipoObjeto, "SPShow", False, 1, "Telas", 1, False
+	End If
+	VerificarPropriedadeValor Obj, TipoObjeto, "ValueVisible", True, 1, "Telas", 1, False
+	VerificarPropriedadeValor Obj, TipoObjeto, "MinPos", -100, 1, "Telas", 0, False
+	VerificarPropriedadeValor Obj, TipoObjeto, "MaxPos", 100, 1, "Telas", 0, False
+	'-----------------------------------------------------------------------------
+Case "uhe_InfoSetpoint"
+	VerificarPropriedadeVazia Obj, TipoObjeto, "SPTag", "Telas", 1, False
+	VerificarPropriedadeHabilitada Obj, TipoObjeto, "ShowUE", True, "Telas", 1, False
+	VerificarPropriedadeValor Obj, TipoObjeto, "Format", 0.00, 0, "Telas", 0, False
+	'-----------------------------------------------------------------------------
+Case "uhe_LineHoriz"
+	VerificarPropriedadeValor Obj, TipoObjeto, "Energizado", True, 1, "Telas", 1, False
+	VerificarPropriedadeValor Obj, TipoObjeto, "CorOff", 16448250, 1, "Telas", 0, False
+	VerificarPropriedadeValor Obj, TipoObjeto, "CorOn", 5263440, 1, "Telas", 0, False
+	'-----------------------------------------------------------------------------
+Case "uhe_LineVert"
+	VerificarPropriedadeValor Obj, TipoObjeto, "Energizado", True, 1, "Telas", 1, False
+	VerificarPropriedadeValor Obj, TipoObjeto, "CorOff", 16448250, 1, "Telas", 0, False
+	VerificarPropriedadeValor Obj, TipoObjeto, "CorOn", 5263440, 1, "Telas", 0, False
+	'-----------------------------------------------------------------------------
+Case "uhe_Lock"
+	If VerificarPropriedadeValor (Obj, TipoObjeto, "Visible", True, 1, "Telas", 1, True) Then
+	VerificarAssociacaoBase Obj, TipoObjeto, "ClosedState", "Telas", 0, False
+	End If
+	'-----------------------------------------------------------------------------
+Case "uhe_PresDiferencial"
+	VerificarPropriedadeValor Obj, TipoObjeto, "ActiveState", True, 1, "Telas", 1, False
+	'-----------------------------------------------------------------------------
+Case "uhe_PressureSwitch"
+	VerificarPropriedadeVazia Obj, TipoObjeto, "Measure", "Telas", 1, False
+	If VerificarPropriedadeVazia (Obj, TipoObjeto, "Measure", "Telas", 1, True) Then
+	VerificarPropriedadeVazia Obj, TipoObjeto, "AlarmSource", "Telas", 1, False
+	VerificarPropriedadeHabilitada Obj, TipoObjeto, "ShowUE", True, "Telas", 1, False
+	VerificarPropriedadeTextoProibido Obj, TipoObjeto, "Measure", ".Value", "Telas", 1, False
+	End If
+	'-----------------------------------------------------------------------------
+Case "uhe_Rectifier"
+	If VerificarPropriedadeValor (Obj, TipoObjeto, "Enabled", True, 1, "Telas", 1, True) Then
+	VerificarAssociacaoBase Obj, TipoObjeto, "Energizado", "Telas", 0, False
+	End If
+	'-----------------------------------------------------------------------------
 Case "XCPump"
 	VerificarPropriedadeVazia Obj, TipoObjeto, "SourceObject", "Telas", 0, False
 	'-----------------------------------------------------------------------------
@@ -1781,7 +1886,6 @@ Case "archInfoLine"
 Case Else
     RegistrarTipoSemPropriedade TipoObjeto
 End Select
-
 End Function
 
 '***********************************************************************
